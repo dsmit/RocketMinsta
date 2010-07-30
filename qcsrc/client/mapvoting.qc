@@ -6,6 +6,7 @@ string mv_pics[MAPVOTE_COUNT];
 string mv_pk3[MAPVOTE_COUNT];
 float mv_preview[MAPVOTE_COUNT];
 float mv_votes[MAPVOTE_COUNT];
+float mv_avail[MAPVOTE_COUNT];
 entity mv_pk3list;
 float mv_abstain;
 float mv_ownvote;
@@ -88,21 +89,46 @@ string GameTypeVote_GameTypeDescription(string gtype)
 	return "No description is available for this gametype";
 }
 
-#define drawGameTypeLine(s,c,sc) \
-drawstring(o, (s), sbar_fontsize * (sc), (c), 1, DRAWFLAG_NORMAL); \
+string GameTypeVote_DescriptionByID(float id)
+{
+	switch(mv_avail[id])
+	{
+		case GTV_AVAILABLE:
+			return GameTypeVote_GameTypeDescription(mv_maps[id]);
+		
+		case GTV_OVERPLAYED:
+			return "This gametype is currently overplayed.";
+		
+		case GTV_FORBIDDEN:
+			return "This gametype is forbidden on this map.";
+		
+		default:
+			return "wtf?";
+	}
+}
+
+#define drawGameTypeLine(s,c,sc,a) \
+drawstring(o, (s), sbar_fontsize * (sc), (c), a, DRAWFLAG_NORMAL); \
 o_y += sbar_fontsize_y * sc
 
 vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
 {
-	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2);
+	local string s;
+	s = GameTypeVote_DescriptionByID(id);
 	
-	local float i, n = tokenizebyseparator(GameTypeVote_GameTypeDescription(gtype), "\n");
+	local float a, i, n = tokenizebyseparator(s, "\n");
+	if(mv_avail[id] != GTV_AVAILABLE)
+		a = 0.5;
+	else
+		a = 1;
+	
+	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2, a);
 	for(i = 0; i < n; ++i)
 	{
-		drawGameTypeLine(argv(i), '1 1 1', 1);
+		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
 	
-	drawGameTypeLine("", '1 1 1', 1);
+	drawGameTypeLine("", '1 1 1', 1, 1);
 	return o;
 }
 
@@ -280,7 +306,7 @@ void MapVote_Draw()
 		}
 		
 		o_y += img_size_y;
-		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize);
+		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
 		
 		drawstring(o, mapvote_choosenmap, sbar_fontsize, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
@@ -390,7 +416,7 @@ void MapVote_CheckPic(string pic, string pk3, float id)
 
 void MapVote_Init()
 {
-	float i, power;
+	float i, n, j, power, tmp;
 	string map, pk3, ssdir;
 
 	precache_sound ("misc/invshot.wav");
@@ -410,6 +436,14 @@ void MapVote_Init()
 
 	mv_ownvote = -1;
 	mv_timeout = ReadCoord();
+
+	gametypevote = ReadByte();
+	
+	if(gametypevote)
+	{
+		print("^5Now decide the GAMETYPE!\n");
+		MapVote_RememberMap(ReadString());
+	}
 
 	if(mv_num_maps <= 8)
 		mv_maps_mask = ReadByte();
@@ -436,6 +470,20 @@ void MapVote_Init()
 
 			//print(strcat("RECV: ", map, " in ", pk3, "\n"));
 			MapVote_CheckPic(map, pk3, i);
+			
+			if(gametypevote)
+			{
+				mv_avail[i] = ReadByte();
+				
+				map = mv_maps[i];
+				n = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
+				for(j = 0; j < n; ++j)
+				{
+					tmp = strlen(argv(j));
+					if(tmp > gametypevote_longest)
+						gametypevote_longest = tmp;
+				}
+			}
 		}
 		else
 		{
@@ -443,11 +491,14 @@ void MapVote_Init()
 			mv_pk3[i] = strzone("if-you-see-this-the-code-is-broken");
 			mv_pics[i] = strzone("if-you-see-this-the-code-is-broken");
 			mv_preview[i] = false;
+			mv_avail[i] = false;
 		}
 	}
 
 	// do we NEED this, or can we handle key presses directly in CSQC?
 	localcmd("\nin_bind 7 1 \"impulse 1\"; in_bind 7 2 \"impulse 2\"; in_bind 7 3 \"impulse 3\"; in_bind 7 4 \"impulse 4\"; in_bind 7 5 \"impulse 5\"; in_bind 7 6 \"impulse 6\"; in_bind 7 7 \"impulse 7\"; in_bind 7 8 \"impulse 8\"; in_bind 7 9 \"impulse 9\"; in_bind 7 0 \"impulse 10\"; in_bind 7 KP_1 \"impulse 1\"; in_bind 7 KP_2 \"impulse 2\"; in_bind 7 KP_3 \"impulse 3\"; in_bind 7 KP_4 \"impulse 4\"; in_bind 7 KP_5 \"impulse 5\"; in_bind 7 KP_6 \"impulse 6\"; in_bind 7 KP_7 \"impulse 7\"; in_bind 7 KP_8 \"impulse 8\"; in_bind 7 KP_9 \"impulse 9\"; in_bind 7 KP_0 \"impulse 10\"; in_bindmap 7 0\n");
+	
+	
 }
 
 void MapVote_UpdateMask()

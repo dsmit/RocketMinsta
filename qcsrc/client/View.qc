@@ -133,29 +133,54 @@ float atan2(float y, float x)
 	return v_y * 0.01745329251994329576;
 }
 
+float oldzoomspeed;
+float oldzoomfactor;
+
 vector GetCurrentFov(float fov)
 {
 	float zoomsensitivity, zoomspeed, zoomfactor, zoomdir;
 
 	zoomsensitivity = cvar("cl_zoomsensitivity");
 	zoomfactor = cvar("cl_zoomfactor");
+	zoomspeed = cvar("cl_zoomspeed");
+	
+	if(zoomspeed 	!= oldzoomspeed || 
+	   zoomfactor	!= oldzoomfactor )
+	{
+		localcmd("cmd zoomreport ", ftos(zoomspeed), " ", ftos(zoomfactor), "\n");
+		oldzoomspeed = zoomspeed;
+		oldzoomfactor = zoomfactor;
+	}
+	
+	if(fovlock > -1)
+	{
+		zoomfactor = speczoom_factor;
+		zoomspeed = speczoom_speed;
+	}
+	
 	if(zoomfactor < 1 || zoomfactor > 16)
 		zoomfactor = 2.5;
-	zoomspeed = cvar("cl_zoomspeed");
+		
 	if(zoomspeed >= 0)
 		if(zoomspeed < 0.5 || zoomspeed > 16)
 			zoomspeed = 3.5;
 
-	zoomdir = button_zoom;
-	if(getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
-		zoomdir += button_attack2;
 	if(spectatee_status > 0 || isdemo())
 	{
 		if(spectatorbutton_zoom)
-			zoomdir = 0 + !zoomdir;
+			//zoomdir = 0 + !zoomdir;
 			// do not even THINK about removing this 0
 			// _I_ know what I am doing
 			// fteqcc does not
+			
+			/// cool story bro.
+			zoomdir = 1; 
+	}
+	else
+	{
+		zoomdir = button_zoom;
+		if(getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
+			zoomdir += button_attack2;
 	}
 
 	if(zoomdir)
@@ -319,6 +344,8 @@ float TrueAimCheck()
 
 void CSQC_common_hud(void);
 
+float oldfov;
+
 void CSQC_kh_hud(vector);
 void CSQC_ctf_hud(vector);
 void PostInit(void);
@@ -401,6 +428,13 @@ void CSQC_UpdateView(float w, float h)
 	maptimeAnnouncer();
 
 	fov = cvar("fov");
+	
+	if(fov != oldfov)
+	{
+		localcmd("cmd fovreport ", ftos(fov), "\n");
+		oldfov = fov;
+	}
+	
 	if(button_zoom || fov <= 59.5)
 	{
 		if(!zoomscript_caught)
@@ -450,7 +484,10 @@ void CSQC_UpdateView(float w, float h)
 	vid_conheight = cvar("vid_conheight");
 	vid_pixelheight = cvar("vid_pixelheight");
 
-	R_SetView(VF_FOV, GetCurrentFov(fov));
+	if(fovlock > -1)
+		R_SetView(VF_FOV, GetCurrentFov(fovlock));
+	else
+		R_SetView(VF_FOV, GetCurrentFov(fov));
 
 	// Camera for demo playback
 	if(camera_active)
@@ -733,6 +770,21 @@ void CSQC_UpdateView(float w, float h)
             }
         }
     }
+
+	if(screenfade)
+	{
+		local vector position;
+		position_x = vid_conwidth;
+		position_y = vid_conheight;
+		
+		local float sf_a;
+		sf_a =  bound(0, 1 - 4 * (time - screenfade), 1);
+		
+		if(!sf_a)
+			screenfade = 0;
+		else
+			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
+	}
 
 	if(NextFrameCommand)
 	{

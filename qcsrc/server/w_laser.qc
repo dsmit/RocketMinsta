@@ -25,8 +25,8 @@ void W_Laser_Attack (float issecondary)
 		a = cvar("g_balance_laser_primary_shotangle");
 	s_forward = v_forward * cos(a * DEG2RAD) + v_up * sin(a * DEG2RAD);
 
-	//<akari>
-	local float lasr_recoil = 3;
+	local float lasr_recoil;
+	lasr_recoil = 3;
 	
 	if(cvar("g_explosive_norecoil"))
 		lasr_recoil = 0;
@@ -35,7 +35,7 @@ void W_Laser_Attack (float issecondary)
 		W_SetupShot_Dir (self, s_forward, FALSE, lasr_recoil, "weapons/lasergun_fire.wav", cvar("g_balance_laser_secondary_damage"));
 	else
 		W_SetupShot_Dir (self, s_forward, FALSE, lasr_recoil, "weapons/lasergun_fire.wav", cvar("g_balance_laser_primary_damage"));
-	//</akari>
+		
 	pointparticles(particleeffectnum("laser_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
 	missile = spawn ();

@@ -121,6 +121,7 @@ void vip_SoulGem_touch()
 				vip_ResetHealthArmor(e);
 		}
 		vip_started = 1;
+		vip_ended = 0;
 	}
 	
 	self.gem_pickedup = 1;
@@ -203,6 +204,7 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	
 	//MoveToRandomMapLocation(e, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 1024, 256);
 	
+	local entity WHAT_THE_FUCK;
 	switch(theteam)
 	{
 		case COLOR_TEAM1:
@@ -221,7 +223,7 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 				bprint("^1WTF?!?!?!??!?!?!??!\n");
 				vip_removegem(e);
 				
-				local entity WHAT_THE_FUCK = spawn();
+				WHAT_THE_FUCK = spawn();
 				WHAT_THE_FUCK.think = WHAT_THE_FUCK_think;
 				WHAT_THE_FUCK.team = theteam;
 				WHAT_THE_FUCK.origin = orig;
@@ -237,14 +239,13 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 				bluegem_loc = e.origin;
 			vip_bluegem = e;
 			
-			/// HOLY FUCKING COCKS FROM HELL
-			/// THIS SHIT BLOWS MY MIIIIND
+			/// SEE COMMENT ABOVE
 			if(e.origin != bluegem_loc)
 			{
 				bprint("^4WTF?!?!?!??!?!?!??!\n");
 				vip_removegem(e);
 				
-				local entity WHAT_THE_FUCK = spawn();
+				WHAT_THE_FUCK = spawn();
 				WHAT_THE_FUCK.think = WHAT_THE_FUCK_think;
 				WHAT_THE_FUCK.team = theteam;
 				WHAT_THE_FUCK.origin = orig;
@@ -282,6 +283,7 @@ void vip_init()
 void vip_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
+    local entity e;
     
     if(intermission_running)
     {
@@ -295,7 +297,6 @@ void vip_EndRound_Think()
     {
         if(timeleft <= 0)
         {
-            local entity e;
             FOR_EACH_PLAYER(e)
             {
                 bigprint_clear_spec(e);
@@ -310,7 +311,6 @@ void vip_EndRound_Think()
         vip_started = 0;
         vip_ended = 0;
         
-        local entity e;
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
@@ -493,9 +493,9 @@ void vip_RegenerateHealth()
 {
 	self.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self, "g_explosive_vip_health_dependonenemies");
 	
-	self.health = min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
+	self.health = max(self.health, min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
 		self.vip_maxhealth
-	);
+	));
 	
 	self.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_health_delay");
 }
@@ -504,9 +504,9 @@ void vip_RegenerateArmor()
 {
 	self.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self, "g_explosive_vip_armor_dependonenemies");
 	
-	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
 		self.vip_maxarmor
-	);
+	));
 	
 	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 }
@@ -515,9 +515,9 @@ void vip_RegenerateExtra()
 {
 	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
 	
-	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
 		self.owner.vip_maxarmor
-	);
+	));
 	
 	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extralives_delay");
 }
@@ -570,7 +570,7 @@ void vip_MakePlayerVIP(entity pl)
 		if(cvar("g_explosive_vip_regenerate_armor"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateArmor;
-			pl.vip_healthregentime = time;
+			pl.vip_armorregentime = time;
 			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 		}
 		
@@ -588,7 +588,7 @@ void vip_MakePlayerVIP(entity pl)
 		if(cvar("g_explosive_vip_regenerate_extra"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateExtra;
-			pl.vip_healthregentime = time;
+			pl.vip_armorregentime = time;
 			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
 		}
 	}
@@ -779,7 +779,7 @@ void vip_ClearVIPs_MaybeAssign()
 		defer(1, vip_AssignVIPs);
 }
 
-float vip_RedVIPDown()
+void vip_RedVIPDown()
 {
 	local entity e;
 	FOR_EACH_PLAYER(e)
@@ -802,7 +802,7 @@ float vip_RedVIPDown()
 	vip_EndRound();
 }
 
-float vip_BlueVIPDown()
+void vip_BlueVIPDown()
 {
 	local entity e;
 	FOR_EACH_PLAYER(e)
@@ -826,10 +826,10 @@ float vip_BlueVIPDown()
 
 float vip_PlayerDies(float deathtype)
 {
-	DEPENDON(g_vip)
+	DEPENDON_F(g_vip, 0)
 	
 	if(vip_ended)
-		return;
+		return 0;
 	
 	if(!vip_started)
 	{
@@ -848,7 +848,7 @@ float vip_PlayerDies(float deathtype)
 				vip_AssignBlueVIP();
 		}
 		
-		return;
+		return 0;
 	}
 	
 	if(!ISVIP(frag_target))
@@ -865,17 +865,19 @@ float vip_PlayerDies(float deathtype)
 	}
 	
 	if(ISREDVIP(frag_target))
-		return vip_RedVIPDown();
+		vip_RedVIPDown();
 	else if(ISBLUEVIP(frag_target))
-		return vip_BlueVIPDown();
+		vip_BlueVIPDown();
+	
+	return 0;
 }
 
 float vip_RemovePlayer()
 {
-	DEPENDON(g_vip)
+	DEPENDON_F(g_vip, 0)
 	
 	if(vip_ended)
-		return;
+		return 0;
 	
 	if(ISREDVIP(self))
 	{
@@ -895,4 +897,6 @@ float vip_RemovePlayer()
 		else if(!vip_soulgem)
 			vip_AssignBlueVIP();
 	}
+	
+	return 0;
 }

@@ -241,7 +241,7 @@ void SV_ParseClientCommand(string s) {
 			return;
 		}
 		
-		sprint(self, "^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n");
+		sprint(self, strcat("^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n"));
 		return;
 	} else if(cmd == "madoka") {
 		if(!self)
@@ -257,6 +257,7 @@ void SV_ParseClientCommand(string s) {
 		
 		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
 		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
+		WriteSpectatorInfo(self);
 		return;
 	} else if(cmd == "hudinfo") {
 		if(!self)
@@ -264,6 +265,7 @@ void SV_ParseClientCommand(string s) {
 		
 		self.hud_old = stof(argv(1));
 		self.hud_alt = stof(argv(2));
+		WriteSpectatorInfo(self);
 	} else if(cmd == "fakeflag") {
 		if(!self)
 			return;
@@ -272,6 +274,15 @@ void SV_ParseClientCommand(string s) {
 			return;
 		
 		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
+	} else if(cmd == "fovreport") {
+		if(!self) return;
+		self.clientfov = stof(argv(1));
+		WriteSpectatorInfo(self);
+	} else if(cmd == "zoomreport") {
+		if(!self) return;
+		self.speczoom_speed = stof(argv(1));
+		self.speczoom_factor = stof(argv(2));
+		WriteSpectatorInfo(self);
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));

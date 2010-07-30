@@ -557,3 +557,8 @@ float MAX_SHOT_DISTANCE = 32768;
 const vector eX = '1 0 0';
 const vector eY = '0 1 0';
 const vector eZ = '0 0 1';
+
+#define GTV_AVAILABLE 0
+#define GTV_OVERPLAYED 1
+// for later use in per-map gametype filtering
+#define GTV_FORBIDDEN 2

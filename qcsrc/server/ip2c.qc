@@ -1,4 +1,4 @@
-float IPCacheDB
+float IPCacheDB;
 
 void IP2C_Log(string msg)
 {
@@ -39,7 +39,7 @@ string IP2C_Lookup(string ip)
     
     if(cvar_string("g_explosive_ip2country_server") == "")
     {
-        IP2C_Log("Can't lookup ip ", ip, ", g_explosive_ip2country_server is not set");
+        IP2C_Log(strcat("Can't lookup ip ", ip, ", g_explosive_ip2country_server is not set"));
         return "";
     }
     
@@ -66,7 +66,7 @@ void IP2C_URI_Get_Callback(float id, float status, string data)
     
     if(cn == "--")
     {
-        IP2C_Log("The remote server failed to resolve ", ip);
+        IP2C_Log(strcat("The remote server failed to resolve ", ip));
         return;
     }
     

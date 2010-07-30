@@ -115,7 +115,7 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(argv(0) == "kill" && victim.classname != "player")
 		{
-			sprint(self, victim.netname, "^1 is not playing.\n");
+			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));
 			return FALSE;
 		}
 		
@@ -131,17 +131,17 @@ float RemapVote(string vote, string cmd, entity e)
 		}
 		
 		local string cfgname = argv(1), strcfgs, tmpname;
-		local float i, size, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
-		size = search_getsize(rmglob);
+		local float i, globsize, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
+		globsize = search_getsize(rmglob);
 		
-		if(size <= 0)
+		if(globsize <= 0)
 		{
 			sprint(e, "This server doesn't have any custom configurations\n");
 			search_end(rmglob);
 			return FALSE;
 		}
 		
-		for(i = 0; i < size; ++i)
+		for(i = 0; i < globsize; ++i)
 		{
 			tmpname = search_getfilename(rmglob, i);
 			tmpname = substring(tmpname, strlen("rm-custom/"), strlen(tmpname));
@@ -270,6 +270,12 @@ float GameCommand_Vote(string s, entity e) {
 		print_to(e, "  vote COMMANDS ARGUMENTS. See 'vhelp' for more info.");
 		return TRUE;
 	} else if(argv(0) == "vote") {
+		if(e.classname == "")
+		{
+			sprint(e, "^1You must be connected to use vote commands\n");
+			return TRUE;
+		}
+		
 		UnmarkAway(e);
 		
 		if(argv(1) == "") {

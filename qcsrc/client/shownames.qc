@@ -48,7 +48,7 @@ void Draw_ShowNames()
         a = autocvar_hud_shownames_alpha;
         if(self.alpha)
             a *= self.alpha;
-        if(autocvar_hud_shownames_maxdistance)
+        //if(autocvar_hud_shownames_maxdistance)
         {
             if(dist >= autocvar_hud_shownames_maxdistance)
                 return;
@@ -57,8 +57,8 @@ void Draw_ShowNames()
 
         float resize;
         resize = 1;
-        if(autocvar_hud_shownames_resize) // limit resize so its never smaller than 0.5... gets unreadable
-            resize = 0.5 + 0.5 * ((autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance) - max(0, dist - autocvar_hud_shownames_mindistance)) / (autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance);
+        //if(autocvar_hud_shownames_resize) // limit resize so its never smaller than 0.5... gets unreadable
+        //    resize = 0.5 + 0.5 * ((autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance) - max(0, dist - autocvar_hud_shownames_mindistance)) / (autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance);
 
         // draw the sprite image
         vector o;
@@ -80,6 +80,7 @@ void Draw_ShowNames()
             myPos_y += (mySize_y / resize - mySize_y);
 
             vector iconpos, iconsize; // these determine icon position/size, if any
+            iconsize = '0 0 0'; /// fteqcc sucks
             vector namepos; // this is where the origin of the string
             float namesize; // total area where we can draw the string
 
@@ -122,14 +123,15 @@ void Draw_ShowNames()
 
             string s;
             s = GetPlayerName(self.the_entnum-1);
-            if((autocvar_hud_shownames_decolorize == 1 && teamplay) || autocvar_hud_shownames_decolorize == 2)
+            //if((autocvar_hud_shownames_decolorize == 1 && teamplay) || autocvar_hud_shownames_decolorize == 2)
+            if(teamplay)
                 s = playername(s, GetPlayerColor(self.the_entnum-1));
 
             //drawfontscale = '1 1 0' * resize;
-            s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors);
+            s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors_svn);
 
             float width;
-            width = stringwidth(s, TRUE, '1 1 0' * autocvar_hud_shownames_fontsize * resize);
+            width = stringwidth_svn(s, TRUE, '1 1 0' * autocvar_hud_shownames_fontsize * resize);
 
             if (width != namesize)
                 namepos_x += (namesize - width) / 2;

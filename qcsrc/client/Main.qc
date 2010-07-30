@@ -170,7 +170,7 @@ void CSQC_Init(void)
 	}
 	
 	// workaround a crash for nexuiz-svn users
-	if(cvar_string("g_nexuizversion") == "2.5svn")
+	if(cvar_string("g_nexuizversion") == "2.5svn" || cvar_string("g_nexuizversion") == "2.5.3")
 	{
 		print("^1Potentially bugged SVN engine detected!\n");
 		svn_workaround = 1;
@@ -384,7 +384,6 @@ void PostInit(void)
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
-	local float _printmsg;
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
@@ -494,6 +493,8 @@ void PostInit(void)
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
 	
+	screenfade = time + 0.1;
+	fovlock = -1;
 	postinit = true;
 }
 
@@ -534,7 +535,6 @@ float CSQC_ConsoleCommand(string strMessage)
 	// Acquire Command
 	local string strCmd;
 	strCmd = argv(0);
-	local float value;
 
 	if(strCmd == "+button4") { // zoom
 		// return false, because the message shall be sent to the server anyway (for demos/speccing)
@@ -941,6 +941,15 @@ void GameCommand(string msg)
 		rm_althud = hudlocked_alt;
 		rm_oldhud = hudlocked_old;
 	}
+	else if(cmd == "lockfov")
+	{
+		fovlock = stof(argv(1));
+	}
+	else if(cmd == "speczoom")
+	{
+		speczoom_speed = stof(argv(1));
+		speczoom_factor = stof(argv(2));
+	}
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -961,45 +970,6 @@ void GameCommand(string msg)
 		}
 		
 		bigprint(argv(1), argv(2), stof(argv(3)));
-	}
-	else if(cmd == "gametypevote")
-	{
-		print("^5Now decide the GAMETYPE!\n");
-		
-		local float i, tmp;
-		local string tmpvote;
-		
-		MapVote_RememberMap(argv(1));
-		
-		for(i = 2; i < argc; ++i)
-		{
-			/*
-			tmp = strlen(GameTypeVote_GameTypeDescription(argv(i)));
-			if(tmp > gametypevote_longest)
-			{
-				gametypevote_longest = tmp;
-				print("Found longest: ", argv(i), "\n");
-			}
-			*/
-			
-			tmpvote = argv(i);
-			local float j, n = tokenizebyseparator(GameTypeVote_GameTypeDescription(tmpvote), "\n");
-			
-			for(j = 0; j < n; ++j)
-			{
-				tmp = strlen(argv(j));
-				if(tmp > gametypevote_longest)
-				{
-					gametypevote_longest = tmp;
-					//print("Found longest (", ftos(tmp), "): ", argv(j), "\n");
-				}
-			}
-			
-			tokenize_console(msg);
-		}
-		
-		gametypevote = 1;
-		//gametypevote_longest = 0;
 	}
 	else if(cmd == "hudflash")
 	{
@@ -1323,6 +1293,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 	self.enttype = t;
 	switch(t)
 	{
+		case ENT_CLIENT: break;
 		case ENT_CLIENT_ENTCS: Ent_ReadEntCS(); break;
 		case ENT_CLIENT_SCORES: Ent_ReadPlayerScore(); break;
 		case ENT_CLIENT_TEAMSCORES: Ent_ReadTeamScore(); break;
@@ -1571,18 +1542,14 @@ void Net_ReadMadokaPrint()
 
 void Net_ReadSpecInfo()
 {
-	local float i, limit;
-	limit = min(num_spectators, MAX_SPECTATORS);
-	for(i = 0; i < limit; ++i)
-		strunzone(spectatornames[i]);
-		
+	local float i;
 	num_spectators = ReadShort();
 
 	for(i = 0; i < num_spectators; ++i)
 	{
-		local string s = ReadString();
+		local float slot = ReadByte();
 		if(i < MAX_SPECTATORS)
-			spectatornames[i] = strzone(s);
+			spectatorlist[i] = slot - 1;
 	}
 }
 
@@ -1658,9 +1625,9 @@ void Net_ReadHudFlash(float teamcolor)
 	hudflash(c, t, i, a);
 }
 
-void Net_ReadVIPInfo(float team)
+void Net_ReadVIPInfo(float teem)
 {
-	switch(team)
+	switch(teem)
 	{
 		case COLOR_TEAM1:
 			vip_red_maxhealth = ReadShort();
@@ -1681,7 +1648,7 @@ void Net_ReadVIPInfo(float team)
 			return;
 	}
 	
-	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(team), "\n");
+	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(teem), "\n");
 	print("Dump: \n");
 	print("^5 -> ", ftos(ReadShort()), "\n");
 	print("^5 -> ", ftos(ReadShort()), "\n");
@@ -1828,7 +1795,7 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
-void bigprint_old(string bigstr, string comment, float fadetime)
+void bigprint_old(string bigstr, string comment, float fadeTime)
 {
 	if(is_tmpmadoka) return;
 	
@@ -1842,7 +1809,7 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 	bigprint_oldstring = strzone(bigstr);
 	//bigprint_oldcomment = strzone(comment);
 	
-	bigprint_oldfadetime = fadetime - 0.1;
+	bigprint_oldfadetime = fadeTime - 0.1;
 	bigprint_oldappeartime = time;
 }
 
@@ -1943,9 +1910,9 @@ void score_visual(float score)
 	++score_strings_num;
 }
 
-void hudflash(vector color, float staytime, float intensivity, float alph)
+void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
-	hudflash_color = color;
+	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;
 	hudflash_appeartime = time;

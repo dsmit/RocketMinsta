@@ -631,8 +631,8 @@ void bigprint(entity e, string bigstring, string comment, float staytime);
 void centerprint_spec(entity, string);
 void bigprint_spec(entity, string, string, float);
 
-.string rmcfgreport
-.float anonspec
+.string rmcfgreport;
+.float anonspec;
 .float madoka;
 
 void dom_cp_placeholder();
@@ -655,3 +655,10 @@ float g_explosive_speedaward_ownaccel;
 
 .float hud_old;
 .float hud_alt;
+
+.float clientfov;
+.float speczoom_speed;
+.float speczoom_factor;
+
+#define DEPENDON(d) if(!(d)) return;
+#define DEPENDON_F(d,f) if(!(d)) return f;

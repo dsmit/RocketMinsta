@@ -2773,7 +2773,7 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
 #define HF_DEFAULT_INT 0.5
 #define HF_DEFAULT_ALPHA 0.4
 
-void hudflash(entity e, vector color, float staytime, float intensivity, float alph)
+void hudflash(entity e, vector flashcolor, float staytime, float intensivity, float alph)
 {
     if(clienttype(e) != CLIENTTYPE_REAL)
         return;
@@ -2784,11 +2784,11 @@ void hudflash(entity e, vector color, float staytime, float intensivity, float a
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
-    //WriteShort(MSG_ONE, compressShortVector(color));
+    //WriteShort(MSG_ONE, compressShortVector(flashcolor));
     
-    WriteCoord(MSG_ONE, color_x);
-    WriteCoord(MSG_ONE, color_y);
-    WriteCoord(MSG_ONE, color_z);
+    WriteCoord(MSG_ONE, flashcolor_x);
+    WriteCoord(MSG_ONE, flashcolor_y);
+    WriteCoord(MSG_ONE, flashcolor_z);
     
     WriteCoord(MSG_ONE, staytime);
     WriteCoord(MSG_ONE, intensivity);
@@ -2811,12 +2811,12 @@ void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
     WriteCoord(MSG_ONE, alph);
 }
 
-void hudflash_spec(entity pl, vector color, float staytime, float intensivity, float alph)
+void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivity, float alph)
 {
     local entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash(e, color, staytime, intensivity, alph);
+            hudflash(e, flashcolor, staytime, intensivity, alph);
     }
 }
 
@@ -2829,14 +2829,14 @@ void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float
     }
 }
 
-void hudflash_default(entity e, vector color)
+void hudflash_default(entity e, vector flashcolor)
 {
-    hudflash(e, color, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+    hudflash(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
 }
 
-void hudflash_default_spec(entity e, vector color)
+void hudflash_default_spec(entity e, vector flashcolor)
 {
-    hudflash_spec(e, color, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+    hudflash_spec(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
 }
 
 void hudflash_teamcolor_default(entity e)

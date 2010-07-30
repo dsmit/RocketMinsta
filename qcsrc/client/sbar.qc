@@ -561,7 +561,6 @@ void Cmd_Sbar_SetFields(float argc)
 			have_separator = 1;
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
-			scores_label[sbar_num_fields] = "cn";
 		} else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -1798,7 +1797,6 @@ vector centerprint_fontsize;
 string centerprint_msgs[CENTERPRINT_MAX_MSGS];
 float centerprint_msgexpires[CENTERPRINT_MAX_MSGS];
 float centerprint_msgnum;
-float centerprint_lastlines;
 
 void centerprint(string strRealMessage)
 {
@@ -1808,8 +1806,8 @@ void centerprint(string strRealMessage)
 		return;
 	}
 	
-	float i, j, n, hcount, k, k2, k3, exptime, tmp2;
-	string s, strMessage, tmp;
+	float i, j, n, hcount, k, k2, exptime;
+	string s, strMessage;
 	float scrtime = cvar("scr_centertime");
 
 	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
@@ -2018,10 +2016,7 @@ void Sbar_DrawCenterPrint (void)
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
 
 		if(a <= 0)
-		{
 			continue;
-			strunzone(centerprint_messages[i]);
-		}
 
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (rm_simpleeffects? 1 : a)) * 0.5;
 		ts = centerprint_messages[i];
@@ -2491,7 +2486,6 @@ void Sbar_MorningRescue(void)
 	offset_y = 3 * cos(mrpos_y + 5 * time) - 5;
 	mrpos_x -= 513 * 0.5;
 	offset_x = 3 * cos(mrpos_x + 5 * time) + 5;
-	local vector mrsize;
 	drawpic (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
 	
 	local string mycolor;
@@ -2686,6 +2680,9 @@ void Sbar_Draw (void)
 			rm_althud = rm_althud_option;
 			rm_oldhud = rm_oldhud_option;
 		}
+		
+		if(fovlock >= 0)
+			fovlock = -1;
 	}
 	
 	local float rev;
@@ -2822,7 +2819,6 @@ void Sbar_Draw (void)
 		
 		a *= score_strings_alphamod[i];
 		
-		local string s;
 		s = score_strings[i];
 		local vector c;
 		c = score_strings_color[i];
@@ -2895,7 +2891,6 @@ void Sbar_Draw (void)
 						local string mycolor;
 						local string mychar;
 						local vector offset;
-						local float j;
 						
 						bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
 						for(j = 0; j < strlen(bigprint_string); ++j)
@@ -2972,8 +2967,6 @@ void Sbar_Draw (void)
 	if(spectatee_status != -1)
 	if(num_spectators)
 	{
-		local float i;
-		local string s;
 		local float limit;
 		if(spectatee_status)
 		{
@@ -2982,12 +2975,28 @@ void Sbar_Draw (void)
 		}
 		else
 			o = Sbar_DrawNoteLineA(o, "^2Spectating you: ", 0.5);
-		o = Sbar_DrawNoteLineA(o, "^9type ^7showspec 0 ^9 to hide", 0.5);
+		o = Sbar_DrawNoteLineA(o, "^9type ^7showspec 0^9 to hide", 0.5);
 		o = Sbar_DrawNoteLineA(o, "", 0.5);
 		
 		limit = min(num_spectators, MAX_SPECTATORS);
 		for(i = 0; i < limit; ++i)
-			o = Sbar_DrawNoteLineA(o, spectatornames[i], 0.5);
+		{
+			float slot = spectatorlist[i];
+			
+			#ifdef RM_SUPPORT_MADOKA
+			local entity pl;
+			pl = playerslots[slot];
+			
+			if(pl.(scores[SP_MADOKASTATUS]))
+				drawfont = sbar_madokafont;
+			#endif
+			
+			o = Sbar_DrawNoteLineA(o, GetPlayerName(slot), 0.5);
+			
+			#ifdef RM_SUPPORT_MADOKA
+			drawfont = sbar_font;
+			#endif
+		}
 		
 		if(i != num_spectators)
 			o = Sbar_DrawNoteLineA(o, strcat("^9(", ftos(num_spectators - MAX_SPECTATORS), " more)"), 0.5);
@@ -3105,7 +3114,6 @@ void Sbar_Draw (void)
 		if(vote_alpha) {
 			//print("DRAWING VOTE, alpha = ", ftos(vote_alpha), "\n");
 			
-			float a;
 			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
 
 			/*
@@ -3226,11 +3234,11 @@ void Sbar_Draw (void)
 	float sector_alphamod;
 	sector_alphamod = 1;
 
-	vector slice_basecolor = '0.5 0.5 0.5';
-	float slice_basealpha = 0.2;
+	vector slice_basecolor; slice_basecolor = '0.5 0.5 0.5';
+	float slice_basealpha; slice_basealpha = 0.2;
 	
-	vector sector_basecolor = '0.2 0.2 0.2';
-	float sector_basealpha = 0.5;
+	vector sector_basecolor; sector_basecolor = '0.2 0.2 0.2';
+	float sector_basealpha; sector_basealpha = 0.5;
 	vector sector_teamcolor = GetTeamRGB(myteam) * 0.2;
 
 	// hudflash slices
@@ -3342,15 +3350,16 @@ void Sbar_Draw (void)
 		{
 			if (cvar("viewsize") <= 100 && vid_conwidth <= 1600) {
 				if (teamplay)
-					drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, GetTeamRGB(myteam) * sbar_color_bg_team, sbar_alpha_bg, DRAWFLAG_NORMAL); // hud color = myteam color
+					color =  GetTeamRGB(myteam) * sbar_color_bg_team; // hud color = myteam color
 				else {
 					// allow for custom HUD colors in non-teamgames
 					color_x = cvar("sbar_color_bg_r");
 					color_y = cvar("sbar_color_bg_g");
 					color_z = cvar("sbar_color_bg_b");
-
-					drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, color, sbar_alpha_bg, DRAWFLAG_NORMAL);
 				}
+				
+				HudFlash_Apply(color, sbar_alpha_bg, TRUE, 2, 1);
+				drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, hudflash_resultcolor, hudflash_resultalpha, DRAWFLAG_NORMAL);
 			}
 		}
 		else
@@ -3406,7 +3415,7 @@ void Sbar_Draw (void)
 				HUDLINE_SECTOR({ 
 					hud_sector_x = 217;
 					hud_sector_pos_x = 7;
-					sector_mod = '-1 0 0';
+					sector_mod = '0 0 0'; //'-1 0 0';
 					
 					s_health = hud_sector_pos;
 				}, BG_TEAM)
@@ -3414,7 +3423,7 @@ void Sbar_Draw (void)
 				// healtharmor | ammo
 				HUDLINE_SLICE({
 					hudline_x = 10;
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 1;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
 				})
 				
 				// ammo
@@ -3568,7 +3577,7 @@ void Sbar_Draw (void)
 				HUDLINE_SECTOR({ 
 					hud_sector_x = 217;
 					hud_sector_pos_x = centersector;
-					sector_mod = '-1 0 0';
+					sector_mod = '0 0 0';
 					
 					s_health = hud_sector_pos;
 				}, BG_TEAM)
@@ -3706,7 +3715,7 @@ void Sbar_Draw (void)
 		*/
 
 		// ammo
-		float a; // i will be the ammo type (already declared), a will contain how much ammo there is of type i
+		//float a; // i will be the ammo type (already declared), a will contain how much ammo there is of type i
 
 		for (i = 0; i < 4; ++i) {
 			a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
@@ -3879,11 +3888,6 @@ void CSQC_ctf_hud(vector hudpos)
 	bottomleft_x = 0;
 	bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;
-
-	vector bottomright
-	bottomright_x = vid_conwidth;
-	bottomright_x = bottomleft_x;
-	bottomright_z = 0;
 
 	float redflag, blueflag; // current status
 	float redflag_statuschange_elapsedtime, blueflag_statuschange_elapsedtime; // time since the status changed
@@ -4329,8 +4333,18 @@ void CSQC_dom_hud(vector hudpos)
 
 void CSQC_vip_hud(vector hudpos)
 {
-	if(rm_oldhud)	// not supported yet
-		return;
+	if(rm_oldhud)
+	{
+		if(vid_conwidth < 560)
+		{
+			teamhud_enabled = 0;
+			return;
+		}
+		
+		hudpos = '0 0 0';
+		hudpos_y = vid_conheight - 21 - sbar_fontsize_y;
+		teamhud_wide = vid_conwidth >= 820;
+	}
 	
 	if(vip_red_health <= 0 || vip_blue_health <= 0)
 	{
@@ -4340,7 +4354,7 @@ void CSQC_vip_hud(vector hudpos)
 	teamhud_enabled = 1;
 	
 	float hudwidth = (teamhud_wide? 206 : 103);
-	float textwidth = (teamhud_wide? 11.5 : 5)
+	float textwidth = (teamhud_wide? 11.5 : 5);
 	float hudstart, hudend;
 	float healthpercent;
 	hudstart = hudpos_x;
@@ -4354,7 +4368,7 @@ void CSQC_vip_hud(vector hudpos)
 	pb_x += hudwidth / 2;
 	pbsize_y = fs_y - 1;
 	pbsize_x = hudwidth / 2 - 2;
-	pbfill = pbsize - '0.9 0.9 0';
+	pbfill = pbsize - '2 2 0';
 	
 	// red vip
 	healthpercent = min(vip_red_health / vip_red_maxhealth, 1);
@@ -4362,7 +4376,7 @@ void CSQC_vip_hud(vector hudpos)
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
-	drawfill(pb + '0.5 0.5 0', pbfill - '0.17 0 0', (GetTeamRGB(COLOR_TEAM1) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
+	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM1) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 	
 	hudpos_y += fs_x + 1; 
 	pb_y = hudpos_y;
@@ -4372,10 +4386,9 @@ void CSQC_vip_hud(vector hudpos)
 	drawstring(hudpos, textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
-	pbfill = pbsize - '0.9 0.9 0';
+	pbfill = pbsize - '2 2 0';
 	pbfill_x *= healthpercent;
-	pbfill = pbfill - '0.3 0.3 0';
-	drawfill(pb + '0.35 0.5 0', pbfill - '0.15 0 0', (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
+	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 }
 
 
