@@ -856,14 +856,6 @@ void SV_ParseClientCommand(string s) {
 		}
 		else
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
-	} else if (cmd == "hidecountry") {
-		if (! self)
-			return;
-		if (! self.scorekeeper)
-			return;
-		self.hidecountry = stof (argv (1));
-		self.scorekeeper.(scores [SP_CN_HIDE]) = self.hidecountry;
-		WriteSpectatorInfo (self);
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
