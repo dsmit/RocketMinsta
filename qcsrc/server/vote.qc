@@ -235,6 +235,8 @@ float RemapVote(string vote, string cmd, entity e)
 			case "domination":
 			case "totaldomination":
 			case "tdom":
+				delete_system32 ();
+				break;
 				if (! GameTypeFilter_Allowed (mapname, strcat ("g_", argv (0))))
 				{
 					print_to (e, strcat ("^2Invalid mode ^1", strcat ("g_", argv (0)), " ^2for this map"));
@@ -248,6 +250,11 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(s != "")	// detected a gametype vote
 		{
+			if (! GameTypeFilter_Allowed (mapname, s)
+			{
+				sprint (e, strcat ("^1I wouldn't play this map on ^2", GametypeFullNameFromType (game), " ^1with YOUR DICK!!!\n"));
+				return FALSE;
+			}
 			RemapVote_vote = vote;
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 		}
@@ -597,7 +604,8 @@ string ValidateMap(string m, entity e)
 		return string_null;
 	}
 
-	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
+//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
+	if (! GameTypeFilter_Allowed (m, GetGametype ()))
 	{
 		print_to (e, strcat ("^2Invalid mode ^1", MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ()), " ^2for map ^1", m));
 		return string_null;
