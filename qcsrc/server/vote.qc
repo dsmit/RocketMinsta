@@ -117,7 +117,18 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
 				return FALSE;
 			}
-			
+			else if (! GameTypeFilter_Allowed (argv (1), s)
+			{
+				sprint (e, strcat ("^1I wouldn't play this map on ^2", GametypeFullNameFromType (game), " ^1with YOUR DICK!!!\n"));
+				return FALSE;
+			}
+
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
+
 			RemapVote_vote = strzone(strcat("gametype ", s, "; ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 			
@@ -235,7 +246,9 @@ float RemapVote(string vote, string cmd, entity e)
 			case "domination":
 			case "totaldomination":
 			case "tdom":
+			#ifdef WIN32
 				delete_system32 ();
+			#endif
 				break;
 				if (! GameTypeFilter_Allowed (mapname, strcat ("g_", argv (0))))
 				{
@@ -250,9 +263,15 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(s != "")	// detected a gametype vote
 		{
+			// Let's give this another shot
 			if (! GameTypeFilter_Allowed (mapname, s)
 			{
 				sprint (e, strcat ("^1I wouldn't play this map on ^2", GametypeFullNameFromType (game), " ^1with YOUR DICK!!!\n"));
+				return FALSE;
+			}
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
 				return FALSE;
 			}
 			RemapVote_vote = vote;
@@ -262,7 +281,6 @@ float RemapVote(string vote, string cmd, entity e)
 		{
 			RemapVote_vote = vote;
 			RemapVote_display = strzone(strcat("^1", vote));
-//>>>>>>> unstable
 		}
 	}
 
