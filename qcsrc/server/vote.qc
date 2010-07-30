@@ -75,6 +75,7 @@ float RemapVote(string vote, string cmd, entity e)
 	float vote_argc;
 	entity victim;
 	vote_argc = tokenize_console(vote);
+	local string s;
 
 	if(!VoteAllowed(argv(0), cmd))
 		return FALSE;
@@ -93,10 +94,35 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	if(argv(0) == "gotomap")
 	{
-		if(!(vote = ValidateMap(substring(vote, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), e)))
+		if(vote_argc > 2)
+			s = strcat(" ", argv(2));
+		
+		//if(!(vote = ValidateMap(substring(vote, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), e)))
+		if(!(vote = ValidateMap(argv(1), e)))
 			return FALSE;
-		vote = strcat("gotomap ", vote);
+		
+		vote = strcat("gotomap ", vote, s);
 		vote_argc = tokenize_console(vote); // ValidateMap may have done some stuff to it
+		
+		if(vote_argc > 2)
+		{
+			s = NormalizeGametypeName(argv(2));
+			if(!ListContains(GameTypeVote_GetOptions(), s, " ")) s = "";
+			
+			// ListContains tokenizes
+			vote_argc = tokenize_console(vote);
+			
+			if(s == "")
+			{
+				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
+				return FALSE;
+			}
+			
+			RemapVote_vote = strzone(strcat("gametype ", s, "; ", vote));
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			
+			return TRUE;
+		}
 	}
     if(argv(0) == "endround")
     {
@@ -196,7 +222,7 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else
 	{
-		switch (argv (0))
+/*		switch (argv (0))
 		{
 			case "kh":
 			case "ctf":
@@ -218,6 +244,18 @@ float RemapVote(string vote, string cmd, entity e)
 				RemapVote_vote = vote;
 				RemapVote_display = strzone(strcat("^1", vote));
 				break;
+*/		s = NormalizeGametypeName(argv(0));
+		
+		if(s != "")	// detected a gametype vote
+		{
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+		}
+		else
+		{
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote));
+//>>>>>>> unstable
 		}
 	}
 

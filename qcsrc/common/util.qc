@@ -431,7 +431,7 @@ string GametypeNameFromType(float g)
 	else if (g == GAME_CTS) return "cts";
 	else if (g == GAME_FREEZETAG) return "ft";
     else if (g == GAME_VIP) return "vip";
-	return "dm";
+	return "";
 }
 
 string GametypeFullNameFromType(float g)
@@ -453,6 +453,66 @@ string GametypeFullNameFromType(float g)
 	else if (g == GAME_FREEZETAG) return "Freeze Tag";
     else if (g == GAME_VIP) return "VIP";
 	return "Unknown";
+}
+
+float GametypeIDFromName(string name)
+{
+	local string s;
+	local float i;
+	i = GAME_DEATHMATCH;
+	
+	do
+	{
+		s = GametypeNameFromType(i);
+		if(name == s) return i;
+		++i;
+	} while(s != "");
+	
+	return -1;
+}
+
+string GametypeFullNameFromName(string name)
+{
+	return(GametypeFullNameFromType(GametypeIDFromName(name)));
+}
+
+// this function expands possible aliases to real gametype names.
+// Update this code when adding new gametypes and/or builtin aliases to existing ones
+string NormalizeGametypeName(string name)
+{
+	switch(name)
+	{
+		case "ft": case "freezetag":
+			return "ft";
+		
+		case "kh": case "keyhunt":
+			return "kh";
+		
+		case "ctf":
+			return "ctf";
+		
+		case "dom": case "domination":
+			return "dom";
+		
+		case "totaldom": case "tdom": case "totaldomination":
+			return "totaldom";
+		
+		case "vip":
+			return "vip";
+		
+		default:
+			return "";
+	}
+}
+
+float ListContains(string source, string key, string sep)
+{
+	local float i;
+	local float n = tokenizebyseparator(source, sep);
+	
+	for(i = 0; i < n; ++i)
+		if(argv(i) == key) return 1;
+	return 0;
 }
 
 string mmsss(float tenths)

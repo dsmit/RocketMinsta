@@ -40,3 +40,6 @@ IGNOREPKG=(-)
 # it will be, of course, rebuilt. This option is only useful if you're a developer who constantly needs to rebuild the mod
 CACHEPKGS=0
 
+# Like CACHEPKGS, but caches compilled QuakeC code
+CACHEQC=0
+

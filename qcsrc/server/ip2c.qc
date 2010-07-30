@@ -74,7 +74,7 @@ void IP2C_URI_Get_Callback(float id, float status, string data)
     
     // find all clients connected from this ip, update their country
     local entity e;
-    FOR_EACH_REALCLIENT(e) if(e.netaddress)
+    FOR_EACH_REALCLIENT(e) if(e.netaddress == ip)
         IP2C_SetCountry(e);
 }
 

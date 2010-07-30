@@ -83,6 +83,7 @@ void freezetag_Initialize()
     
     precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");
+    precache_sound("freezetag/freezing.wav");
 	ScoreRules_freezetag();
 	update_playercount();
 	
@@ -255,6 +256,8 @@ void freezetag_Freeze(entity attacker)
 	self = oldself;
 
 	update_playercount();
+
+	sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
 
 	// add waypoint
 	WaypointSprite_Spawn("freezetag_frozen", 0, 0, self, '0 0 64', world, self.team, self, waypointsprite_attached, TRUE);

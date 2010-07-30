@@ -244,6 +244,8 @@ void dompoint_captured ()
 	
 	if(g_totaldomination)
 		tdom_checkwinner();
+	else
+		dom_recountpoints(); 
 };
 
 void AnimateDomPoint()
@@ -837,7 +839,8 @@ void dom_delayedinit()
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 	}
-
+	
+	dom_recountpoints();
 	ScoreRules_dom();
 };
 
