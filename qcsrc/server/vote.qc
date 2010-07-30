@@ -532,6 +532,8 @@ string ValidateMap(string m, entity e)
 		return string_null;
 	}
 
+	print_to (e, strcat ("^1Current GameTypeCvar = ^2", MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())));
+
 	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
 		return string_null;
 
