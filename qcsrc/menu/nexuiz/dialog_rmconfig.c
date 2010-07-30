@@ -50,6 +50,9 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "noflags", "Country flags in scoreboard"));
 	me.TR(me);
+		me.TD (me, 1, 4, e = makeRMCheckBox (1, "hidecountry", "Show my country flag"));
+		setDependent (e, "hidecountry", 0, 0);
+	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "notimer", "\"time\" column in scoreboard"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nokillsound", "Separate kill and hit sounds"));

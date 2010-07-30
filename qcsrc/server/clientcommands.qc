@@ -220,6 +220,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
 		OPTAVAIL	("shownames", "g_explosive_shownames")
 		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
+		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
