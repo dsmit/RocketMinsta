@@ -858,6 +858,11 @@ void SV_ParseClientCommand(string s) {
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
 	} else if (cmd == "hidecountry") {
 		if (! self) return;
+		if (! cvar ("g_explosive_allow_hidecountry"))
+		{
+			sprint (self, "^1hidecountry is not allowed on this server.\n");
+			return;
+		}
 		self.hidecountry = stof (argv (1));
 		IP2C_SetCountry (self);
 	} else {
