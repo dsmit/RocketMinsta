@@ -209,8 +209,11 @@ float RemapVote(string vote, string cmd, entity e)
 			case "domination":
 			case "totaldomination":
 			case "tdom":
-				if (! (ValidateMap (substring (vote, argv_start_index (1), argv_end_index (-1) - argv_start_index (1)), e)))
+				if (! GameTypeFilter_Allowed (mapname, strcat ("g_", argv (0))))
+				{
+					print_to (e, strcat ("^2Invalid mode ^1", strcat ("g_", argv (0)), " ^2for this map"));
 					return FALSE;
+				}
 			default:
 				RemapVote_vote = vote;
 				RemapVote_display = strzone(strcat("^1", vote));
@@ -556,9 +559,9 @@ string ValidateMap(string m, entity e)
 		return string_null;
 	}
 
-	if (! GameTypeFilter_Allowed (m, GametypeNameFromType (MapInfo_CurrentGametype ())))
+	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
 	{
-		print_to (e, strcat ("^2The vote is wrong: Map ^1", m, " ^2cannot be played on ^1", GametypeFullNameFromType (MapInfo_CurrentGametype ())));
+		print_to (e, strcat ("^2Invalid mode ^1", MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ()), " ^2for map ^1", m));
 		return string_null;
 	}
 

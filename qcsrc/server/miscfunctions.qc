@@ -3020,6 +3020,6 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	forbiddenModes = cvar_string (strcat ("g_gametypefilter_", map));
 	fmCount = tokenizebyseparator (forbiddenModes, " ");
 	for (i = 0; i < fmCount; i ++)
-		if (argv (i) == gametype) return 0;
+		if (strcat ("g_", argv (i)) == gametype) return 0;
 	return 1;
 }
