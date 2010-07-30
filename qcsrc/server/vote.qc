@@ -532,6 +532,9 @@ string ValidateMap(string m, entity e)
 		return string_null;
 	}
 
+	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
+		return string_null;
+
 	return m;
 }
 
