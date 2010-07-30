@@ -859,6 +859,7 @@ void SV_ParseClientCommand(string s) {
 	} else if (cmd == "hidecountry") {
 		if (! self) return;
 		self.hidecountry = stof (argv (1));
+		IP2C_SetCountry (self);
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
