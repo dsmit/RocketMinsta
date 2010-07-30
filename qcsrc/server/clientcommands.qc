@@ -856,6 +856,9 @@ void SV_ParseClientCommand(string s) {
 		}
 		else
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
+	} else if (cmd == "hidecountry") {
+		if (! self) return;
+		self.hidecountry = stof (argv (1));
 	} else {
 		//if(ctf_clientcommand())
 		//	return;

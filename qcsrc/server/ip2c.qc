@@ -9,6 +9,9 @@ void IP2C_SetCountry_Internal(entity player, string cn)
     if(player.scorekeeper)
     {
         local float char0, char1;
+
+	if (player.hidecountry) cn = "xx";
+
         cn = strtolower(cn);  // flag icons have lowcase names
         
         char0 = str2chr(substring(cn, 0, 1), 0);
