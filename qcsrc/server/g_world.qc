@@ -445,6 +445,17 @@ void spawnfunc_worldspawn (void)
     registercvar("_sv_rm_maprow", "0");
     registercvar("_g_explosive_infomessages_count", "0");
 
+	/**
+	  * !!!!!
+	  * registercvar ("_sv_rm_maprow_ctf", "0");
+	  * registercvar ("_sv_rm_maprow_kh", "0");
+	  * registercvar ("_sv_rm_maprow_ft", "0");
+	  * registercvar ("_sv_rm_maprow_dom", "0");
+	  * registercvar ("_sv_rm_maprow_totaldom", "0");
+	  * registercvar ("_sv_rm_maprow_vip", "0");
+	  * Increase or decrease the appropriate cvar by 1 when a particular gametype is played/not played
+	**/
+
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)
@@ -2659,6 +2670,9 @@ void MapVote_Think()
 
 float GameTypeVote_AvailabilityStatus(string gtname)
 {
+	if (! GameTypeFilter_Allowed (getmapname_stored, gtname))
+		return GTV_FORBIDDEN;
+
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_AVAILABLE;
 	
@@ -2667,7 +2681,7 @@ float GameTypeVote_AvailabilityStatus(string gtname)
 	
 	if(gtname == GametypeNameFromType(game))
 		return GTV_OVERPLAYED;
-	
+
 	return GTV_AVAILABLE;
 }
 
@@ -2719,7 +2733,7 @@ void GameTypeVote_Start()
 {
 	local float j;
 	MapVote_ClearAllVotes();
-	
+
 	for(j = 0; j < mapvote_count; ++j)
 		if(mapvote_maps[j])
 			strunzone(mapvote_maps[j]);
@@ -2732,10 +2746,13 @@ void GameTypeVote_Start()
 	
 	for(j = 0; j < n; ++j)
 	{
+		// If we don't spam tokenizebyseparator, shit fucks up
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
 		MapVote_AddVotable(argv(j), 0);
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
 		mapvote_maps_availability[j] = GameTypeVote_AvailabilityStatus(argv(j));
 	}
-	
+
 	if(cvar("g_explosive_gametypevote_shuffle"))
 	{
 		for(j = 0; j < mapvote_count * 3; ++j)
