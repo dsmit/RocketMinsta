@@ -856,6 +856,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(ex_armor)
 			if(targ.armorvalue)
 			if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+			if not(DEATH_ISSPECIAL(deathtype))
 			if(targ != attacker)
 			{
 				targ.armorvalue = max(0, targ.armorvalue - (damage * cvar("g_explosive_armor_factor")));
