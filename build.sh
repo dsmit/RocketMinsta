@@ -51,7 +51,7 @@ function buildqc
 {
     qcdir="$QCSOURCE/$1"
 
-    echo " -- Building $qcdir" &>2
+    echo " -- Building $qcdir" >&2
     pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
     $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
     popd &>/dev/null

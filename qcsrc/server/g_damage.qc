@@ -446,7 +446,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						
 						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
 					}
-					else if(deathtype == WEP_MINSTANEX)
+					else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 					{
 						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s, ragemeter));
 						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
@@ -826,13 +826,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			local float ex_armor = cvar("g_explosive_armor");
 			
 			if(ex)
-			if(targ.ignore_next && (deathtype == WEP_ROCKET_LAUNCHER))
+			if(targ.ignore_next && DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
 			{
 				damage = 0;
 				targ.ignore_next = 0;
 			}
 			
-			if (targ.armorvalue && (deathtype == WEP_MINSTANEX) && damage)
+			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage)
 			{
 				if(!ex || !ex_armor)
 				{
@@ -855,7 +855,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(ex)
 			if(ex_armor)
 			if(targ.armorvalue)
-			if(deathtype != WEP_MINSTANEX)
+			if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 			if(targ != attacker)
 			{
 				targ.armorvalue = max(0, targ.armorvalue - (damage * cvar("g_explosive_armor_factor")));
