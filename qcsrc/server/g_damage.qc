@@ -708,6 +708,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	mirrordamage = 0;
 	mirrorforce = 0;
 
+	float armordamage;
+	armordamage = 0;
+
 	if (gameover || targ.killcount == -666)
 		return;
 
@@ -844,7 +847,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				}
 				else
 				{
-					targ.armorvalue = max(0, targ.armorvalue - 100);
+					armordamage = min(100, targ.armorvalue);
+					
+					targ.armorvalue -= armordamage;
 					damage = 0;
 					attacker.hitsound += 1;
 					targ.hitsound += 1;
@@ -859,7 +864,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if not(DEATH_ISSPECIAL(deathtype))
 			if(targ != attacker)
 			{
-				targ.armorvalue = max(0, targ.armorvalue - (damage * cvar("g_explosive_armor_factor")));
+				armordamage = min(damage * cvar("g_explosive_armor_factor"), targ.armorvalue);
+				
+				targ.armorvalue -= armordamage;
 				attacker.hitsound += 1;
 				damage = 0;
 			}
@@ -1036,31 +1043,57 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	//<akari>
 	//Print damage to players
-	if(!cvar("g_explosive_hidedamage")) if(damage > 0) if(targ.health > 0)
+	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0)
 	{
-		if(attacker.classname == "player")
+		if(damage > 0) 
 		{
-			if(targ.netname)
-				//centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3< ^7", ftos(rint(damage)), " ^3>\n^7", targ.netname));
-				centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3^x550 ^7", ftos(rint(damage)), " ^x550^3\n^7", targ.netname));
+			if(attacker.classname == "player")
+			{
+				if(targ.netname)
+					//centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3< ^7", ftos(rint(damage)), " ^3>\n^7", targ.netname));
+					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3^x550 ^7", ftos(rint(damage)), " ^x550^3\n^7", targ.netname));
+			}
+			
+			if(targ.classname == "player")
+			{
+				if(attacker.netname)
+				{
+					if(attacker == targ)
+						//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1>> ^7", ftos(rint(damage)), " ^1<<"));
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^8^x500^1 ^7", ftos(rint(damage)), " ^1^x500^8\n"));
+					else
+						//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<\n^7", attacker.netname));
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n^7", attacker.netname));
+				}
+				else
+					//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<"));
+					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n"));
+			}
 		}
 		
-		if(targ.classname == "player")
+		else if(armordamage > 0) 
 		{
-			if(attacker.netname)
+			if(attacker.classname == "player")
 			{
-				if(attacker == targ)
-					//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1>> ^7", ftos(rint(damage)), " ^1<<"));
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^8^x500^1 ^7", ftos(rint(damage)), " ^1^x500^8\n"));
-				else
-					//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<\n^7", attacker.netname));
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n^7", attacker.netname));
+				if(targ.netname)
+					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3^x550 ^2(^7", ftos(rint(armordamage)), "^2) ^x550^3\n^7", targ.netname));
 			}
-			else
-				//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<"));
-				centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n"));
+			
+			if(targ.classname == "player")
+			{
+				if(attacker.netname)
+				{
+					if(attacker == targ)
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^8^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500^8\n"));
+					else
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500\n^7", attacker.netname));
+				}
+				else
+					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500\n"));
+			}
 		}
 	}
+	
 	//</akari>
 
 	if(targ.classname == "player" && attacker.classname == "player" && attacker != targ && attacker.health > 2)
