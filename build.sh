@@ -45,6 +45,7 @@ function getqcc
     echo "$qcc"
 }
 
+[ -e "rocketminsta.cfg" ] || error "rocketminsta.cfg wasn't found"
 USEQCC="$(getqcc)"
 
 function buildqc
@@ -63,3 +64,29 @@ mv -v progs.dat "$SVPROGS"
 buildqc client/
 mv -v csprogs.dat "$CSPROGS"
 
+cp -v "rocketminsta.cfg" "NEXDATA"
+
+cat <<EOF
+**************************************************
+
+    RocketMinsta has been built successfuly
+    
+    Server QC progs:
+        $SVPROGS
+    
+    Client QC progs:
+        $CLPROGS
+        
+    CVAR defaults for server configuration:
+        $NEXDATA/rocketminsta.cfg
+    
+    Please make sure all of these files are
+    accessible by Nexuiz. Then add the following
+    lines at top of your server config:
+    
+        exec rocketminsta.cfg
+        set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
+        set csqc_progname $(echo "$CLPROGS" | sed -e 's@.*/@@g')
+
+**************************************************
+EOF
