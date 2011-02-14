@@ -2,3 +2,5 @@
 *.lno
 akaribuild.sh
 config.sh
+qcsrc/server/fteqcc.log
+qcsrc/client/fteqcc.log
