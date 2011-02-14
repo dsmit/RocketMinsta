@@ -60,7 +60,9 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
 			break;
 		case PROJECTILE_GRENADE:
-			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
+			//trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
+			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
 			break;
 		case PROJECTILE_GRENADE_BOUNCING:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
