@@ -95,7 +95,7 @@ compiling mode_onslaught.qc
 compiling nexball.qc
 compiling g_hook.qc
 in function GetHitSound (line 186),
-g_hook.qc:318: warning: Local "target" defined with name of a global
+g_hook.qc:344: warning: Local "target" defined with name of a global
 compiling t_swamp.qc
 compiling clientcommands.qc
 compiling vote.qc

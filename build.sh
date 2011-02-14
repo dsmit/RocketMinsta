@@ -1,26 +1,13 @@
 #!/bin/bash
 
-NEXDATA="$HOME/.nexuiz/data"
-
-# These must match sv_progs and csqc_progname values
-SVPROGS="$NEXDATA/sv_mod.dat"
-CSPROGS="$NEXDATA/cl_mod.dat"
-
-# List of QuakeC compillers the script will attempt to use
-# Full and relative paths are allowed
-QCC=("fteqcc" "qcc" "$HOME/bin/fteqcc" "$HOME/bin/qcc")
-
-# Additional flags to pass to the QuakeC compiller
-QCCFLAGS="-O3"
-
-# Where QuakeC source is located
-QCSOURCE="qcsrc"
-
 function error
 {
     echo -e "\n$*" >&2
     exit 1
 }
+
+[ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
+. "config.sh" || error "Failed to read configuration"
 
 function getqcc
 {
@@ -64,7 +51,7 @@ mv -v progs.dat "$SVPROGS"
 buildqc client/
 mv -v csprogs.dat "$CSPROGS"
 
-cp -v "rocketminsta.cfg" "NEXDATA"
+cp -v "rocketminsta.cfg" "$NEXDATA"
 
 cat <<EOF
 **************************************************
@@ -75,7 +62,7 @@ cat <<EOF
         $SVPROGS
     
     Client QC progs:
-        $CLPROGS
+        $CSPROGS
         
     CVAR defaults for server configuration:
         $NEXDATA/rocketminsta.cfg
@@ -86,7 +73,7 @@ cat <<EOF
     
         exec rocketminsta.cfg
         set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
-        set csqc_progname $(echo "$CLPROGS" | sed -e 's@.*/@@g')
+        set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 
 **************************************************
 EOF

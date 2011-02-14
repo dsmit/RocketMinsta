@@ -278,14 +278,14 @@ void minstagib_ammocheck (void)
 	}
 	
 	//Hook damage
-	if(self.hooker.hooked_to == self)
+	/*if(self.hooker.hooked_to == self)
 	{
 		if(!teams_matter || self.hooker.team != self.team)
 		{
 			play2(self.hooker, "misc/hit.wav");
 			Damage(self, self.hooker.hook, self.hooker, random() * 10, DEATH_NOAMMO, self.origin, '0 0 0');
 		}
-	}
+	}*/
 	
 	//</akari>
 	

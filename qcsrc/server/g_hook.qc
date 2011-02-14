@@ -267,6 +267,26 @@ void GrapplingHookThink()
 	te_beam(self.owner, self.origin + v_forward * (-9), org);
 }
 
+//<akari>
+void HookDamage_Think()
+{
+	if(self.hooker.hooked_to == nobody)
+	{
+		remove(self);
+		return;
+	}
+	
+	if(!teams_matter || self.hooker.team != self.hooker.hooked_to.team)
+	{
+		play2(self.hooker, "misc/hit.wav");
+		Damage(self.hooker.hooked_to, self.hooker.hook, self.hooker, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		self.nextthink = time + 0.1;
+	}
+	else
+		remove(self);
+}
+//</akari>
+
 void GrapplingHookTouch (void)
 {
 	if(SUB_OwnerCheck())
@@ -301,6 +321,12 @@ void GrapplingHookTouch (void)
 		//sprint(self.owner, "\{0}Hooked ", other.netname, "\n");
 		self.owner.hooked_to = other;
 		other.hooker = self.owner;
+		
+		entity hookdmg = spawn();
+		hookdmg.classname = "hookdamage";
+		hookdmg.think = HookDamage_Think;
+		hookdmg.nextthink = time + 0.1;
+		hookdmg.hooker = self.owner;
 	}
 	//</akari>
 
