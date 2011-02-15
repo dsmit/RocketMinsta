@@ -315,60 +315,11 @@ void W_RM_Alt_Explode (void)
 }
 
 void W_RM_Alt_Touch(void);
-void W_RM_Alt_SpawnProjectile()
-{
-	local entity proj;
-
-	proj = spawn ();
-	proj.classname = "plasma_prim";
-	proj.owner = self.owner;
-	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar("g_balance_electro_primary_damage");
-	proj.use = W_RM_Alt_Explode;
-	proj.think = adaptor_think2use;
-	proj.nextthink = time + cvar("g_balance_laser_primary_lifetime");
-	proj.cnt = self.cnt;
-	PROJECTILE_MAKETRIGGER(proj);
-	proj.projectiledeathtype = WEP_ELECTRO;
-	//setorigin(proj, w_shotorg);
-	proj.origin = self.origin;
-
-	proj.movetype = MOVETYPE_BOUNCEMISSILE;
-	proj.velocity = self.velocity * -1;
-	
-	//proj.velocity_y *= -5.5;
-	//proj.velocity_x *= -5.5;
-	proj.velocity_z *= -5.5;
-	
-	W_SetupProjectileVelocity(proj);
-	proj.angles = self.angles; //vectoangles(self.velocity);
-	proj.touch = W_RM_Alt_Touch;
-	setsize(proj, '0 0 -3', '0 0 -3');
-	proj.flags = FL_PROJECTILE;
-
-	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO_BEAM, TRUE);
-	
-	bprint("W_RM_Alt_SpawnProjectile(): velocity ", vtos(self.velocity), " angles ", vtos(self.angles), "\n");
-	
-}
 
 void W_RM_Alt_Touch(void)
 {
-	float finalhit;
 	PROJECTILE_TOUCH;
-	
-	finalhit = ((self.cnt <= 0) || (other.takedamage != DAMAGE_NO));
 	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_balance_electro_primary_radius"), world, self.rm_force, self.projectiledeathtype, other);
-	if (finalhit)
-	{
-		remove (self);
-		return;
-	}
-	self.cnt = self.cnt - 1;
-	//self.angles = vectoangles(self.velocity);
-	//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), self.origin, self.angles);
-	
-	//W_RM_Alt_SpawnProjectile();
 	remove(self);
 }
 
@@ -391,9 +342,9 @@ void W_RM_Alt_Attack()
 		proj.owner = self;
 		proj.bot_dodge = TRUE;
 		
-		proj.rm_force = cvar("g_balance_laser_primary_force") / total;
-		proj.rm_damage = cvar("g_balance_laser_primary_damage") / total;
-		proj.rm_edmg = cvar("g_balance_laser_primary_edgedamage") / total;
+		proj.rm_force = cvar("g_explosive_laser_force") / total;
+		proj.rm_damage = cvar("g_explosive_laser_damage") / total;
+		proj.rm_edmg = proj.rm_damage;
 		
 		proj.bot_dodgerating = self.rm_damage;
 		proj.use = W_RM_Alt_Explode;
@@ -405,8 +356,7 @@ void W_RM_Alt_Attack()
 		setorigin(proj, w_shotorg);
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
-		//proj.velocity = w_shotdir * cvar("g_balance_laser_primary_speed");
-		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_balance_laser_primary_speed");
+		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_explosive_laser_speed");
 		W_SetupProjectileVelocity(proj);
 		proj.angles = vectoangles(proj.velocity);
 		proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
@@ -434,9 +384,9 @@ void W_RM_Alt_Attack_Single()
 	proj.owner = self;
 	proj.bot_dodge = TRUE;
 	
-	proj.rm_force = cvar("g_balance_laser_primary_force"); /// total;
-	proj.rm_damage = cvar("g_balance_laser_primary_damage") / total;
-	proj.rm_edmg = cvar("g_balance_laser_primary_edgedamage") / total;
+	proj.rm_force = cvar("g_explosive_laser_force");
+	proj.rm_damage = cvar("g_explosive_laser_damage") / total;
+	proj.rm_edmg = proj.rm_damage;
 	
 	proj.bot_dodgerating = self.rm_damage;
 	proj.use = W_RM_Alt_Explode;
@@ -448,8 +398,7 @@ void W_RM_Alt_Attack_Single()
 	setorigin(proj, w_shotorg);
 
 	proj.movetype = MOVETYPE_BOUNCEMISSILE;
-	proj.velocity = w_shotdir * cvar("g_balance_laser_primary_speed");
-	//proj.velocity = (w_shotdir + (((floor(random() * total) + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_balance_laser_primary_speed");
+	proj.velocity = w_shotdir * cvar("g_explosive_laser_speed");
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;

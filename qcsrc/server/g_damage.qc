@@ -432,7 +432,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						play2(attacker, "announcer/male/awesome.wav");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
 						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^4fragged by ^7", a));
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
 					}
 					else if(deathtype == DEATH_NOAMMO)
 					{
@@ -876,7 +876,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		
 		if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 		{
-			if(targ == attacker || targ.armorvalue)
+			if(targ == attacker)
 			{
 				damage = 0;
 			}
