@@ -427,7 +427,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				} else {
 					//<akari>
 					//Let's detect laserfrags
-					if(DEATH_ISWEAPON(deathtype, WEP_LASER))
+					if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					{
 						play2(attacker, "announcer/male/awesome.wav");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
@@ -874,7 +874,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			//</akari>
 		}
 		
-		if (DEATH_ISWEAPON(deathtype, WEP_LASER))
+		if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 		{
 			if(targ == attacker || targ.armorvalue)
 			{

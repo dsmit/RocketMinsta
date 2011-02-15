@@ -158,8 +158,10 @@ void Ent_DamageInfo(float isNew)
 					else
 					{
 						pointparticles(particleeffectnum("electro_impact"), org2, '0 0 0', 1);
+						//if(!issilent)
+							//sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
 						if(!issilent)
-							sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+							sound(self, CHAN_PROJECTILE, "weapons/crylink_impact2.wav", VOL_BASE, ATTN_NORM);
 					}
 				}
 				break;
