@@ -434,7 +434,7 @@ void W_RM_Alt_Attack_Single()
 	proj.owner = self;
 	proj.bot_dodge = TRUE;
 	
-	proj.rm_force = cvar("g_balance_laser_primary_force") / total;
+	proj.rm_force = cvar("g_balance_laser_primary_force"); /// total;
 	proj.rm_damage = cvar("g_balance_laser_primary_damage") / total;
 	proj.rm_edmg = cvar("g_balance_laser_primary_edgedamage") / total;
 	
@@ -448,8 +448,8 @@ void W_RM_Alt_Attack_Single()
 	setorigin(proj, w_shotorg);
 
 	proj.movetype = MOVETYPE_BOUNCEMISSILE;
-	//proj.velocity = w_shotdir * cvar("g_balance_laser_primary_speed");
-	proj.velocity = (w_shotdir + (((floor(random() * total) + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_balance_laser_primary_speed");
+	proj.velocity = w_shotdir * cvar("g_balance_laser_primary_speed");
+	//proj.velocity = (w_shotdir + (((floor(random() * total) + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_balance_laser_primary_speed");
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
@@ -493,7 +493,7 @@ float w_minstanex(float req)
 					if(rapid)
 						self.held_down = TRUE;
 					self.jump_interval = time + cvar("g_balance_minstanex_refire");
-					self.jump_interval2 = time + cvar("g_balance_minstanex_refire") * 0.2;
+					self.jump_interval2 = time + cvar("g_balance_minstanex_refire") * 0.3;
 					W_RM_Alt_Attack();
 				}
 				else if(rapid && self.jump_interval2 <= time)
