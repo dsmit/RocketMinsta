@@ -280,6 +280,7 @@ void HookDamage_Think()
 	{
 		play2(self.hooker, "misc/hit.wav");
 		Damage(self.hooker.hooked_to, self.hooker.hook, self.hooker, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		self.hooker.health += 1;
 		self.nextthink = time + 0.1;
 	}
 	else
