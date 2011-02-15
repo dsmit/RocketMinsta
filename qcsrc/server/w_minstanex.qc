@@ -358,7 +358,7 @@ void W_RM_Alt_Touch(void)
 	PROJECTILE_TOUCH;
 	
 	finalhit = ((self.cnt <= 0) || (other.takedamage != DAMAGE_NO));
-	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_balance_laser_primary_radius"), world, self.rm_force, self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_balance_electro_primary_radius"), world, self.rm_force, self.projectiledeathtype, other);
 	if (finalhit)
 	{
 		remove (self);
@@ -419,8 +419,54 @@ void W_RM_Alt_Attack()
 	}
 }
 
+void W_RM_Alt_Attack_Single()
+{
+	local entity proj;
+	float total = cvar("g_explosive_laser_count");
+	float spread = cvar("g_explosive_laser_spread");
+
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, "weapons/crylink_fire.wav", cvar("g_balance_electro_primary_damage"));
+
+	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
+
+	proj = spawn ();
+	proj.classname = "plasma_prim";
+	proj.owner = self;
+	proj.bot_dodge = TRUE;
+	
+	proj.rm_force = cvar("g_balance_laser_primary_force") / total;
+	proj.rm_damage = cvar("g_balance_laser_primary_damage") / total;
+	proj.rm_edmg = cvar("g_balance_laser_primary_edgedamage") / total;
+	
+	proj.bot_dodgerating = self.rm_damage;
+	proj.use = W_RM_Alt_Explode;
+	proj.think = adaptor_think2use;
+	proj.nextthink = time + cvar("g_balance_laser_primary_lifetime");
+	proj.cnt = 3;
+	PROJECTILE_MAKETRIGGER(proj);
+	proj.projectiledeathtype = WEP_ELECTRO;
+	setorigin(proj, w_shotorg);
+
+	proj.movetype = MOVETYPE_BOUNCEMISSILE;
+	//proj.velocity = w_shotdir * cvar("g_balance_laser_primary_speed");
+	proj.velocity = (w_shotdir + (((floor(random() * total) + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_balance_laser_primary_speed");
+	W_SetupProjectileVelocity(proj);
+	proj.angles = vectoangles(proj.velocity);
+	proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
+	setsize(proj, '0 0 -3', '0 0 -3');
+	proj.flags = FL_PROJECTILE;
+
+
+	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO_BEAM, TRUE);
+}
+
+.float jump_interval2;
+.float held_down;
+
 float w_minstanex(float req)
 {
+	float rapid = cvar("g_explosive_laser_rapid");
+	
 	if (req == WR_AIM)
 	{
 		if(self.ammo_cells>0)
@@ -440,16 +486,30 @@ float w_minstanex(float req)
 		}
 		else if (self.BUTTON_ATCK2)
 		{
-			if (self.jump_interval <= time)
+			if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
+			{
+				if (self.jump_interval <= time && !self.held_down)
+				{
+					if(rapid)
+						self.held_down = TRUE;
+					self.jump_interval = time + cvar("g_balance_minstanex_refire");
+					self.jump_interval2 = time + cvar("g_balance_minstanex_refire") * 0.2;
+					W_RM_Alt_Attack();
+				}
+				else if(rapid && self.jump_interval2 <= time)
+				{
+					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_refire");
+					W_RM_Alt_Attack_Single();
+				}
+			}
+			else if (self.jump_interval <= time)
 			{
 				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
-				
-				if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
-					W_RM_Alt_Attack();
-				else
-					W_Laser_Attack(FALSE);
+				W_Laser_Attack(FALSE);
 			}
 		}
+		else
+			self.held_down = FALSE;
 	}
 	else if (req == WR_PRECACHE)
 	{
