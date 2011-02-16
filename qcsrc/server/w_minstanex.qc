@@ -425,16 +425,20 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK && self.ammo_cells)
+		if (self.BUTTON_ATCK)
 		{
 			if (weapon_prepareattack(0, cvar("g_balance_minstanex_refire")))
 			{
+				if(!self.ammo_cells)
+					goto laser;
+				
 				W_MinstaNex_Attack();
 				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
 			}
 		}
-		else if (self.BUTTON_ATCK2 || !self.ammo_cells)
+		else if (self.BUTTON_ATCK2)
 		{
+:laser
 			if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
 			{
 				if (self.jump_interval <= time && !self.held_down)
@@ -470,6 +474,8 @@ float w_minstanex(float req)
 		precache_sound ("weapons/nexwhoosh1.wav");
 		precache_sound ("weapons/nexwhoosh2.wav");
 		precache_sound ("weapons/nexwhoosh3.wav");
+		precache_sound ("weapons/crylink_fire.wav");
+		precache_sound ("weapons/crylink_fire2.wav");
 		w_laser(WR_PRECACHE);
 	}
 	else if (req == WR_SETUP)
