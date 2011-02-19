@@ -151,6 +151,8 @@ void CSQC_Init(void)
 	mi_center = (mi_min + mi_max) * 0.5;
 	mi_scale = mi_max - mi_min;
 	minimapname = strzone(minimapname);
+	
+	vote_statstring = strzone("");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -533,6 +535,11 @@ void GameCommand(string msg)
 			debug_shotorg = world;
 		}
 		localcmd("sv_cmd debug_shotorg\n");
+	}
+	else if(cmd == "votestat")
+	{
+		strunzone(vote_statstring);
+		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
 	}
 	else
 	{

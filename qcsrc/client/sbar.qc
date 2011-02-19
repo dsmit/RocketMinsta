@@ -2229,6 +2229,7 @@ void Sbar_Reset (void)
 		CSQC_ctf_hudreset();
 }
 
+string vote_statstring;
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -2398,6 +2399,9 @@ void Sbar_Draw (void)
 			s = strcat("^2Waiting for others to vote...");
 			o = Sbar_DrawNoteLine(o, s);
 		}
+		
+		s = vote_statstring;
+		o = Sbar_DrawNoteLine(o, s);
 	}
 	if(teamplay && !intermission && !spectatee_status)
 	{

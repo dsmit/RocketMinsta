@@ -258,6 +258,7 @@ float GameCommand_Vote(string s, entity e) {
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
 				print_to(e, "^1You accepted the vote.");
+				bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^2YES\n"));
 				e.vote_vote = 1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
@@ -274,6 +275,7 @@ float GameCommand_Vote(string s, entity e) {
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
 				print_to(e, "^1You rejected the vote.");
+				bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^1NO\n"));
 				e.vote_vote = -1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
@@ -624,5 +626,12 @@ void VoteCount() {
 		}
 	}
 
+	FOR_EACH_REALCLIENT(player)
+	{
+		stuffcmd(player, strcat("cl_cmd votestat ", ftos(yescount), " ", ftos(nocount), " ",
+		ftos(simplevotefactor? floor(min((playercount - abstaincount) * votefactor, (yescount + nocount) * simplevotefactor)) + 1
+						: floor((playercount - abstaincount) * votefactor) + 1), "\n")
+		);
+	}
 	Nagger_VoteCountChanged();
 }
