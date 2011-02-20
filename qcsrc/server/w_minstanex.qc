@@ -331,7 +331,7 @@ void W_RM_Alt_Attack()
 	float spread = cvar("g_explosive_laser_spread");
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, cvar("g_explosive_norecoil")? 0 : 2, "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
