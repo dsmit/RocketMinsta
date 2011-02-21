@@ -53,6 +53,7 @@ mv -v csprogs.dat "$CSPROGS"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
 
+
 cat <<EOF
 **************************************************
 
