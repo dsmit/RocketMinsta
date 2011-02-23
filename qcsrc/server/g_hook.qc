@@ -270,7 +270,7 @@ void GrapplingHookThink()
 //<akari>
 void HookDamage_Think()
 {
-	if(self.hooker.hooked_to == nobody)
+	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0)
 	{
 		remove(self);
 		return;
