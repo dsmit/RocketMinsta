@@ -331,7 +331,7 @@ void W_RM_Alt_Attack()
 	float spread = cvar("g_explosive_laser_spread");
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, cvar("g_explosive_norecoil")? 0 : 2, "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -470,9 +470,9 @@ float w_minstanex(float req)
 		precache_sound ("weapons/nexwhoosh1.wav");
 		precache_sound ("weapons/nexwhoosh2.wav");
 		precache_sound ("weapons/nexwhoosh3.wav");
+		w_laser(WR_PRECACHE);
 		precache_sound ("weapons/crylink_fire.wav");
 		precache_sound ("weapons/crylink_fire2.wav");
-		w_laser(WR_PRECACHE);
 	}
 	else if (req == WR_SETUP)
 	{
