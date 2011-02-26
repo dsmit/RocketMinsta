@@ -33,7 +33,7 @@ which netcat &>/dev/null || error "Cannot use RCON: netcat is not installed"
 
 i=0
 while true; do
-    cmd="${RCON_COMMANDS[$i]}"
+    cmd="${RCON_COMMANDS[$((i++))]}"
     [ x"$cmd" = x ] && exit 0
     rconsend "$cmd"
 done
