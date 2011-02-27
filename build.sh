@@ -52,7 +52,7 @@ buildqc client/
 mv -v csprogs.dat "$CSPROGS"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
-
+cp -v "svndefault.cfg" "$NEXDATA"
 
 cat <<EOF
 **************************************************
@@ -67,7 +67,10 @@ cat <<EOF
         
     CVAR defaults for server configuration:
         $NEXDATA/rocketminsta.cfg
-    
+   
+    Nexuiz SVN defaults for 2.5.2 compatibility:
+        $NEXDATA/svndefault.cfg
+
     Please make sure all of these files are
     accessible by Nexuiz. Then add the following
     lines at top of your server config:

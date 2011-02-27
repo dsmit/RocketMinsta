@@ -2780,7 +2780,10 @@ float ExponentialFalloff(float mindist, float maxdist, float halflifedist, float
 string cvar_string_normal(string n)
 {
 	if not(cvar_type(n) & 1)
-		backtrace(strcat("Attempt to access undefined cvar: ", n));
+    {
+		//backtrace(strcat("Attempt to access undefined cvar: ", n));
+        localcmd("echo UNDEFINED CVAR: ", n, "\n");
+    }
 	return cvar_string_builtin(n);
 }
 
