@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(CRYLINK, w_crylink, IT_CELLS, 6, WEP_FLAG_NORMAL | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_MID, "crylink", "crylink", "Crylink");
+#else
 .float gravity;
 
 .entity realowner;
@@ -100,10 +103,8 @@ void W_Crylink_Attack (void)
 			s_y = v_forward_x;
 			s_z = v_forward_y;
 		}
-		s = s * cvar("g_balance_crylink_primary_spread");
-		proj.velocity = (w_shotdir + right * s_y + up * s_z) * cvar("g_balance_crylink_primary_speed");
-//		proj.velocity = (w_shotdir + randomvec() * cvar("g_balance_crylink_primary_spread")) * cvar("g_balance_crylink_primary_speed");
-		W_SetupProjectileVelocity(proj);
+		s = s * cvar("g_balance_crylink_primary_spread") * g_weaponspreadfactor;
+		W_SetupProjectileVelocityEx(proj, w_shotdir + right * s_y + up * s_z, v_up, cvar("g_balance_crylink_primary_speed"), 0, 0, 0);
 		proj.touch = W_Crylink_Touch;
 		if(counter == 0)
 			SUB_SetFade(proj, time + cvar("g_balance_crylink_primary_middle_lifetime"), cvar("g_balance_crylink_primary_middle_fadetime"));
@@ -154,8 +155,7 @@ void W_Crylink_Attack2 (void)
 		setorigin (proj, w_shotorg);
 		setsize(proj, '0 0 0', '0 0 0');
 
-		proj.velocity = (w_shotdir + (((counter + 0.5) / shots) * 2 - 1) * v_right * cvar("g_balance_crylink_secondary_spread")) * cvar("g_balance_crylink_secondary_speed");
-		W_SetupProjectileVelocity(proj);
+		W_SetupProjectileVelocityEx(proj, (w_shotdir + (((counter + 0.5) / shots) * 2 - 1) * v_right * cvar("g_balance_crylink_secondary_spread") * g_weaponspreadfactor), v_up, cvar("g_balance_crylink_secondary_speed"), 0, 0, 0);
 		proj.touch = W_Crylink_Touch2;
 		if(counter == (shots - 1) / 2)
 			SUB_SetFade(proj, time + cvar("g_balance_crylink_secondary_middle_lifetime"), cvar("g_balance_crylink_secondary_middle_fadetime"));
@@ -175,26 +175,6 @@ void W_Crylink_Attack2 (void)
 		counter = counter + 1;
 	}
 }
-
-
-/*
-// experimental lightning gun
-void W_Crylink_Attack3 (void)
-{
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - cvar("g_balance_crylink_primary_ammo");
-	W_SetupShot (self, TRUE, 0, "weapons/crylink_fire.wav");
-
-	traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * 1000, FALSE, self, self.ping * 0.001);
-
-	pointparticles(particleeffectnum("lightning_muzzleflash", w_shotorg, w_shotdir * 1000, 1);
-	pointparticles(particleeffectnum("lightning_impact", trace_endpos, trace_plane_normal * 1000, 1);
-	trailparticles(world, particleeffectnum("lightning_beam", w_shotorg, trace_endpos);
-
-	if (trace_fraction < 1)
-		Damage(trace_ent, self, self, cvar("g_balance_crylink_primary_damage"), WEP_CRYLINK | HITTYPE_SECONDARY, trace_endpos, '0 0 0');
-}
-*/
 
 void spawnfunc_weapon_crylink (void)
 {
@@ -218,7 +198,7 @@ float w_crylink(float req)
 			W_Crylink_Attack();
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_crylink_primary_animtime"), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && cvar("g_balance_crylink_secondary"))
 		if (weapon_prepareattack(1, cvar("g_balance_crylink_secondary_refire")))
 		{
 			W_Crylink_Attack2();
@@ -241,7 +221,7 @@ float w_crylink(float req)
 		return self.ammo_cells >= cvar("g_balance_crylink_secondary_ammo");
 	else if (req == WR_SUICIDEMESSAGE)
 	{
-		w_deathtypestring = "succeeded at self-destructing himself with the Crylink";
+		w_deathtypestring = "succeeded at self-destructing themself with the Crylink";
 	}
 	else if (req == WR_KILLMESSAGE)
 	{
@@ -254,3 +234,4 @@ float w_crylink(float req)
 	}
 	return TRUE;
 };
+#endif

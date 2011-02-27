@@ -38,6 +38,7 @@ const float GAME_ONSLAUGHT	= 10;
 const float GAME_RACE	= 11;
 const float GAME_NEXBALL = 12;
 const float GAME_CTS = 13;
+const float GAME_CA		= 14;
 
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
@@ -50,6 +51,11 @@ const float TE_CSQC_SPAWN = 102;
 const float TE_CSQC_ZCURVEPARTICLES = 103;
 const float TE_CSQC_NEXGUNBEAMPARTICLE = 104;
 const float TE_CSQC_LIGHTNINGARC = 105;
+const float TE_CSQC_TEAMNAGGER = 106;
+const float TE_CSQC_PINGPLREPORT = 107;
+const float TE_CSQC_VOTE = 108;
+const float TE_CSQC_VOTERESET = 109;
+const float TE_CSQC_ANNOUNCE = 110;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -59,6 +65,12 @@ const float RACE_NET_CHECKPOINT_HIT_RACE_BY_OPPONENT = 4; // byte checkpoint, sh
 const float RACE_NET_CHECKPOINT_NEXT_SPEC_QUALIFYING = 5; // byte nextcheckpoint, float laptime, short recordtime, string recordholder
 const float RACE_NET_PENALTY_RACE = 6; // byte penaltytime, string reason
 const float RACE_NET_PENALTY_QUALIFYING = 7; // byte penaltytime, string reason
+const float RACE_NET_SERVER_RECORD = 8; // server record, sent to client
+const float RACE_NET_SPEED_AWARD = 9; // speed award, sent to client
+const float RACE_NET_SPEED_AWARD_BEST = 10; // all time best speed award, sent to client
+const float RACE_NET_SERVER_RANKINGS = 11;
+const float RACE_NET_SERVER_STATUS = 12;
+const float RANKINGS_CNT = 15;
 
 const float ENT_CLIENT = 0;
 const float ENT_CLIENT_DEAD = 1;
@@ -83,6 +95,9 @@ const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
+const float ENT_CLIENT_TUBANOTE = 23;
+const float ENT_CLIENT_WARPZONE = 24;
+const float ENT_CLIENT_WARPZONE_CAMERA = 25;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -269,16 +284,17 @@ const float CTF_STATE_COMMANDER = 3;
 const float STAT_HUD = 50;
 const float HUD_NORMAL = 0;
 const float HUD_SPIDERBOT = 10;
+const float HUD_WAKIZASHI = 11;
 
-const float STAT_SPIDERBOT_HEALTH  = 60;
-const float STAT_SPIDERBOT_ROCKETS = 61;
-const float STAT_SPIDERBOT_HEAT    = 62;
-const float STAT_SPIDERBOT_RELOAD  = 63;
-const float STAT_SPIDERBOT_ENERGY  = 64;
-const float STAT_SPIDERBOT_SHIELD  = 65;
+const float STAT_VEHICLESTAT_HEALTH  = 60;
+const float STAT_VEHICLESTAT_SHIELD  = 61;
+const float STAT_VEHICLESTAT_ENERGY  = 62;
+const float STAT_VEHICLESTAT_AMMO1   = 63;
+const float STAT_VEHICLESTAT_RELOAD1 = 64;
+const float STAT_VEHICLESTAT_AMMO2   = 65;
+const float STAT_VEHICLESTAT_RELOAD2 = 66;
 
 //const float STAT_SPIDERBOT_AIM     53 // compressShotOrigin
-
 //const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
 
 
@@ -326,10 +342,7 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 /**
  * Score indices
  */
- 
-//<akari>
-#define MAX_SCORE 11
-//</akari>
+#define MAX_SCORE 10
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -337,11 +350,6 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 #define SP_DEATHS 1
 #define SP_SUICIDES 2
 #define SP_SCORE 3
-
-//<akari>
-#define SP_HOOKFRAGS 10
-//</akari>
-
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 
 // this assignment must match menu/nexuiz/dialog_settings_misc.c!
@@ -415,6 +423,7 @@ float PROJECTILE_BULLET_GLOWING = 18;
 float PROJECTILE_CRYLINK_BOUNCING = 19;
 float PROJECTILE_FIREBALL = 20;
 float PROJECTILE_FIREMINE = 21;
+float PROJECTILE_BULLET_GLOWING_TRACER = 22;
 
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
@@ -445,7 +454,20 @@ float DEATH_MIRRORDAMAGE = 10014;
 float DEATH_TOUCHEXPLODE = 10015;
 float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
-float DEATH_TURRET = 10100;
+float DEATH_TURRET = 10020;
+float DEATH_QUIET = 10021;
+
+float DEATH_SBMINIGUN = 10030;
+float DEATH_SBROCKET  = 10031;
+float DEATH_SBCRUSH   = 10032;
+float DEATH_SBBLOWUP  = 10033;
+
+float DEATH_WAKIGUN    = 10040;
+float DEATH_WAKIROCKET = 10041;
+float DEATH_WAKIBLOWUP = 10042;
+
+float DEATH_CUSTOM = 10300;
+
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

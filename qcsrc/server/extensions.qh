@@ -175,6 +175,16 @@ float   EF_RED          = 128;
 //description:
 //entity emits red light (used for invulnerability)
 
+//DP_EF_RESTARTANIM_BIT
+//idea: id software
+//darkplaces implementation: div0
+//effects bit:
+float   EF_RESTARTANIM_BIT = 1048576;
+//description:
+//when toggled, the current animation is restarted. Useful for weapon animation.
+//to toggle this bit in QC, you can do:
+//  self.effects += (EF_RESTARTANIM_BIT - 2 * (self.effects & EF_RESTARTANIM_BIT));
+
 //DP_EF_STARDUST
 //idea: MythWorks Inc
 //darkplaces implementation: LordHavoc
@@ -243,6 +253,14 @@ float EF_DELTA = 8388608;
 .float glow_trail;
 //description:
 //customizable glowing light effect on the entity, glow_color is a paletted (8bit) color in the range 0-255 (note: 0 and 254 are white), glow_size is 0 or higher (up to the engine what limit to cap it to, darkplaces imposes a 1020 limit), if glow_trail is true it will leave a trail of particles of the same color as the light.
+
+//DP_ENT_GLOWMOD
+//idea: LordHavoc
+//darkplaces implementation: LordHavoc
+//field definition:
+.vector glowmod;
+//description:
+//controls color of the entity's glow texture (fullbrights), '0 0 0', is forced to be '1 1 1' (otherwise everything would be black), used for tinting objects, see colormod (same color restrictions apply).
 
 //DP_ENT_LOWPRECISION
 //idea: LordHavoc
@@ -461,6 +479,15 @@ void(entity e, entity tagentity, string tagname) setattachment = #443; // attach
 //self.button7 = (bits & 64) != 0;
 //self.button8 = (bits & 128) != 0;
 
+// DP_LIGHTSTYLE_STATICVALUE
+// idea: VorteX
+// darkplaces implementation: VorteX
+// description: allows alternative 'static' lightstyle syntax : "=value"
+// examples: "=0.5", "=2.0", "=2.75"
+// could be used to control switchable lights or making styled lights with brightness > 2
+// Warning: this extension is experimental. It safely works in CSQC, but SVQC use is limited by the fact 
+// that other engines (which do not support this extension) could connect to a game and misunderstand this kind of lightstyle syntax
+
 //DP_LITSPRITES
 //idea: LordHavoc
 //darkplaces implementation: LordHavoc
@@ -532,6 +559,33 @@ float(float a) tan = #475; // returns tangent value (which is simply sin(a)/cos(
 //description:
 //useful math functions for analyzing vectors, note that these all use angles in radians (just like the cos/sin functions) not degrees unlike makevectors/vectoyaw/vectoangles, so be sure to do the appropriate conversions (multiply by DEG2RAD or RAD2DEG as needed).
 //note: atan2 can take unnormalized vectors (just like vectoyaw), and the function was included only for completeness (more often you want vectoyaw or vectoangles), atan2(v_x,v_y) * RAD2DEG gives the same result as vectoyaw(v)
+
+//DP_QC_AUTOCVARS
+//idea: div0
+//darkplaces implementation: div0
+//description:
+//allows QC variables to be bound to cvars
+//(works for float, string, vector types)
+//example:
+// float autocvar_developer;
+// float autocvar_registered;
+// string autocvar__cl_name;
+//NOTE: copying a string-typed autocvar to another variable/field, and then
+//changing the cvar or returning from progs is UNDEFINED. Writing to autocvar
+//globals is UNDEFINED.  Accessing autocvar globals after cvar_set()ing that
+//cvar is IMPLEMENTATION DEFINED (an implementation may either yield the
+//previous, or the current, value). Whether autocvar globals, after restoring
+//a savegame, have the cvar's current value, or the original value at time of
+//saving, is UNDEFINED. Restoring a savegame however must not restore the
+//cvar values themselves.
+//In case the cvar does NOT exist, then it is automatically created with the
+//value of the autocvar initializer, if given. This is possible with e.g.
+//frikqcc and fteqcc the following way:
+// var float autocvar_whatever = 42;
+//If no initializer is given, the cvar will be initialized to a string
+//equivalent to the NULL value of the given data type, that is, the empty
+//string, 0, or '0 0 0'. However, when automatic cvar creation took place, a
+//warning is printed to the game console.
 
 //DP_QC_CHANGEPITCH
 //idea: id Software
@@ -623,6 +677,14 @@ float FIELD_FUNCTION = 6;
 //getentityfieldstring returns data as would be written to a savegame, eg... "0.05" (float), "0 0 1" (vector), or "Hello World!" (string). Function names can also be returned.
 //putentityfieldstring puts the data returned by getentityfieldstring back into the entity.
 
+//DP_QC_ENTITYSTRING
+void(string s) loadfromdata = #529;
+void(string s) loadfromfile = #530;
+void(string s) callfunction = #605;
+void(float fh, entity e) writetofile = #606;
+float(string s) isfunction = #607;
+void(entity e, string s) parseentitydata = #608;
+
 //DP_QC_ETOS
 //idea: id Software
 //darkplaces implementation: id Software
@@ -630,6 +692,17 @@ float FIELD_FUNCTION = 6;
 string(entity ent) etos = #65;
 //description:
 //prints "entity 1" or similar into a string. (this was a Q2 builtin)
+
+//DP_QC_EXTRESPONSEPACKET
+//idea: div0
+//darkplaces implementation: div0
+//builtin definitions:
+string(void) getextresponse = #624;
+//description:
+//returns a string of the form "\"ipaddress:port\" data...", or the NULL string
+//if no packet was found. Packets can be queued into the client/server by
+//sending a packet starting with "\xFF\xFF\xFF\xFFextResponse " to the
+//listening port.
 
 //DP_QC_FINDCHAIN
 //idea: LordHavoc
@@ -733,9 +806,17 @@ float SPA_LIGHTMAP0_TEXCOORDS = 5;
 float SPA_LIGHTMAP0_COLOR = 6;
 //builtin definitions:
 vector(entity e, float s, float n, float a) getsurfacepointattribute = #486;
-
 //description:
 //function to query extended information about a point on a certain surface
+
+//DP_QC_GETSURFACETRIANGLE
+//idea: div0
+//darkplaces implementation: div0
+//builtin definitions:
+float(entity e, float s) getsurfacenumtriangles = #628;
+vector(entity e, float s, float n) getsurfacetriangle = #629;
+//description:
+//function to query triangles of a surface
 
 //DP_QC_GETTAGINFO
 //idea: VorteX, LordHavoc (somebody else?)
@@ -783,6 +864,13 @@ float(float tmr) gettime = #519;
 float GETTIME_CDTRACK = 4;
 //description:
 //returns the playing time of the current cdtrack when passed to gettime()
+
+//DP_QC_LOG
+//darkplaces implementation: div0
+//builtin definitions:
+float log(float f) = #532;
+//description:
+//logarithm
 
 //DP_QC_MINMAXBOUND
 //idea: LordHavoc
@@ -847,6 +935,30 @@ float(float val) sqrt = #62;
 float(float a, float b) pow = #97;
 //description:
 //useful math functions, sine of val, cosine of val, square root of val, and raise a to power b, respectively.
+
+//DP_QC_SPRINTF
+//idea: div0
+//darkplaces implementation: div0
+//builtin definitions:
+string(string format, ...) sprintf = #627;
+//description:
+//you know sprintf :P
+//supported stuff:
+//  %
+//  optional: <argpos>$ for the argument to format
+//  flags: #0- +
+//  optional: <width>, *, or *<argpos>$ for the field width
+//  optional: .<precision>, .*, or .*<argpos>$ for the precision
+//  length modifiers: h for forcing a float, l for forcing an int/entity (by default, %d etc. cast a float to int)
+//  conversions:
+//    di take a float if no length is specified or h is, and an int/entity if l is specified as length, and cast it to an int
+//    ouxXc take a float if no length is specified or h is, and an int/entity if l is specified as length, and cast it to an unsigned int
+//    eEfFgG take a float if no length is specified or h is, and an int/entity if l is specified as length, and cast it to a double
+//    s takes a string
+//    For conversions s and c, the flag # makes precision and width interpreted
+//      as byte count, by default it is interpreted as character count in UTF-8
+//      enabled engines. No other conversions can create wide characters, and #
+//      has another meaning in these.
 
 //DP_QC_STRFTIME
 //idea: LordHavoc
@@ -1013,6 +1125,12 @@ string(string in) uri_unescape = #511;
 //  the HTTP response code on server error (e.g. 404)
 //if 1 is returned by uri_get, the callback will be called in the future
 float(string url, float id) uri_get = #513;
+
+//DP_SKELETONOBJECTS
+//idea: LordHavoc
+//darkplaces implementation: LordHavoc
+//description:
+//this extension indicates that FTE_CSQC_SKELETONOBJECTS functionality is available in server QC (as well as CSQC).
 
 //DP_SV_SPAWNFUNC_PREFIX
 //idea: div0
@@ -1316,6 +1434,15 @@ float MF_TRACER3 = 128; // purple trail
 .float ping;
 //description:
 //continuously updated field indicating client's ping (based on average of last 16 packet time differences).
+
+//DP_SV_PING_PACKETLOSS
+//idea: LordHavoc
+//darkplaces implementation: LordHavoc
+//field definitions:
+.float ping_packetloss;
+.float ping_movementloss;
+//description:
+//continuously updated field indicating client's packet loss, and movement loss (i.e. packet loss affecting player movement).
 
 //DP_SV_POINTPARTICLES
 //idea: Spike
@@ -1717,7 +1844,7 @@ string(float fhandle) fgets = #112; // reads a line of text from the file and re
 void(float fhandle, string s, ...) fputs = #113; // writes a line of text to the end of the file
 float(string s) strlen = #114; // returns how many characters are in a string
 string(string s1, string s2, ...) strcat = #115; // concatenates two or more strings (for example "abc", "def" would return "abcdef") and returns as a tempstring
-string(string s, float start, float length) substring = #116; // returns a section of a string as a tempstring
+string(string s, float start, float length) substring = #116; // returns a section of a string as a tempstring - see FTE_STRINGS for enhanced version
 vector(string s) stov = #117; // returns vector value from a string
 string(string s, ...) strzone = #118; // makes a copy of a string into the string zone and returns it, this is often used to keep around a tempstring for longer periods of time (tempstrings are replaced often)
 void(string s) strunzone = #119; // removes a copy of a string from the string zone (you can not use that string again or it may crash!!!)
@@ -1732,6 +1859,190 @@ float FILE_WRITE = 2;
 //
 //NOTE: strzone functionality is partially superseded by
 //DP_QC_UNLIMITEDTEMPSTRINGS when longterm storage is not needed
+//NOTE: substring is upgraded by FTE_STRINGS extension with negative start/length handling identical to php 5.2.0
+
+//FTE_CSQC_SKELETONOBJECTS
+//idea: Spike, LordHavoc
+//darkplaces implementation: LordHavoc
+//builtin definitions:
+float(float modlindex) skel_create = #263; // create a skeleton (be sure to assign this value into .skeletonindex for use), returns skeleton index (1 or higher) on success, returns 0 on failure  (for example if the modelindex is not skeletal), it is recommended that you create a new skeleton if you change modelindex.
+float(float skel, entity ent, float modlindex, float retainfrac, float firstbone, float lastbone) skel_build = #264; // blend in a percentage of standard animation, 0 replaces entirely, 1 does nothing, 0.5 blends half, etc, and this only alters the bones in the specified range for which out of bounds values like 0,100000 are safe (uses .frame, .frame2, .frame3, .frame4, .lerpfrac, .lerpfrac3, .lerpfrac4, .frame1time, .frame2time, .frame3time, .frame4time), returns skel on success, 0 on failure
+float(float skel) skel_get_numbones = #265; // returns how many bones exist in the created skeleton
+string(float skel, float bonenum) skel_get_bonename = #266; // returns name of bone (as a tempstring)
+float(float skel, float bonenum) skel_get_boneparent = #267; // returns parent num for supplied bonenum, -1 if bonenum has no parent or bone does not exist (returned value is always less than bonenum, you can loop on this)
+float(float skel, string tagname) skel_find_bone = #268; // get number of bone with specified name, 0 on failure, tagindex (bonenum+1) on success, same as using gettagindex on the modelindex
+vector(float skel, float bonenum) skel_get_bonerel = #269; // get matrix of bone in skeleton relative to its parent - sets v_forward, v_right, v_up, returns origin (relative to parent bone)
+vector(float skel, float bonenum) skel_get_boneabs = #270; // get matrix of bone in skeleton in model space - sets v_forward, v_right, v_up, returns origin (relative to entity)
+void(float skel, float bonenum, vector org) skel_set_bone = #271; // set matrix of bone relative to its parent, reads v_forward, v_right, v_up, takes origin as parameter (relative to parent bone)
+void(float skel, float bonenum, vector org) skel_mul_bone = #272; // transform bone matrix (relative to its parent) by the supplied matrix in v_forward, v_right, v_up, takes origin as parameter (relative to parent bone)
+void(float skel, float startbone, float endbone, vector org) skel_mul_bones = #273; // transform bone matrices (relative to their parents) by the supplied matrix in v_forward, v_right, v_up, takes origin as parameter (relative to parent bones)
+void(float skeldst, float skelsrc, float startbone, float endbone) skel_copybones = #274; // copy bone matrices (relative to their parents) from one skeleton to another, useful for copying a skeleton to a corpse
+void(float skel) skel_delete = #275; // deletes skeleton at the beginning of the next frame (you can add the entity, delete the skeleton, renderscene, and it will still work)
+float(float modlindex, string framename) frameforname = #276; // finds number of a specified frame in the animation, returns -1 if no match found
+float(float modlindex, float framenum) frameduration = #277; // returns the intended play time (in seconds) of the specified framegroup, if it does not exist the result is 0, if it is a single frame it may be a small value around 0.1 or 0.
+//fields:
+.float skeletonindex; // active skeleton overriding standard animation on model
+.float frame; // primary framegroup animation (strength = 1 - lerpfrac - lerpfrac3 - lerpfrac4)
+.float frame2; // secondary framegroup animation (strength = lerpfrac)
+.float frame3; // tertiary framegroup animation (strength = lerpfrac3)
+.float frame4; // quaternary framegroup animation (strength = lerpfrac4)
+.float lerpfrac; // strength of framegroup blend
+.float lerpfrac3; // strength of framegroup blend
+.float lerpfrac4; // strength of framegroup blend
+.float frame1time; // start time of framegroup animation
+.float frame2time; // start time of framegroup animation
+.float frame3time; // start time of framegroup animation
+.float frame4time; // start time of framegroup animation
+//description:
+//this extension provides a way to do complex skeletal animation on an entity.
+//
+//see also DP_SKELETONOBJECTS (this extension implemented on server as well as client)
+//
+//notes:
+//each model contains its own skeleton, reusing a skeleton with incompatible models will yield garbage (or not render).
+//each model contains its own animation data, you can use animations from other model files (for example saving out all character animations as separate model files).
+//if an engine supports loading an animation-only file format such as .md5anim in FTEQW, it can be used to animate any model with a compatible skeleton.
+//proper use of this extension may require understanding matrix transforms (v_forward, v_right, v_up, origin), and you must keep in mind that v_right is negative for this purpose.
+//
+//features include:
+//multiple animations blended together.
+//animating a model with animations from another model with a compatible skeleton.
+//restricting animation blends to certain bones of a model - for example independent animation of legs, torso, head.
+//custom bone controllers - for example making eyes track a target location.
+//
+//
+//
+//example code follows...
+//
+//this helper function lets you identify (by parentage) what group a bone
+//belongs to - for example "torso", "leftarm", would return 1 ("torso") for
+//all children of the bone named "torso", unless they are children of
+//"leftarm" (which is a child of "torso") which would return 2 instead...
+float(float skel, float bonenum, string g1, string g2, string g3, string g4, string g5, string g6) example_skel_findbonegroup =
+{
+	local string bonename;
+	while (bonenum >= 0)
+	{
+		bonename = skel_get_bonename(skel, bonenum);
+		if (bonename == g1) return 1;
+		if (bonename == g2) return 2;
+		if (bonename == g3) return 3;
+		if (bonename == g4) return 4;
+		if (bonename == g5) return 5;
+		if (bonename == g6) return 6;
+		bonenum = skel_get_boneparent(skel, bonenum);
+	}
+	return 0;
+};
+// create a skeletonindex for our player using current modelindex
+void() example_skel_player_setup =
+{
+	self.skeletonindex = skel_create(self.modelindex);
+};
+// setup bones of skeleton based on an animation
+// note: animmodelindex can be a different model than self.modelindex
+void(float animmodelindex, float framegroup, float framegroupstarttime) example_skel_player_update_begin =
+{
+	// start with our standard animation
+	self.frame = framegroup;
+	self.frame2 = 0;
+	self.frame3 = 0;
+	self.frame4 = 0;
+	self.frame1time = framegroupstarttime;
+	self.frame2time = 0;
+	self.frame3time = 0;
+	self.frame4time = 0;
+	self.lerpfrac = 0;
+	self.lerpfrac3 = 0;
+	self.lerpfrac4 = 0;
+	skel_build(self.skeletonindex, self, animmodelindex, 0, 0, 100000);
+};
+// apply a different framegroup animation to bones with a specified parent
+void(float animmodelindex, float framegroup, float framegroupstarttime, float blendalpha, string groupbonename, string excludegroupname1, string excludegroupname2) example_skel_player_update_applyoverride =
+{
+	local float bonenum;
+	local float numbones;
+	self.frame = framegroup;
+	self.frame2 = 0;
+	self.frame3 = 0;
+	self.frame4 = 0;
+	self.frame1time = framegroupstarttime;
+	self.frame2time = 0;
+	self.frame3time = 0;
+	self.frame4time = 0;
+	self.lerpfrac = 0;
+	self.lerpfrac3 = 0;
+	self.lerpfrac4 = 0;
+	bonenum = 0;
+	numbones = skel_get_numbones(self.skeletonindex);
+	while (bonenum < numbones)
+	{
+		if (example_skel_findbonegroup(self.skeletonindex, bonenum, groupbonename, excludegroupname1, excludegroupname2, "", "", "") == 1)
+			skel_build(self.skeletonindex, self, animmodelindex, 1 - blendalpha, bonenum, bonenum + 1);
+		bonenum = bonenum + 1;
+	}
+};
+// make eyes point at a target location, be sure v_forward, v_right, v_up are set correctly before calling
+void(vector eyetarget, string bonename) example_skel_player_update_eyetarget =
+{
+	local float bonenum;
+	local vector ang;
+	local vector oldforward, oldright, oldup;
+	local vector relforward, relright, relup, relorg;
+	local vector boneforward, boneright, boneup, boneorg;
+	local vector parentforward, parentright, parentup, parentorg;
+	local vector u, v;
+	local vector modeleyetarget;
+	bonenum = skel_find_bone(self.skeletonindex, bonename) - 1;
+	if (bonenum < 0)
+		return;
+	oldforward = v_forward;
+	oldright = v_right;
+	oldup = v_up;
+	v = eyetarget - self.origin;
+	modeleyetarget_x =   v * v_forward;
+	modeleyetarget_y = 0-v * v_right;
+	modeleyetarget_z =   v * v_up;
+	// this is an eyeball, make it point at the target location
+	// first get all the data we can...
+	relorg = skel_get_bonerel(self.skeletonindex, bonenum);
+	relforward = v_forward;
+	relright = v_right;
+	relup = v_up;
+	boneorg = skel_get_boneabs(self.skeletonindex, bonenum);
+	boneforward = v_forward;
+	boneright = v_right;
+	boneup = v_up;
+	parentorg = skel_get_boneabs(self.skeletonindex, skel_get_boneparent(self.skeletonindex, bonenum));
+	parentforward = v_forward;
+	parentright = v_right;
+	parentup = v_up;
+	// get the vector from the eyeball to the target
+	u = modeleyetarget - boneorg;
+	// now transform it inversely by the parent matrix to produce new rel vectors
+	v_x = u * parentforward;
+	v_y = u * parentright;
+	v_z = u * parentup;
+	ang = vectoangles2(v, relup);
+	ang_x = 0 - ang_x;
+	makevectors(ang);
+	// set the relative bone matrix
+	skel_set_bone(self.skeletonindex, bonenum, relorg);
+	// restore caller's v_ vectors
+	v_forward = oldforward;
+	v_right = oldright;
+	v_up = oldup;
+};
+// delete skeleton when we're done with it
+// note: skeleton remains valid until next frame when it is really deleted
+void() example_skel_player_delete =
+{
+	skel_delete(self.skeletonindex);
+	self.skeletonindex = 0;
+};
+//
+// END OF EXAMPLES FOR FTE_CSQC_SKELETONOBJECTS
+//
 
 //KRIMZON_SV_PARSECLIENTCOMMAND
 //idea: KrimZon
@@ -1838,18 +2149,31 @@ float checkpvs(vector viewpos, entity viewee) = #240;
 //FTE_STRINGS
 //idea: many
 //darkplaces implementation: KrimZon
+//builtin definitions:
+float(string str, string sub, float startpos) strstrofs = #221; // returns the offset into a string of the matching text, or -1 if not found, case sensitive
+float(string str, float ofs) str2chr = #222; // returns the character at the specified offset as an integer, or 0 if an invalid index, or byte value - 256 if the engine supports UTF8 and the byte is part of an extended character
+string(float c, ...) chr2str = #223; // returns a string representing the character given, if the engine supports UTF8 this may be a multi-byte sequence (length may be more than 1) for characters over 127.
+string(float ccase, float calpha, float cnum, string s, ...) strconv = #224; // reformat a string with special color characters in the font, DO NOT USE THIS ON UTF8 ENGINES (if you are lucky they will emit ^4 and such color codes instead), the parameter values are 0=same/1=lower/2=upper for ccase, 0=same/1=white/2=red/5=alternate/6=alternate-alternate for redalpha, 0=same/1=white/2=red/3=redspecial/4=whitespecial/5=alternate/6=alternate-alternate for rednum.
+string(float chars, string s, ...) strpad = #225; // pad string with spaces to a specified length, < 0 = left padding, > 0 = right padding
+string(string info, string key, string value, ...) infoadd = #226; // sets or adds a key/value pair to an infostring - note: forbidden characters are \ and "
+string(string info, string key) infoget = #227; // gets a key/value pair in an infostring, returns value or null if not found
+float(string s1, string s2, float len) strncmp = #228; // compare two strings up to the specified number of characters, if their length differs and is within the specified limit the result will be negative, otherwise it is the difference in value of their first non-matching character.
+float(string s1, string s2) strcasecmp = #229; // compare two strings with case-insensitive matching, characters a-z are considered equivalent to the matching A-Z character, no other differences, and this does not consider special characters equal even if they look similar
+float(string s1, string s2, float len) strncasecmp = #230; // same as strcasecmp but with a length limit, see strncmp
+//string(string s, float start, float length) substring = #116; // see note below
 //description:
 //various string manipulation functions
-float(string str, string sub, float startpos) strstrofs = #221;
-float(string str, float ofs) str2chr = #222;
-string(float c, ...) chr2str = #223;
-string(float ccase, float calpha, float cnum, string s, ...) strconv = #224;
-string(float chars, string s, ...) strpad = #225;
-string(string info, string key, string value, ...) infoadd = #226;
-string(string info, string key) infoget = #227;
-float(string s1, string s2, float len) strncmp = #228;
-float(string s1, string s2) strcasecmp = #229;
-float(string s1, string s2, float len) strncasecmp = #230;
+//note: substring also exists in FRIK_FILE but this extension adds negative start and length as valid cases (see note above), substring is consistent with the php 5.2.0 substr function (not 5.2.3 behavior)
+//substring returns a section of a string as a tempstring, if given negative
+// start the start is measured back from the end of the string, if given a
+// negative length the length is the offset back from the end of the string to
+// stop at, rather than being relative to start, if start is negative and
+// larger than length it is treated as 0.
+// examples of substring:
+// substring("blah", -3, 3) returns "lah"
+// substring("blah", 3, 3) returns "h"
+// substring("blah", -10, 3) returns "bla"
+// substring("blah", -10, -3) returns "b"
 
 //DP_CON_BESTWEAPON
 //idea: many
@@ -1935,4 +2259,55 @@ void(float pause) setpause = #531;
 //calling setpause(0) will end a pause immediately.
 //
 //Note: it is worth considering that network-related functions may be called during the pause (including customizeentityforclient for example), and it is also important to consider the continued use of the KRIMZON_SV_PARSECLIENTCOMMAND extension while paused (chatting players, etc), players may also join/leave during the pause.  In other words, the only things that are not called are think and other time-related functions.
+
+
+
+
+
+
+
+//DP_PHYSICS
+float SOLID_PHYSICS_BOX = 32;
+float SOLID_PHYSICS_SPHERE = 33;
+float SOLID_PHYSICS_CAPSULE = 34;
+float MOVETYPE_PHYSICS = 32;
+.float mass;
+
+.float jointtype;
+// common joint properties:
+// .entity aiment, enemy; // connected objects
+// .vector movedir;
+//   for a spring:
+//     movedir_x = spring constant (force multiplier, must be > 0)
+//     movedir_y = spring dampening constant to prevent oscillation (must be > 0)
+//     movedir_z = spring stop position (+/-)
+//   for a motor:
+//     movedir_x = desired motor velocity
+//     movedir_y = -1 * max motor force to use
+//     movedir_z = stop position (+/-), set to 0 for no stop
+//   note that ODE does not support both in one anyway
+//   motor properties only make sense for hinge and slider!
+
+float JOINTTYPE_POINT = 1;
+// .vector origin; // point anchor
+
+float JOINTTYPE_HINGE = 2;
+// .vector origin; // hinge anchor
+// .vector angles; // hinge axis
+
+float JOINTTYPE_SLIDER = 3;
+// .vector angles; // slider axis
+
+float JOINTTYPE_UNIVERSAL = 4;
+// .vector origin; // universal anchor
+// .vector angles; // universal axis1 and axis2 (axis1 is forward, axis2 is up)
+
+float JOINTTYPE_HINGE2 = 5;
+// .vector origin; // hinge2 anchor
+// .vector angles; // hinge2 first axis (as angles)
+// .vector velocity; // hinge2 second axis (as vector)
+
+
+
+
 

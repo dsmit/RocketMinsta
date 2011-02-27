@@ -72,16 +72,15 @@ void tdm_init();
 void nb_init();
 void entcs_init();
 
-void LogTeamchange(entity pl)
+void LogTeamchange(float player_id, float team_number, float type)
 {
-	string str;
 	if(!cvar("sv_eventlog"))
 		return;
-	if(pl.playerid < 1)
+
+	if(player_id < 1)
 		return;
-	str = strcat(":team:", ftos(pl.playerid), ":");
-	str = strcat(str, ftos(pl.team));
-	GameLogEcho(str);
+
+	GameLogEcho(strcat(":team:", ftos(player_id), ":", ftos(team_number), ":", ftos(type)));
 }
 
 void WriteGameCvars()
@@ -93,6 +92,7 @@ void WriteGameCvars()
 	cvar_set("g_runematch", ftos(g_runematch));
 	cvar_set("g_lms", ftos(g_lms));
 	cvar_set("g_arena", ftos(g_arena));
+	cvar_set("g_ca", ftos(g_ca));
 	cvar_set("g_keyhunt", ftos(g_keyhunt));
 	cvar_set("g_assault", ftos(g_assault));
 	cvar_set("g_onslaught", ftos(g_onslaught));
@@ -118,6 +118,7 @@ void ReadGameCvars()
 		found += (g_runematch = (!found && (prev != GAME_RUNEMATCH) && cvar("g_runematch")));
 		found += (g_lms = (!found && (prev != GAME_LMS) && cvar("g_lms")));
 		found += (g_arena = (!found && (prev != GAME_ARENA) && cvar("g_arena")));
+		found += (g_ca = (!found && (prev != GAME_CA) && cvar("g_ca")));
 		found += (g_keyhunt = (!found && (prev != GAME_KEYHUNT) && cvar("g_keyhunt")));
 		found += (g_assault = (!found && (prev != GAME_ASSAULT) && cvar("g_assault")));
 		found += (g_onslaught = (!found && (prev != GAME_ONSLAUGHT) && cvar("g_onslaught")));
@@ -219,6 +220,8 @@ void InitGameplayMode()
 		gamemode_name = "Team Deathmatch";
 		ActivateTeamplay();
 		tdm_init();
+		if(cvar("g_tdm_team_spawns"))
+			have_team_spawns = -1; // request team spawns
 	}
 
 	if(g_domination)
@@ -229,6 +232,7 @@ void InitGameplayMode()
 		fraglimit_override = cvar("g_domination_point_limit");
 		leadlimit_override = cvar("g_domination_point_leadlimit");
 		dom_init();
+		have_team_spawns = -1; // request team spawns
 	}
 
 	if(g_ctf)
@@ -252,6 +256,7 @@ void InitGameplayMode()
 			leadlimit_override = cvar("captureleadlimit_override");
 		}
 		ctf_init();
+		have_team_spawns = -1; // request team spawns
 	}
 
 	if(g_runematch)
@@ -290,6 +295,16 @@ void InitGameplayMode()
 		arena_roundbased = cvar("g_arena_roundbased");
 	}
 
+	if(g_ca)
+	{
+		game = GAME_CA;
+		gamemode_name = "Clan Arena";
+		ActivateTeamplay();
+		fraglimit_override = cvar("g_ca_point_limit");
+		leadlimit_override = cvar("g_ca_point_leadlimit");
+		precache_sound("ctf/red_capture.wav");
+		precache_sound("ctf/blue_capture.wav");
+	}
 	if(g_keyhunt)
 	{
 		game = GAME_KEYHUNT;
@@ -306,6 +321,7 @@ void InitGameplayMode()
 		gamemode_name = "Assault";
 		ActivateTeamplay();
 		ScoreRules_assault();
+		have_team_spawns = -1; // request team spawns
 	}
 
 	if(g_onslaught)
@@ -313,6 +329,7 @@ void InitGameplayMode()
 		game = GAME_ONSLAUGHT;
 		gamemode_name = "Onslaught";
 		ActivateTeamplay();
+		have_team_spawns = -1; // request team spawns
 	}
 
 	if(g_race)
@@ -324,6 +341,7 @@ void InitGameplayMode()
 		{
 			ActivateTeamplay();
 			race_teams = bound(2, cvar("g_race_teams"), 4);
+			have_team_spawns = -1; // request team spawns
 		}
 		else
 			race_teams = 0;
@@ -350,6 +368,7 @@ void InitGameplayMode()
 		leadlimit_override = cvar("g_nexball_goalleadlimit");
 		ActivateTeamplay();
 		nb_init();
+		have_team_spawns = -1; // request team spawns
 	}
 
 	if(teams_matter)
@@ -506,27 +525,28 @@ void PrintWelcomeMessage(entity pl)
 		modifications = strcat(modifications, ", Bloodloss");
 	if(g_jetpack)
 		modifications = strcat(modifications, ", Jet pack");
-		
+
 	//<akari>
+	// is the cvar() working here, it's not in the standard stuff? --nilyt
 	//Infroms about explosive stuff
-	
+
 	if(cvar("g_balance_minstanex_explosive"))
 		modifications = strcat(modifications, ", Explosive");
-	
+
 	if(cvar("g_explosive_hook_breakable"))
 		modifications = strcat(modifications, ", Hookbreak");
-	
+
 	if(cvar("g_explosive_ctf_capheals"))
 		modifications = strcat(modifications, ", Cap heals");
-	
+
 	if(cvar("g_explosive_health_overflow"))
 		modifications = strcat(modifications, ", Health overflow");
-	
+
 	if(cvar("g_explosive_health_drain"))
 		modifications = strcat(modifications, ", Health draining");
-	
+
 	//</akari>
-		
+
 	modifications = substring(modifications, 2, strlen(modifications) - 2);
 
 	local string versionmessage;
@@ -604,14 +624,13 @@ void SetPlayerTeam(entity pl, float t, float s, float noprint)
 
 	SetPlayerColors(pl,_color);
 
-	if(!noprint && t != s)
-	{
-		//bprint(pl.netname, " has changed to ", TeamNoName(t), "\n");
+	if(t != s) {
+		LogTeamchange(pl.playerid, pl.team, 3);  // log manual team join
+
+		if(!noprint)
 		bprint(pl.netname, "^7 has changed from ", TeamNoName(s), " to ", TeamNoName(t), "\n");
 	}
 
-	if(t != s)
-		LogTeamchange(pl);
 }
 
 // set c1...c4 to show what teams are allowed
@@ -776,7 +795,7 @@ void GetTeamCounts(entity ignore)
 // NOTE: Assumes CheckAllowedTeams has already been called!
 float FindSmallestTeam(entity pl, float ignore_pl)
 {
-	float totalteams, smallestteam, smallestteam_count, smallestteam_score, balance_type;
+	float totalteams, balance_type, maxc;
 	totalteams = 0;
 
 	// find out what teams are available
@@ -816,10 +835,6 @@ float FindSmallestTeam(entity pl, float ignore_pl)
 	// c1...c4 now have counts of each team
 	// figure out which is smallest, giving priority to the team the player is already on as a tie-breaker
 
-	smallestteam = 0;
-	smallestteam_count = 999999999;
-	smallestteam_score = 999999999;
-
 	// 2 gives priority to what team you're already on, 1 goes in order
 	// 2 doesn't seem to work though...
 	balance_type = 1;
@@ -828,68 +843,39 @@ float FindSmallestTeam(entity pl, float ignore_pl)
 	//if(pl.classname != "player")
 	if(clienttype(pl) != CLIENTTYPE_BOT)
 	{
-		c1 -= cb1 * 255.0/256;
-		c2 -= cb2 * 255.0/256;
-		c3 -= cb3 * 255.0/256;
-		c4 -= cb4 * 255.0/256;
+		c1 -= cb1 * 255.0/256.0;
+		c2 -= cb2 * 255.0/256.0;
+		c3 -= cb3 * 255.0/256.0;
+		c4 -= cb4 * 255.0/256.0;
 	}
+	maxc = max4(c1, c2, c3, c4);
 
+	RandomSelection_Init();
 	if(balance_type == 1)
 	{
-		if(c1 >= 0 && (c1 < smallestteam_count || (c1 <= smallestteam_count && team1_score < smallestteam_score)))
-		{
-			smallestteam = 1;
-			smallestteam_count = c1;
-			smallestteam_score = team1_score;
-		}
-		if(c2 >= 0 && (c2 < smallestteam_count || (c2 <= smallestteam_count && team2_score < smallestteam_score)))
-		{
-			smallestteam = 2;
-			smallestteam_count = c2;
-			smallestteam_score = team2_score;
-		}
-		if(c3 >= 0 && (c3 < smallestteam_count || (c3 <= smallestteam_count && team3_score < smallestteam_score)))
-		{
-			smallestteam = 3;
-			smallestteam_count = c3;
-			smallestteam_score = team3_score;
-		}
-		if(c4 >= 0 && (c4 < smallestteam_count || (c4 <= smallestteam_count && team4_score < smallestteam_score)))
-		{
-			smallestteam = 4;
-			smallestteam_count = c4;
-			smallestteam_score = team4_score;
-		}
+		// 1: use team count, then score (note: can only use 8 significant bits of score)
+		if(c1 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + float2range01(-team1_score) / 256.0);
+		if(c2 >= 0) RandomSelection_Add(world, 2, string_null, 1, (maxc - c2) + float2range01(-team2_score) / 256.0);
+		if(c3 >= 0) RandomSelection_Add(world, 3, string_null, 1, (maxc - c3) + float2range01(-team3_score) / 256.0);
+		if(c4 >= 0) RandomSelection_Add(world, 4, string_null, 1, (maxc - c4) + float2range01(-team4_score) / 256.0);
 	}
-	else
+	else if(balance_type == 2)
 	{
-		if(c1 >= 0 && (c1 < smallestteam_count ||
-					(c1 == smallestteam_count && self.team == COLOR_TEAM1) ) )
-		{
-			smallestteam = 1;
-			smallestteam_count = c1;
-		}
-		if(c2 >= 0 && c2 < (c2 < smallestteam_count ||
-					(c2 == smallestteam_count && self.team == COLOR_TEAM2) ) )
-		{
-			smallestteam = 2;
-			smallestteam_count = c2;
-		}
-		if(c3 >= 0 && c3 < (c3 < smallestteam_count ||
-					(c3 == smallestteam_count && self.team == COLOR_TEAM3) ) )
-		{
-			smallestteam = 3;
-			smallestteam_count = c3;
-		}
-		if(c4 >= 0 && c4 < (c4 < smallestteam_count ||
-					(c4 == smallestteam_count && self.team == COLOR_TEAM4) ) )
-		{
-			smallestteam = 4;
-			smallestteam_count = c4;
-		}
+		// 1: use team count, if equal prefer own team
+		if(c1 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + (self.team == COLOR_TEAM1) / 512.0);
+		if(c2 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + (self.team == COLOR_TEAM2) / 512.0);
+		if(c3 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + (self.team == COLOR_TEAM3) / 512.0);
+		if(c4 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + (self.team == COLOR_TEAM4) / 512.0);
 	}
-
-	return smallestteam;
+	else if(balance_type == 3)
+	{
+		// 1: use team count, then score, if equal prefer own team (probably fails due to float accuracy problems)
+		if(c1 >= 0) RandomSelection_Add(world, 1, string_null, 1, (maxc - c1) + float2range01(-team1_score + 0.5 * (self.team == COLOR_TEAM1)) / 256.0);
+		if(c2 >= 0) RandomSelection_Add(world, 2, string_null, 1, (maxc - c2) + float2range01(-team2_score + 0.5 * (self.team == COLOR_TEAM2)) / 256.0);
+		if(c3 >= 0) RandomSelection_Add(world, 3, string_null, 1, (maxc - c3) + float2range01(-team3_score + 0.5 * (self.team == COLOR_TEAM3)) / 256.0);
+		if(c4 >= 0) RandomSelection_Add(world, 4, string_null, 1, (maxc - c4) + float2range01(-team4_score + 0.5 * (self.team == COLOR_TEAM4)) / 256.0);
+	}
+	return RandomSelection_chosen_float;
 }
 
 float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
@@ -917,12 +903,16 @@ float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
 			selectedteam = pl.team;
 		else
 			selectedteam = -1;
+
 		if(selectedteam > 0)
 		{
 			if(!only_return_best)
 			{
 				SetPlayerColors(pl, selectedteam - 1);
-				LogTeamchange(pl);
+
+				// when JoinBestTeam is called by client.qc/ClientKill_Now_TeamChange the players team is -1 and thus skipped
+				// when JoinBestTeam is called by cl_client.qc/ClientConnect the player_id is 0 the log attempt is rejected
+				LogTeamchange(pl.playerid, pl.team, 99);
 			}
 			return selectedteam;
 		}
@@ -930,7 +920,6 @@ float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
 	}
 
 	smallest = FindSmallestTeam(pl, TRUE);
-
 
 	if(!only_return_best)
 	{
@@ -955,7 +944,9 @@ float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
 		{
 			error("smallest team: invalid team\n");
 		}
-		LogTeamchange(pl);
+
+		LogTeamchange(pl.playerid, pl.team, 2); // log auto join
+
 		if(pl.deadflag == DEAD_NO)
 			Damage(pl, pl, pl, 100000, DEATH_TEAMCHANGE, pl.origin, '0 0 0');
 	}
@@ -1009,16 +1000,9 @@ void SV_ChangeTeam(float _color)
 		return;
 	}
 
-	if(cvar("g_campaign"))
-	{
+	if((cvar("g_campaign")) || (cvar("g_changeteam_banned") && self.wasplayer)) {
 		sprint(self, "Team changes not allowed\n");
 		return; // changing teams is not allowed
-	}
-
-	if(cvar("g_changeteam_banned") && self.wasplayer)
-	{
-		sprint(self, "Team changes not allowed\n");
-		return;
 	}
 
 	if(cvar("g_balance_teams_prevent_imbalance"))

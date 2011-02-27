@@ -1,65 +1,4 @@
 // generic string stuff
-float startsWith(string haystack, string needle)
-{
-	return substring(haystack, 0, strlen(needle)) == needle;
-}
-float startsWithNocase(string haystack, string needle)
-{
-	return strcasecmp(substring(haystack, 0, strlen(needle)), needle) == 0;
-}
-string extractRestOfLine(string haystack, string needle)
-{
-	if(startsWith(haystack, needle))
-		return substring(haystack, strlen(needle), strlen(haystack) - strlen(needle));
-	return string_null;
-}
-string car(string s)
-{
-	float o;
-	o = strstrofs(s, " ", 0);
-	if(o < 0)
-		return s;
-	return substring(s, 0, o);
-}
-string cdr(string s)
-{
-	float o;
-	o = strstrofs(s, " ", 0);
-	if(o < 0)
-		return string_null;
-	return substring(s, o + 1, strlen(s) - (o + 1));
-}
-float matchacl(string acl, string str)
-{
-	string t, s;
-	float r, d;
-	r = 0;
-	while(acl)
-	{
-		t = car(acl); acl = cdr(acl);
-		d = 1;
-		if(substring(t, 0, 1) == "-")
-		{
-			d = -1;
-			t = substring(t, 1, strlen(t) - 1);
-		}
-		else if(substring(t, 0, 1) == "+")
-			t = substring(t, 1, strlen(t) - 1);
-		if(substring(t, -1, 1) == "*")
-		{
-			t = substring(t, 0, strlen(t) - 1);
-			s = substring(s, 0, strlen(t));
-		}
-		else
-			s = str;
-
-		if(s == t)
-		{
-			r = d;
-		}
-	}
-	return r;
-}
 
 float _MapInfo_Cache_Active;
 float _MapInfo_Cache_DB_NameToIndex;
@@ -377,6 +316,8 @@ float _MapInfo_Generate(string pFilename) // 0: failure, 1: ok ent, 2: ok bsp
 					++spawnpoints;
 				else if(v == "trigger_race_checkpoint")
 					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_RACE;
+				else if(v == "target_startTimer")
+					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CTS;
 				else if(v == "weapon_nex")
 					{ }
 				else if(v == "weapon_railgun")
@@ -405,8 +346,10 @@ float _MapInfo_Generate(string pFilename) // 0: failure, 1: ok ent, 2: ok bsp
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_RUNEMATCH;       // Rune always works
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_LMS;             // LMS always works
 
-		if(spawnpoints >= 8  && diameter > 4096)
+		if(spawnpoints >= 8  && diameter > 4096) {
 			MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_TEAM_DEATHMATCH;
+			MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CA;
+		}
 		if(                     diameter < 4096)
 			MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_ARENA;
 		if(spawnpoints >= 12 && diameter > 5120)
@@ -525,6 +468,7 @@ float MapInfo_Type_FromString(string t)
 	else if(t == "rune")    return MAPINFO_TYPE_RUNEMATCH;
 	else if(t == "lms")     return MAPINFO_TYPE_LMS;
 	else if(t == "arena")   return MAPINFO_TYPE_ARENA;
+	else if(t == "ca")   	return MAPINFO_TYPE_CA;
 	else if(t == "kh")      return MAPINFO_TYPE_KEYHUNT;
 	else if(t == "as")      return MAPINFO_TYPE_ASSAULT;
 	else if(t == "ons")     return MAPINFO_TYPE_ONSLAUGHT;
@@ -535,11 +479,39 @@ float MapInfo_Type_FromString(string t)
 	else                    return 0;
 }
 
-void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurse)
+void _MapInfo_Parse_Settemp(string pFilename, string acl, float type, string s, float recurse)
 {
 	string t;
-	float fh;
+	float fh, o;
 	t = car(s); s = cdr(s);
+
+	// limited support of "" and comments
+	//   remove trailing and leading " of t
+	if(substring(t, 0, 1) == "\"")
+	{
+		if(substring(t, -1, 1) == "\"")
+			t = substring(t, 1, -2);
+	}
+
+	//   remove leading " of s
+	if(substring(s, 0, 1) == "\"")
+	{
+		s = substring(s, 1, -1);
+	}
+	//   remove trailing " of s, and all that follows (cvar description)
+	o = strstrofs(s, "\"", 0);
+	if(o >= 0)
+		s = substring(s, 0, o);
+	
+	//   remove // comments
+	o = strstrofs(s, "//", 0);
+	if(o >= 0)
+		s = substring(s, 0, o);
+	
+	//   remove trailing spaces
+	while(substring(s, -1, 1) == " ")
+		s = substring(s, 0, -2);
+
 	if(t == "#include")
 	{
 		if(recurse > 0)
@@ -564,7 +536,12 @@ void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurs
 					if(substring(s, 0, 1) == "_")  // q3map style
 						continue;
 
-					_MapInfo_Parse_Settemp(pFilename, acl, s, recurse - 1);
+					if(substring(s, 0, 4) == "set ")
+						s = substring(s, 4, -1);
+					if(substring(s, 0, 5) == "seta ")
+						s = substring(s, 5, -1);
+
+					_MapInfo_Parse_Settemp(pFilename, acl, type, s, recurse - 1);
 				}
 				fclose(fh);
 			}
@@ -572,21 +549,33 @@ void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurs
 		else
 			print("Map ", pFilename, " uses too many levels of inclusion\n");
 	}
+	else if(t == "")
+		print("Map ", pFilename, " contains a potentially harmful setting, ignored\n");
 	else if not(cvar_value_issafe(t))
 		print("Map ", pFilename, " contains a potentially harmful setting, ignored\n");
 	else if not (cvar_value_issafe(s))
 		print("Map ", pFilename, " contains a potentially harmful setting, ignored\n");
-	else if(substring(t, 0, 10) == "g_mapinfo_")
+	else if(matchacl(MAPINFO_SETTEMP_ACL_SYSTEM, t) <= 0)
 		print("Map ", pFilename, " contains a potentially harmful setting, ignored\n");
 	else if(matchacl(acl, t) <= 0)
 		print("Map ", pFilename, " contains a denied setting, ignored\n");
 	else
 	{
-		dprint("Applying temporary setting ", t, " := ", s, "\n");
-		if(cvar("g_campaign"))
-			cvar_set(t, s); // this is a wrapper and is always temporary anyway; no need to backup old values then
+		if(type == 0) // server set
+		{
+			dprint("Applying temporary setting ", t, " := ", s, "\n");
+			if(cvar("g_campaign"))
+				cvar_set(t, s); // this is a wrapper and is always temporary anyway; no need to backup old values then
+			else
+				cvar_settemp(t, s);
+		}
 		else
-			cvar_settemp(t, s);
+		{
+			dprint("Applying temporary client setting ", t, " := ", s, "\n");
+			MapInfo_Map_clientstuff = strcat(
+					MapInfo_Map_clientstuff, "cl_cmd settemp \"", t, "\" \"", s, "\"\n"
+					);
+		}
 	}
 }
 
@@ -599,7 +588,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 	float r, f, n, i;
 	string acl;
 
-	acl = cvar_string("g_mapinfo_settemp_acl");
+	acl = MAPINFO_SETTEMP_ACL_USER;
 
 	if(strstrofs(pFilename, "/", 0) >= 0)
 	{
@@ -666,6 +655,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RUNEMATCH)       fputs(fh, "type rune 200 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_LMS)             fputs(fh, "type lms 9 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ARENA)           fputs(fh, "type arena 10 20\n");
+		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CA)              fputs(fh, "type ca 10 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_KEYHUNT)         fputs(fh, "type kh 1000 20 3\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ASSAULT)         fputs(fh, "type as 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RACE)            fputs(fh, "type rc 20 5 7 15\n");
@@ -783,7 +773,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 			{
 				if(f & pGametypeToSet)
 				{
-					_MapInfo_Parse_Settemp(pFilename, acl, s, 1);
+					_MapInfo_Parse_Settemp(pFilename, acl, 0, s, 1);
 				}
 			}
 			else
@@ -798,18 +788,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 			{
 				if(f & pGametypeToSet)
 				{
-					t = car(s); s = cdr(s);
-					if not(cvar_value_issafe(t))
-						print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
-					else if not (cvar_value_issafe(s))
-						print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
-					else
-					{
-						dprint("Applying temporary client setting ", t, " := ", s, "\n");
-						MapInfo_Map_clientstuff = strcat(
-							MapInfo_Map_clientstuff, "cl_cmd settemp \"", t, "\" \"", s, "\"\n"
-						);
-					}
+					_MapInfo_Parse_Settemp(pFilename, acl, 1, s, 1);
 				}
 			}
 			else
@@ -841,12 +820,15 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 	}
 	fclose(fh);
 
-	if(!MapInfo_Map_supportedGametypes)
-		_MapInfo_Map_ApplyGametype("30 20", pGametypeToSet, MAPINFO_TYPE_DEATHMATCH);
-
 	if(pGametypeToSet)
+	{
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
-			error("Can't select the requested game type. Bailing out.");
+		{
+			print("Can't select the requested game type. Trying anyway with stupid settings.\n");
+			_MapInfo_Map_ApplyGametype("0 0 0", pGametypeToSet, MAPINFO_TYPE_DEATHMATCH);
+		}
+	}
+
 	MapInfo_Cache_Store();
 	if(MapInfo_Map_supportedGametypes != 0)
 		return r;
@@ -912,7 +894,7 @@ float MapInfo_CurrentFeatures()
 {
 	float req;
 	req = 0;
-	if(!(cvar("g_lms") || cvar("g_instagib") || cvar("g_minstagib") || cvar("g_nixnex") || cvar("g_rocketarena") || !cvar("g_pickup_items") || cvar("g_race") || cvar("g_cts") || cvar("g_nexball")))
+	if(!(cvar("g_lms") || cvar("g_minstagib") || cvar("g_nixnex") || cvar("g_weaponarena") || !cvar("g_pickup_items") || cvar("g_race") || cvar("g_cts") || cvar("g_nexball")))
 		req |= MAPINFO_FEATURE_WEAPONS;
 	return req;
 }
@@ -933,6 +915,8 @@ float MapInfo_CurrentGametype()
 		return MAPINFO_TYPE_LMS;
 	else if(cvar("g_arena"))
 		return MAPINFO_TYPE_ARENA;
+	else if(cvar("g_ca"))
+		return MAPINFO_TYPE_CA; 
 	else if(cvar("g_keyhunt"))
 		return MAPINFO_TYPE_KEYHUNT;
 	else if(cvar("g_onslaught"))
@@ -977,6 +961,7 @@ string MapInfo_GetGameTypeCvar(float t)
 		case MAPINFO_TYPE_RUNEMATCH: return "g_runematch";
 		case MAPINFO_TYPE_LMS: return "g_lms";
 		case MAPINFO_TYPE_ARENA: return "g_arena";
+		case MAPINFO_TYPE_CA: return "g_ca";
 		case MAPINFO_TYPE_KEYHUNT: return "g_kh";
 		case MAPINFO_TYPE_ASSAULT: return "g_assault";
 		case MAPINFO_TYPE_ONSLAUGHT: return "g_onslaught";
@@ -997,6 +982,7 @@ void MapInfo_SwitchGameType(float t)
 	cvar_set("g_runematch",  (t == MAPINFO_TYPE_RUNEMATCH)       ? "1" : "0");
 	cvar_set("g_lms",        (t == MAPINFO_TYPE_LMS)             ? "1" : "0");
 	cvar_set("g_arena",      (t == MAPINFO_TYPE_ARENA)           ? "1" : "0");
+	cvar_set("g_ca",      	 (t == MAPINFO_TYPE_CA)              ? "1" : "0");
 	cvar_set("g_keyhunt",    (t == MAPINFO_TYPE_KEYHUNT)         ? "1" : "0");
 	cvar_set("g_assault",    (t == MAPINFO_TYPE_ASSAULT)         ? "1" : "0");
 	cvar_set("g_onslaught",  (t == MAPINFO_TYPE_ONSLAUGHT)       ? "1" : "0");
@@ -1008,11 +994,12 @@ void MapInfo_SwitchGameType(float t)
 void MapInfo_LoadMap(string s)
 {
 	MapInfo_Map_supportedGametypes = 0;
-	if(!MapInfo_CheckMap(s))
-	{
-		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
-		MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
-	}
+	// we shouldn't need this, as LoadMapSettings already fixes the gametype
+	//if(!MapInfo_CheckMap(s))
+	//{
+	//	print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
+	//	MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
+	//}
 	localcmd(strcat("\nsettemp_restore\nchangelevel ", s, "\n"));
 }
 
@@ -1033,11 +1020,14 @@ string MapInfo_ListAllowedMaps(float pRequiredFlags, float pForbiddenFlags)
 
 void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 {
-	float t;
+	float t, t0;
 	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
 	{
-		if(MapInfo_Map_supportedGametypes <= 0)
-			error("Mapinfo system is not functional at all. BAILED OUT.\n");
+		if(MapInfo_Map_supportedGametypes == 0)
+		{
+			print("Mapinfo system is not functional at all. Assuming deathmatch.\n");
+			MapInfo_Map_supportedGametypes = MAPINFO_TYPE_DEATHMATCH;
+		}
 
 		t = 1;
 		while(!(MapInfo_Map_supportedGametypes & 1))
@@ -1046,8 +1036,22 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 			MapInfo_Map_supportedGametypes = floor(MapInfo_Map_supportedGametypes / 2);
 		}
 		// t is now a supported mode!
-		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
-		MapInfo_SwitchGameType(t);
+		t0 = MapInfo_CurrentGametype();
+		if(cvar("g_mapinfo_allow_unsupported_modes_and_let_stuff_break"))
+		{
+			print("EMERGENCY: can't play the selected map in the given game mode. Working with only the override settings.\n");
+			cvar_set("timelimit", "0");
+			cvar_set("fraglimit", "0");
+			cvar_set("g_tdm_teams", "2");
+			cvar_set("g_keyhunt_teams", "3");
+			cvar_set("g_race_qualifying_timelimit", "0");
+			cvar_set("leadlimit", "0");
+		}
+		else
+		{
+			print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
+			MapInfo_SwitchGameType(t);
+		}
 	}
 	cvar_settemp_restore();
 	MapInfo_Get_ByName(s, 1, MapInfo_CurrentGametype());

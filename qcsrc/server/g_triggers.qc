@@ -165,6 +165,10 @@ void multi_trigger()
 		self.think = multi_wait;
 		self.nextthink = time + self.wait;
 	}
+	else if (self.wait == 0)
+	{
+		multi_wait(); // waiting finished
+	}
 	else
 	{	// we can't just remove (self) here, because this is a touch function
 		// called wheil C code is looping through area links...
@@ -270,6 +274,8 @@ void spawnfunc_trigger_multiple()
 
 	if (!self.wait)
 		self.wait = 0.2;
+	else if(self.wait < -1)
+		self.wait = 0;
 	self.use = multi_use;
 
 	EXACTTRIGGER_INIT;
@@ -1410,16 +1416,31 @@ void spawnfunc_trigger_multivibrator()
 void follow_init()
 {
 	entity src, dst;
-	src = find(world, targetname, self.killtarget);
-	dst = find(world, targetname, self.target);
+	src = world;
+	dst = world;
+	if(self.killtarget != "")
+		src = find(world, targetname, self.killtarget);
+	if(self.target != "")
+		dst = find(world, targetname, self.target);
 
-	if(!src || !dst)
+	if(!src && !dst)
 	{
 		objerror("follow: could not find target/killtarget");
 		return;
 	}
 
-	if(self.spawnflags & 1)
+	if(self.jointtype)
+	{
+		// already done :P entity must stay
+		self.aiment = src;
+		self.enemy = dst;
+	}
+	else if(!src || !dst)
+	{
+		objerror("follow: could not find target/killtarget");
+		return;
+	}
+	else if(self.spawnflags & 1)
 	{
 		// attach
 		if(self.spawnflags & 2)
@@ -1430,6 +1451,8 @@ void follow_init()
 		{
 			attach_sameorigin(dst, src, self.message);
 		}
+
+		remove(self);
 	}
 	else
 	{
@@ -1445,9 +1468,9 @@ void follow_init()
 		{
 			follow_sameorigin(dst, src);
 		}
-	}
 
-	remove(self);
+		remove(self);
+	}
 }
 
 void spawnfunc_misc_follow()
@@ -1656,7 +1679,7 @@ string trigger_magicear_processmessage(entity ear, entity source, float teamsay,
 
 	magicear_matched = FALSE;
 
-	dotrigger = ((self.classname == "player") && ((ear.radius == 0) || (vlen(source.origin - ear.origin) <= ear.radius)));
+	dotrigger = ((self.classname == "player") && (self.deadflag == DEAD_NO) && ((ear.radius == 0) || (vlen(source.origin - ear.origin) <= ear.radius)));
 	domatch = ((ear.spawnflags & 32) || dotrigger);
 	if not(domatch)
 		return msgin;
@@ -1786,7 +1809,7 @@ void spawnfunc_trigger_magicear()
 	//   4 = ignore tell
 	//   8 = ignore tell to unknown player
 	//   16 = let netname replace the whole message (otherwise, netname is a word replacement if set)
-	//   32 = perform the replacement even if outside the radius
+	//   32 = perform the replacement even if outside the radius or dead
 	//   64 = continue replacing/triggering even if this one matched
 	// message: either
 	//   *pattern*

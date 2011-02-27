@@ -20,7 +20,7 @@ entity (entity start, .string fld, string match)			find = #18;
 string (string s)							precache_sound = #19;
 string (string s)							precache_model = #20;
 
-//void (string s)								dprint = #25;
+void (string s, ...)						dprint = #25;
 string (float f)							ftos = #26;
 string (vector v)							vtos = #27;
 void ()									coredump = #28;
@@ -98,7 +98,7 @@ float	drawfill(vector position, vector size, vector rgb, float alpha, float flag
 void	drawsetcliparea(float x, float y, float width, float height) = #324;
 void	drawresetcliparea(void) = #325;
 float	drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) = #326;
-float	stringwidth(string text, float handleColors) = #327;
+float	stringwidth(string text, float handleColors, vector fontSize) = #327;
 float	drawsubpic(vector position, vector size, string pic, vector srcPosition, vector srcSize, vector rgb, float alpha, float flag) = #328;
 
 
@@ -155,12 +155,23 @@ float (float handle)							search_getsize = #446;
 string (float handle, float num)					search_getfilename = #447;
 
 
+#define SPA_POSITION 0
+#define SPA_S_AXIS 1
+#define SPA_T_AXIS 2
+#define SPA_R_AXIS 3
+#define SPA_TEXCOORDS0 4
+#define SPA_LIGHTMAP0_TEXCOORDS 5
+#define SPA_LIGHTMAP_COLOR 6
 float (entity e, float s)						getsurfacenumpoints = #434;
 vector (entity e, float s, float n)					getsurfacepoint = #435;
 vector (entity e, float s)						getsurfacenormal = #436;
 string (entity e, float s)						getsurfacetexture = #437;
 float (entity e, vector p)						getsurfacenearpoint = #438;
 vector (entity e, float s, vector p)					getsurfaceclippedpoint = #439;
+vector(entity e, float s, float n, float a) getsurfacepointattribute = #486;
+float(entity e, float s) getsurfacenumtriangles = #628;
+vector(entity e, float s, float n) getsurfacetriangle = #629;
+
 
 float (float a, float b) min = #94;
 float (float a, float b, float c) min3 = #94;
@@ -285,3 +296,15 @@ float(float timer) gettime = #519;
 float(string s) tokenize_console = #514;
 float(float i) argv_start_index = #515;
 float(float i) argv_end_index = #516;
+
+float(float s) asin = #471; // returns angle in radians for a given sin() value, the result is in the range -PI*0.5 to PI*0.5
+float(float c) acos = #472; // returns angle in radians for a given cos() value, the result is in the range 0 to PI
+float(float t) atan = #473; // returns angle in radians for a given tan() value, the result is in the range -PI*0.5 to PI*0.5
+float(float c, float s) atan2 = #474; // returns angle in radians for a given cos() and sin() value pair, the result is in the range -PI to PI (this is identical to vectoyaw except it returns radians rather than degrees)
+float(float a) tan = #475; // returns tangent value (which is simply sin(a)/cos(a)) for the given angle in radians, the result is in the range -infinity to +infinity
+float DEG2RAD = 0.0174532925199432957692369076848861271344287188854172545609719144;
+float RAD2DEG = 57.2957795130823208767981548141051703324054724665643215491602438612;
+float PI      = 3.1415926535897932384626433832795028841971693993751058209749445923;
+float log(float f) = #532;
+
+void(entity e, entity ignore) tracetoss = #64;

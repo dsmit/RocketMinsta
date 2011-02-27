@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(ELECTRO, w_electro, IT_CELLS, 5, WEP_FLAG_NORMAL | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_MID, "electro", "electro", "Electro");
+#else
 .float electro_count;
 .float electro_secondarytime;
 
@@ -6,22 +9,17 @@ void W_Plasma_Explode_Combo (void);
 void W_Plasma_TriggerCombo(vector org, float rad, entity own)
 {
 	local entity e;
-	e = findradius(org, rad);
+	e = WarpZone_FindRadius(org, rad, TRUE);
 	while (e)
 	{
 		if (e.classname == "plasma")
 		{
-			// see if there is line of sight to the combo ball
-			traceline(org, e.origin, MOVE_NOMONSTERS, e);
-			if (trace_fraction == 1 || trace_ent == e)
-			{
-				// change owner to whoever caused the combo explosion
-				e.owner = own;
-				e.takedamage = DAMAGE_NO;
-				e.classname = "plasma_chain";
-				e.think = W_Plasma_Explode_Combo;
-				e.nextthink = time + vlen(e.origin - org) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
-			}
+			// change owner to whoever caused the combo explosion
+			e.owner = own;
+			e.takedamage = DAMAGE_NO;
+			e.classname = "plasma_chain";
+			e.think = W_Plasma_Explode_Combo;
+			e.nextthink = time + vlen(e.WarpZone_findradius_dist) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
 		}
 		e = e.chain;
 	}
@@ -34,7 +32,7 @@ void W_Plasma_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/electrobitch.wav");
+						AnnounceTo(self.owner, "electrobitch");
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -94,7 +92,8 @@ void W_Plasma_Damage (entity inflictor, entity attacker, float damage, float dea
 			self.owner = inflictor.owner;
 			self.classname = "plasma_chain";
 			self.think = W_Plasma_Explode_Combo;
-			self.nextthink = time + vlen(self.origin - inflictor.origin) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
+			self.nextthink = time + min(cvar("g_balance_electro_combo_radius"), vlen(self.origin - inflictor.origin)) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
+				//                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ bounding the length, because inflictor may be in a galaxy far far away (warpzones)
 		}
 		else
 		{
@@ -127,8 +126,7 @@ void W_Electro_Attack()
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_cells = self.ammo_cells - cvar("g_balance_electro_primary_ammo");
 	proj.movetype = MOVETYPE_FLY;
-	proj.velocity = w_shotdir * cvar("g_balance_electro_primary_speed");
-	W_SetupProjectileVelocity(proj);
+	W_SETUPPROJECTILEVELOCITY(proj, g_balance_electro_primary);
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_Plasma_TouchExplode;
 	setsize(proj, '0 0 -3', '0 0 -3');
@@ -166,8 +164,7 @@ void W_Electro_Attack2()
 	//proj.glow_size = 50;
 	//proj.glow_color = 45;
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.velocity = (w_shotdir + randomvec() * cvar("g_balance_electro_secondary_spread")) * cvar("g_balance_electro_secondary_speed") + v_up * cvar("g_balance_electro_secondary_speed_up");
-	W_SetupProjectileVelocity(proj);
+	W_SETUPPROJECTILEVELOCITY_UP(proj, g_balance_electro_secondary);
 	proj.touch = W_Plasma_Touch;
 	setsize(proj, '0 0 -3', '0 0 -3');
 	proj.takedamage = DAMAGE_YES;
@@ -185,6 +182,21 @@ void W_Electro_Attack2()
 #endif
 
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE); // no culling, it has sound
+}
+
+// experimental lightning gun
+void W_Electro_Attack3 (void)
+{
+       if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+               self.ammo_cells = self.ammo_cells - cvar("g_balance_electro_primary_ammo");
+       W_SetupShot (self, TRUE, 0, "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
+
+       traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * cvar("g_balance_electro_primary_radius"), FALSE, self, ANTILAG_LATENCY(self));
+
+       te_lightning1(self, w_shotorg, trace_endpos);
+
+       if (trace_fraction < 1)
+               Damage(trace_ent, self, self, cvar("g_balance_electro_primary_damage"), WEP_ELECTRO | HITTYPE_SECONDARY, trace_endpos, cvar("g_balance_electro_primary_force") * w_shotdir);
 }
 
 void spawnfunc_weapon_electro (void)
@@ -238,10 +250,13 @@ float w_electro(float req)
 		if (self.BUTTON_ATCK)
 		if (weapon_prepareattack(0, cvar("g_balance_electro_primary_refire")))
 		{
-			W_Electro_Attack();
+			if(cvar("g_balance_electro_lightning"))
+				W_Electro_Attack3();
+			else
+				W_Electro_Attack();
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_electro_primary_animtime"), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && !cvar("g_balance_electro_lightning"))
 		if (time >= self.electro_secondarytime)
 		if (weapon_prepareattack(1, cvar("g_balance_electro_secondary_refire")))
 		{
@@ -261,6 +276,8 @@ float w_electro(float req)
 		precache_sound ("weapons/electro_fire2.wav");
 		precache_sound ("weapons/electro_impact.wav");
 		precache_sound ("weapons/electro_impact_combo.wav");
+		if(cvar("g_balance_electro_lightning"))
+			precache_sound ("weapons/crylink_fire2.wav");
 	}
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_ELECTRO);
@@ -271,7 +288,7 @@ float w_electro(float req)
 	else if (req == WR_SUICIDEMESSAGE)
 	{
 		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "could not remember where he put plasma";
+			w_deathtypestring = "could not remember where they put plasma";
 		else
 			w_deathtypestring = "played with plasma";
 	}
@@ -300,3 +317,4 @@ float w_electro(float req)
 	}
 	return TRUE;
 };
+#endif

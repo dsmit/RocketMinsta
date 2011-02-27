@@ -1,17 +1,21 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(CAMPINGRIFLE, w_campingrifle, IT_NAILS, 3, WEP_FLAG_NORMAL | WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID, "campingrifle", "campingrifle", "Rifle");
+#else
 //Camping rifle Primary mode: manually operated bolt*, Secondary: full automatic**
 //* Manually operating the bolt means that all the power of the gas is used to propell the bullet. In this mode the bolt is prevented from moving backwards in response to the firing of the bullet.
 //** In fully automatic mode some of the gas is used to extract and reload the next cartrige, thus there is less power and range.
 
 .float campingrifle_accumulator;
 
-float W_CampingRifle_CheckMaxBullets()
+float W_CampingRifle_CheckMaxBullets(float checkammo)
 {
 	float maxbulls;
 	maxbulls = cvar("g_balance_campingrifle_magazinecapacity");
 	if(!maxbulls)
-		maxbulls = 8;
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		maxbulls = min(maxbulls, floor(self.ammo_nails / min(cvar("g_balance_campingrifle_primary_ammo"), cvar("g_balance_campingrifle_secondary_ammo"))));
+		maxbulls = 8; // match HUD
+	if(checkammo)
+		if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+			maxbulls = min(maxbulls, floor(self.ammo_nails / min(cvar("g_balance_campingrifle_primary_ammo"), cvar("g_balance_campingrifle_secondary_ammo"))));
 	if(self.campingrifle_bulletcounter > maxbulls || !cvar("g_balance_campingrifle_magazinecapacity"))
 		self.campingrifle_bulletcounter = maxbulls;
 	return (self.campingrifle_bulletcounter == maxbulls);
@@ -21,7 +25,7 @@ void W_CampingRifle_ReloadedAndReady()
 {
 	float t;
 	self.campingrifle_bulletcounter = cvar("g_balance_campingrifle_magazinecapacity");
-	W_CampingRifle_CheckMaxBullets();
+	W_CampingRifle_CheckMaxBullets(TRUE);
 	t = ATTACK_FINISHED(self) - cvar("g_balance_campingrifle_reloadtime") - 1;
 	ATTACK_FINISHED(self) = t;
 	w_ready();
@@ -31,7 +35,7 @@ void W_CampingRifle_Reload()
 {
 	float t;
 
-	W_CampingRifle_CheckMaxBullets();
+	W_CampingRifle_CheckMaxBullets(TRUE);
 	if (self.campingrifle_bulletcounter >= cvar("g_balance_campingrifle_magazinecapacity"))
 		return;
 
@@ -87,14 +91,14 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 		w_shotorg = self.origin + self.view_ofs + ((w_shotorg - self.origin - self.view_ofs) * v_forward) * v_forward;
 	}
 
-	fireBallisticBullet(w_shotorg, w_shotdir, pSpread, pSpeed, pLifetime, pDamage, pHeadshotAddedDamage / pDamage, pForce, deathtype, EF_RED, 1, pBulletConstant);
+	fireBallisticBullet(w_shotorg, w_shotdir, pSpread, pSpeed, pLifetime, pDamage, pHeadshotAddedDamage / pDamage, pForce, deathtype, (cvar("g_balance_campingrifle_tracer") ? EF_RED : EF_BLUE), 1, pBulletConstant);
 	endFireBallisticBullet();
 
 	if (cvar("g_casings") >= 2)
 		SpawnCasing (((random () * 50 + 50) * v_right) - (v_forward * (random () * 25 + 25)) - ((random () * 5 - 70) * v_up), 2, vectoangles(v_forward),'0 250 0', 100, 3, self);
 	
 	self.campingrifle_bulletcounter = self.campingrifle_bulletcounter - 1;
-	W_CampingRifle_CheckMaxBullets();
+	W_CampingRifle_CheckMaxBullets(TRUE);
 }
 
 void W_CampingRifle_Attack()
@@ -181,7 +185,7 @@ float w_campingrifle(float req)
 	{
 		weapon_setup(WEP_CAMPINGRIFLE);
 
-		full = W_CampingRifle_CheckMaxBullets();
+		full = W_CampingRifle_CheckMaxBullets(TRUE);
 		if(cvar("g_balance_campingrifle_auto_reload_after_changing_weapons"))
 			if(!full)
 				self.campingrifle_bulletcounter = -1;
@@ -193,9 +197,9 @@ float w_campingrifle(float req)
 	else if (req == WR_SUICIDEMESSAGE)
 	{
 		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "shot himself automatically";
+			w_deathtypestring = "shot themself automatically";
 		else
-			w_deathtypestring = "sniped himself somehow";
+			w_deathtypestring = "sniped themself somehow";
 	}
 	else if (req == WR_KILLMESSAGE)
 	{
@@ -230,7 +234,8 @@ float w_campingrifle(float req)
 	{
 		self.campingrifle_accumulator = time - cvar("g_balance_campingrifle_bursttime");
 		self.campingrifle_bulletcounter = cvar("g_balance_campingrifle_magazinecapacity");
-		W_CampingRifle_CheckMaxBullets();
+		W_CampingRifle_CheckMaxBullets(FALSE);
 	}
 	return TRUE;
 };
+#endif

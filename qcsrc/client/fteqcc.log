@@ -6,9 +6,14 @@ compiling Defs.qc
 compiling csqc_constants.qc
 compiling ../common/constants.qh
 compiling csqc_builtins.qc
+compiling ../warpzonelib/anglestransform.qh
+compiling ../warpzonelib/mathlib.qh
+compiling ../warpzonelib/common.qh
+compiling ../warpzonelib/client.qh
 compiling ../common/util.qh
 compiling ../common/items.qh
 compiling ../common/mapinfo.qh
+compiling autocvars.qh
 compiling interpolate.qh
 compiling teamradar.qh
 compiling waypointsprites.qh
@@ -33,6 +38,7 @@ compiling casings.qc
 compiling effects.qc
 compiling wall.qc
 compiling modeleffects.qc
+compiling tuba.qc
 compiling Main.qc
 compiling View.qc
 compiling interpolate.qc
@@ -45,7 +51,12 @@ compiling ../common/util.qc
 compiling ../common/gamecommand.qc
 compiling ../common/mapinfo.qc
 compiling ../common/items.qc
+compiling ../warpzonelib/anglestransform.qc
+compiling ../warpzonelib/mathlib.qc
+compiling ../warpzonelib/common.qc
+compiling ../warpzonelib/client.qc
 Recognised progs as outdated CSQC module
 Progs should run on any Quake executor
+View.qc:860: warning: i  no references
 Not writing linenumbers file due to conflicting optimisation
-0 warnings
+1 warnings

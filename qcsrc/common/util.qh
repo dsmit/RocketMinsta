@@ -1,13 +1,11 @@
-// note: this is in util.qh so it is included as early as possible.
-var void(string s, ...) dprint;
-void dprint_null() { }
-void dprint_load()
-{
-	if(cvar("developer") > 0)
-		dprint = print;
-	else
-		dprint = dprint_null;
-}
+#define ACCUMULATE_FUNCTION(func,otherfunc) \
+	#ifdef func \
+	void __merge__##otherfunc() { func(); otherfunc(); } \
+	#undef func \
+	#define func __merge__##otherfunc \
+	#else \
+	#define func otherfunc \
+	#endif
 
 // this returns a tempstring containing a copy of s with additional \n newlines added, it also replaces \n in the text with a real newline
 // NOTE: s IS allowed to be a tempstring
@@ -79,10 +77,6 @@ float compressShortVector(vector vec);
 
 #ifndef MENUQC
 float CheckWireframeBox(entity forent, vector v0, vector dvx, vector dvy, vector dvz);
-
-void fixedmakevectors(vector a);
-#define fixedvectoangles2 vectoangles2
-#define fixedvectoangles vectoangles
 #endif
 
 string fixPriorityList(string pl, float from, float to, float subtract, float complete);
@@ -134,20 +128,16 @@ string rgb_to_hexcolor(vector rgb);
 float boxesoverlap(vector m1, vector m2, vector m3, vector m4);
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs);
 
-#ifndef MENUQC
-vector AnglesTransform_Apply(vector transform, vector v);
-vector AnglesTransform_Multiply(vector t1, vector t2);
-vector AnglesTransform_Invert(vector transform);
-vector AnglesTransform_TurnDirection(vector transform);
-vector AnglesTransform_Divide(vector to_transform, vector from_transform);
-#endif
-
-typedef float(string s) textLengthUpToWidth_widthFunction_t;
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw);
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw);
+typedef float(string s, vector size) textLengthUpToWidth_widthFunction_t;
+typedef float(string s) textLengthUpToLength_lenFunction_t;
+float textLengthUpToWidth(string theText, float maxWidth, vector size, textLengthUpToWidth_widthFunction_t tw);
+string textShortenToWidth(string theText, float maxWidth, vector size, textLengthUpToWidth_widthFunction_t tw);
+float textLengthUpToLength(string theText, float maxWidth, textLengthUpToLength_lenFunction_t tw);
+string textShortenToLength(string theText, float maxWidth, textLengthUpToLength_lenFunction_t tw);
 
 string getWrappedLine_remaining;
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw);
+string getWrappedLine(float w, vector size, textLengthUpToWidth_widthFunction_t tw);
+string getWrappedLineLen(float w, textLengthUpToLength_lenFunction_t tw);
 
 float isGametypeInFilter(float gt, float tp, string pattern);
 
@@ -172,7 +162,8 @@ void check_unacceptable_compiler_bugs();
 float compressShotOrigin(vector v);
 vector decompressShotOrigin(float f);
 
-string records_reply, lsmaps_reply, maplist_reply; // cached replies
+string rankings_reply, lsmaps_reply, lsnewmaps_reply, maplist_reply; // cached replies
+string records_reply[10];
 
 float RandomSelection_totalweight;
 float RandomSelection_best_priority;
@@ -194,3 +185,17 @@ float ReadInt24_t();
 void WriteInt24_t(float dest, float val);
 #endif
 #endif
+
+// the NULL function
+const var void func_null(void); FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(func_null)
+const var string string_null;
+float float2range11(float f);
+float float2range01(float f);
+
+float gsl_ran_gaussian(float sigma);
+
+string car(string s); // returns first word
+string cdr(string s); // returns all but first word
+float matchacl(string acl, string str); // matches str against ACL acl (with entries +foo*, +foo, +*foo, +*foo*, and same with - for forbidding)
+float startsWith(string haystack, string needle);
+float startsWithNocase(string haystack, string needle);

@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(GRENADE_LAUNCHER, w_glauncher, IT_ROCKETS, 4, WEP_FLAG_NORMAL | WEP_FLAG_CANCLIMB | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_MID, "gl", "grenadelauncher", "Mortar");
+#else
 void W_Grenade_Explode (void)
 {
 	if(other.takedamage == DAMAGE_AIM)
@@ -5,7 +8,7 @@ void W_Grenade_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/airshot.wav");
+						AnnounceTo(self.owner, "airshot");
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -20,7 +23,7 @@ void W_Grenade_Explode2 (void)
 		if(other.classname == "player")
 			if(IsDifferentTeam(self.owner, other))
 				if(IsFlying(other))
-					announce(self.owner, "announcer/male/airshot.wav");
+					AnnounceTo(self.owner, "airshot");
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -99,8 +102,7 @@ void W_Grenade_Attack (void)
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
 	gren.touch = W_Grenade_Touch1;
-	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_primary_speed") + v_up * cvar("g_balance_grenadelauncher_primary_speed_up");
-	W_SetupProjectileVelocity(gren);
+	W_SETUPPROJECTILEVELOCITY_UP(gren, g_balance_grenadelauncher_primary);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
@@ -138,8 +140,7 @@ void W_Grenade_Attack2 (void)
 	gren.health = cvar("g_balance_grenadelauncher_secondary_health");
 	gren.damageforcescale = cvar("g_balance_grenadelauncher_secondary_damageforcescale");
 	gren.event_damage = W_Grenade_Damage;
-	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_secondary_speed") + v_up * cvar("g_balance_grenadelauncher_secondary_speed_up");
-	W_SetupProjectileVelocity(gren);
+	W_SETUPPROJECTILEVELOCITY_UP(gren, g_balance_grenadelauncher_secondary);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
@@ -181,10 +182,13 @@ float w_glauncher(float req)
 		if (self.BUTTON_ATCK)
 		if (weapon_prepareattack(0, cvar("g_balance_grenadelauncher_primary_refire")))
 		{
-			W_Grenade_Attack();
+			if(cvar("g_balance_grenadelauncher_primary2secondary"))
+				W_Grenade_Attack2();
+			else
+				W_Grenade_Attack();
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_grenadelauncher_primary_animtime"), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && !cvar("g_balance_grenadelauncher_primary2secondary"))
 		if (weapon_prepareattack(1, cvar("g_balance_grenadelauncher_secondary_refire")))
 		{
 			W_Grenade_Attack2();
@@ -229,3 +233,4 @@ float w_glauncher(float req)
 	}
 	return TRUE;
 };
+#endif

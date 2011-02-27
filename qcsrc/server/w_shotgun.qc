@@ -1,4 +1,6 @@
-
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(SHOTGUN, w_shotgun, IT_SHELLS, 2, WEP_FLAG_NORMAL | WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_LOW, "shotgun", "shotgun", "Shotgun");
+#else
 void W_Shotgun_Attack (void)
 {
 	float	sc;
@@ -115,7 +117,7 @@ float w_shotgun(float req)
 			W_Shotgun_Attack();
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_shotgun_primary_animtime"), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && cvar("g_balance_shotgun_secondary"))
 		if (weapon_prepareattack(1, cvar("g_balance_shotgun_secondary_refire")))
 		{
 			W_Shotgun_Attack2();
@@ -145,3 +147,4 @@ float w_shotgun(float req)
 	}
 	return TRUE;
 };
+#endif

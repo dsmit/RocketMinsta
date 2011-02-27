@@ -1,7 +1,18 @@
-var float(string text, float handleColors) stringwidth;
+var float(string text, float handleColors, vector fontSize) stringwidth;
 
 entity players;
 entity teams;
+
+void serverAnnouncer()
+{
+	// check for pending announcement, play it and remove it
+	if(announce_snd != "")
+	{
+		sound(self, CHAN_VOICE, strcat("announcer/", cvar_string("cl_announcer"), "/", announce_snd, ".wav"), VOL_BASEVOICE, ATTN_NONE);
+		strunzone(announce_snd);
+		announce_snd = "";
+	}
+}
 
 void restartAnnouncer_Think() {
 	float countdown_rounded, countdown;
@@ -11,7 +22,7 @@ void restartAnnouncer_Think() {
 		if (!spectatee_status) //do cprint only for players
 			centerprint("^1Begin!");
 
-		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+		sound(self, CHAN_VOICE, strcat("announcer/", cvar_string("cl_announcer"), "/begin.wav"), VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
 		announcer_5min = announcer_1min = FALSE;
 
@@ -23,7 +34,7 @@ void restartAnnouncer_Think() {
 			centerprint(strcat("^1Game starts in ", ftos(countdown_rounded), " seconds"));
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
-			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+			sound(self, CHAN_VOICE, strcat("announcer/", cvar_string("cl_announcer"), "/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
 		}
 
 		self.nextthink = getstatf(STAT_GAMESTARTTIME) - (countdown - 1);
@@ -39,18 +50,29 @@ void maptimeAnnouncer() {
     float timeleft;
     timeleft = max(0, timelimit * 60 + getstatf(STAT_GAMESTARTTIME) - time);
 
+    float warmuplimit;
+    float warmuptimeleft;
+    if(warmup_stage) {
+        warmuplimit = cvar("g_warmup_limit");
+        if(warmuplimit > 0) {
+           warmuptimeleft = max(0, warmuplimit + getstatf(STAT_GAMESTARTTIME) - time); 
+        }
+    }
+
     //5 minute check
     if (cvar("cl_sound_maptime_warning") >= 2) {
         //make sure that after connect (and e.g. 4 minutes left) we will not get a wrong sound
         if(announcer_5min)
         {
-			if(timeleft > 300)
+			if(((!warmup_stage || warmuplimit == 0) && timeleft > 300) || (warmup_stage && warmuplimit > 0 && warmuptimeleft > 300))
 				announcer_5min = FALSE;
         }
-        else if (timelimit > 0 && timeleft < 300 && timeleft > 299) {
+        else if (((!warmup_stage || warmuplimit == 0) && timelimit > 0 && timeleft < 300 && timeleft > 299) || (warmup_stage && warmuplimit > 0 && warmuptimeleft < 300 && warmuptimeleft > 299))
+	//if we're in warmup mode, check whether there's a warmup timelimit
+        if not (warmuplimit == -1 && warmup_stage) {
 			announcer_5min = TRUE;
 			//dprint("i will play the sound, I promise!\n");
-			sound(self, CHAN_VOICE, "announcer/robotic/5minutesremain.wav", VOL_BASEVOICE, ATTN_NONE);
+			sound(self, CHAN_VOICE, strcat("announcer/", cvar_string("cl_announcer"), "/5minutesremain.wav"), VOL_BASEVOICE, ATTN_NONE);
 		}
     }
 
@@ -58,23 +80,107 @@ void maptimeAnnouncer() {
     if (cvar("cl_sound_maptime_warning") == 1 || cvar("cl_sound_maptime_warning") == 3) {
     	if (announcer_1min)
     	{
-			if(timeleft > 60)
+			if(((!warmup_stage || warmuplimit == 0) && timeleft > 60) || (warmup_stage && warmuplimit > 0 && warmuptimeleft > 60))
 				announcer_1min = FALSE;
     	}
-    	else if (timelimit > 0 && timeleft < 60) {
+    	else if (((!warmup_stage || warmuplimit == 0) && timelimit > 0 && timeleft < 60) || (warmup_stage && warmuplimit > 0 && warmuptimeleft < 60))
+	//if we're in warmup mode, check whether there's a warmup timelimit
+    	if not (warmuplimit == -1 && warmup_stage) {
 			announcer_1min = TRUE;
-			sound(self, CHAN_VOICE, "announcer/robotic/1minuteremains.wav", VOL_BASEVOICE, ATTN_NONE);
+			sound(self, CHAN_VOICE, strcat("announcer/", cvar_string("cl_announcer"), "/1minuteremains.wav"), VOL_BASEVOICE, ATTN_NONE);
     	}
 	}
 }
 
+ /**
+ * Announce carried items (e.g. flags in CTF).
+ */
+float redflag_prev;
+float blueflag_prev;
+void carrierAnnouncer() {
+	float stat_items, redflag, blueflag;
+	float pickup;
+	string item;
+
+	if not(cvar("cl_notify_carried_items"))
+		return;
+
+	stat_items = getstati(STAT_ITEMS);
+
+	redflag = (stat_items/IT_RED_FLAG_TAKEN) & 3;
+	blueflag = (stat_items/IT_BLUE_FLAG_TAKEN) & 3;
+
+	if (redflag == 3 && redflag != redflag_prev) {
+		item = "^1RED^7 flag";
+		pickup = (redflag_prev == 2);
+	}
+
+	if (blueflag == 3 && blueflag != blueflag_prev) {
+		item = "^4BLUE^7 flag";
+		pickup = (blueflag_prev == 2);
+	}
+
+	if (item)
+	{
+		if (pickup) {
+			if (cvar("cl_notify_carried_items") & 2)
+				centerprint(strcat("You picked up the ", item, "!"));
+		}
+		else {
+			if (cvar("cl_notify_carried_items") & 1)
+				centerprint(strcat("You got the ", item, "!"));
+		}
+	}
+
+	blueflag_prev = blueflag;
+	redflag_prev = redflag;
+}
+
 /**
  * Add all future announcer sounds precaches here.
- * TODO: make all announcer sound() calls client-side in the end, to allow queues etc.
+ * TODO: announcer queues
  */
 void Announcer_Precache () {
-    precache_sound ("announcer/robotic/1minuteremains.wav");
-	precache_sound ("announcer/robotic/5minutesremain.wav");
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/1minuteremains.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/5minutesremain.wav"));
+
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/electrobitch.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/airshot.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/03kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/05kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/10kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/15kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/20kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/25kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/30kills.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/botlike.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/yoda.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/amazing.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/awesome.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/headshot.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/impressive.wav"));
+
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/prepareforbattle.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/begin.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/timeoutcalled.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/1fragleft.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/2fragsleft.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/3fragsleft.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/terminated.wav"));
+
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/1.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/2.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/3.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/4.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/5.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/6.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/7.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/8.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/9.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/10.wav"));
+
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/lastsecond.wav"));
+	precache_sound (strcat("announcer/", cvar_string("cl_announcer"), "/narrowly.wav"));
 }
 
 void AuditLists()
@@ -266,8 +372,6 @@ float PreviewExists(string name)
 	return false;
 }
 
-float PI      = 3.14159265359;
-float DEG2RAD = 0.01745329252;
 vector rotate(vector v, float a)
 {
 	vector w;
@@ -378,13 +482,24 @@ void drawpic_expanding_two(vector position, string pic, vector scale, vector rgb
 	drawpic(position, pic, scale, rgb, alpha * fadelerp, flag);
 }
 
+vector drawfontscale;
 void drawstring_expanding(vector position, string text, vector scale, vector rgb, float alpha, float flag, float fadelerp)
 {
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
 
+	if(cvar("menu_font_size_snapping_fix"))
+		drawfontscale = sz * '1 1 0';
+	else
+		drawfontscale = '1 1 0';
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, FALSE)), text, scale * sz, rgb, alpha * (1 - fadelerp), flag);
+        drawstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, FALSE, scale * (sz / drawfontscale_x)) / (scale_x * sz)), text, scale * (sz / drawfontscale_x), rgb, alpha * (1 - fadelerp), flag);
+	// width parameter:
+	//    (scale_x * sz / drawfontscale_x) * drawfontscale_x * SIZE1 / (scale_x * sz)
+	//    SIZE1
+
+	if(cvar("menu_font_size_snapping_fix"))
+		drawfontscale = '1 1 0';
 }
 
 void drawcolorcodedstring_expanding(vector position, string text, vector scale, float alpha, float flag, float fadelerp)
@@ -392,6 +507,38 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
 
+	if(cvar("menu_font_size_snapping_fix"))
+		drawfontscale = sz * '1 1 0';
+	else
+		drawfontscale = '1 1 0';
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
+	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE, scale * (sz / drawfontscale_x)) / (scale_x * sz)), text, scale * (sz / drawfontscale_x), alpha * (1 - fadelerp), flag);
+
+	if(cvar("menu_font_size_snapping_fix"))
+		drawfontscale = '1 1 0';
+}
+
+// this draws the triangles of a model DIRECTLY. Don't expect high performance, really...
+void PolyDrawModel(entity e)
+{
+	float i_s, i_t;
+	float n_t;
+	vector tri;
+	string tex;
+	for(i_s = 0; ; ++i_s)
+	{
+		tex = getsurfacetexture(e, i_s);
+		if not(tex)
+			break; // this is beyond the last one
+		n_t = getsurfacenumtriangles(e, i_s);
+		for(i_t = 0; i_t < n_t; ++i_t)
+		{
+			tri = getsurfacetriangle(e, i_s, i_t);
+			R_BeginPolygon(tex, 0);
+			R_PolygonVertex(getsurfacepoint(e, i_s, tri_x), getsurfacepointattribute(e, i_s, tri_x, SPA_TEXCOORDS0), '1 1 1', 1);
+			R_PolygonVertex(getsurfacepoint(e, i_s, tri_y), getsurfacepointattribute(e, i_s, tri_y, SPA_TEXCOORDS0), '1 1 1', 1);
+			R_PolygonVertex(getsurfacepoint(e, i_s, tri_z), getsurfacepointattribute(e, i_s, tri_z, SPA_TEXCOORDS0), '1 1 1', 1);
+			R_EndPolygon();
+		}
+	}
 }

@@ -347,7 +347,7 @@ void GoalTouch (void)
 	if        (ball.team == self.team) //owngoal (regular goals)
 	{
 		LogNB("owngoal", ball.pusher);
-		bprint("Boo! ", pname, "^7 scored a goal against his own team!\n");
+		bprint("Boo! ", pname, "^7 scored a goal against their own team!\n");
 		pscore = -1;
 	} else if (self.team == GOAL_FAULT) {
 		LogNB("fault", ball.pusher);
@@ -675,8 +675,7 @@ void W_Nexball_Attack2 (void)
 	setsize (missile, '0 0 0', '0 0 0');
 	setorigin (missile, w_shotorg);
 
-	missile.velocity = w_shotdir * cvar("g_balance_nexball_secondary_speed");
-	W_SetupProjectileVelocity(missile);
+	W_SetupProjectileVelocity(missile, cvar("g_balance_nexball_secondary_speed"), 0);
 	missile.angles = vectoangles (missile.velocity);
 	missile.touch = W_Nexball_Touch;
 	missile.think = SUB_Remove;

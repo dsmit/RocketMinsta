@@ -2,29 +2,22 @@
 entity weapon_info[24];
 entity dummy_weapon_info;
 
-void register_weapon_real(float id, float(float) func, float ammotype, float i, float normalweapon, float canclimb, float weapontype, float pickupbasevalue, string modelname, string shortname, string wname)
+void register_weapon(float id, float(float) func, float ammotype, float i, float weapontype, float pickupbasevalue, string modelname, string shortname, string wname)
 {
 	entity e;
 	weapon_info[id - 1] = e = spawn();
 	e.classname = "weapon_info";
 	e.weapon = id;
-	e.weapons = power2of(id - 1);
+	e.weapons = power2of(id - WEP_FIRST);
 	e.netname = shortname;
 	e.message = wname;
 	e.items = ammotype;
 	e.weapon_func = func;
 	e.mdl = modelname;
 	e.model = strzone(strcat("models/weapons/g_", modelname, ".md3"));
-	e.spawnflags = 0;
+	e.spawnflags = weapontype;
 	e.model2 = strzone(strcat("wpn-", e.mdl));
-	if(normalweapon > 0)
-		e.spawnflags |= WEPSPAWNFLAG_NORMAL;
-	if(normalweapon < 0)
-		e.spawnflags |= WEPSPAWNFLAG_HIDDEN;
-	if(canclimb)
-		e.spawnflags |= WEPSPAWNFLAG_CANCLIMB;
 	e.impulse = i;
-	e.weapon_type = weapontype;
 	e.bot_pickupbasevalue = pickupbasevalue;
 }
 float w_null(float dummy)
@@ -46,7 +39,6 @@ void register_weapons_done()
 	dummy_weapon_info.model = "";
 	dummy_weapon_info.spawnflags = 0;
 	dummy_weapon_info.impulse = -1;
-	dummy_weapon_info.weapon_type = WEP_TYPE_OTHER;
 	dummy_weapon_info.bot_pickupbasevalue = 0;
 	dummy_weapon_info.model2 = "";
 
@@ -89,35 +81,32 @@ string W_FixWeaponOrder(string order, float complete)
 {
 	return fixPriorityList(order, WEP_FIRST, WEP_LAST, 230 - WEP_FIRST, complete);
 }
-
-#ifdef SVQC
-#define register_weapon(id,func,ammotype,i,normalweapon,canclimb,weapontype,pickupbasevalue,modelname,shortname,wname) \
-	register_weapon_real(id,func,ammotype,i,normalweapon,canclimb,weapontype,pickupbasevalue,modelname,shortname,wname)
-#else
-// no weapon funcs here!
-#define register_weapon(id,func,ammotype,i,normalweapon,canclimb,weapontype,pickupbasevalue,modelname,shortname,wname) \
-	register_weapon_real(id,w_null,ammotype,i,normalweapon,canclimb,weapontype,pickupbasevalue,modelname,shortname,wname)
-#endif
-
-void RegisterWeapons()
+string W_NameWeaponOrder_MapFunc(string s)
 {
-	// %weaponaddpoint
-	register_weapon(WEP_LASER,            w_laser,        0,                1,  1, 1, WEP_TYPE_SPLASH,  0,                      "laser",        "laser",           "Laser");
-	register_weapon(WEP_SHOTGUN,          w_shotgun,      IT_SHELLS,        2,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_LOW,  "shotgun",      "shotgun",         "Shotgun");
-	register_weapon(WEP_UZI,              w_uzi,          IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "uzi",          "uzi",             "Machine Gun");
-	register_weapon(WEP_GRENADE_LAUNCHER, w_glauncher,    IT_ROCKETS,       4,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "gl",           "grenadelauncher", "Mortar");
-	register_weapon(WEP_ELECTRO,          w_electro,      IT_CELLS,         5,  1, 0, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "electro",      "electro",         "Electro");
-	register_weapon(WEP_CRYLINK,          w_crylink,      IT_CELLS,         6,  1, 0, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "crylink",      "crylink",         "Crylink");
-	register_weapon(WEP_NEX,              w_nex,          IT_CELLS,         7,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "nex",          "nex",             "Nex");
-	register_weapon(WEP_HAGAR,            w_hagar,        IT_ROCKETS,       8,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "hagar",        "hagar",           "Hagar");
-	register_weapon(WEP_ROCKET_LAUNCHER,  w_rlauncher,    IT_ROCKETS,       9,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_HIGH, "rl",           "rocketlauncher",  "Rocket Launcher");
-	register_weapon(WEP_PORTO,            w_porto,        0,                0,  0, 0, WEP_TYPE_OTHER,   0,                      "porto" ,       "porto",           "Port-O-Launch");
-	register_weapon(WEP_MINSTANEX,        w_minstanex,    IT_CELLS,         7, -1, 1, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "minstanex",    "minstanex",       "MinstaNex");
-	register_weapon(WEP_HOOK,             w_hook,         IT_CELLS|IT_FUEL, 0,  0, 1, WEP_TYPE_SPLASH,  0,                      "hookgun",      "hook",            "Grappling Hook");
-	register_weapon(WEP_HLAC,             w_hlac,         IT_CELLS,         6,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "hlac",         "hlac",            "Heavy Laser Assault Cannon");
-	register_weapon(WEP_TUBA,             w_tuba,         0,                1, -1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "tuba",         "tuba",            "@!#%'n Tuba");
-	register_weapon(WEP_CAMPINGRIFLE,     w_campingrifle, IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "campingrifle", "campingrifle",    "Rifle");
-	register_weapon(WEP_FIREBALL,         w_fireball,     IT_ROCKETS,       9,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "fireball",     "fireball",        "Fireball");
-
-	register_weapons_done();
+	entity wi;
+	if(s == "0" || stof(s))
+	{
+		wi = get_weaponinfo(stof(s));
+		if(wi != dummy_weapon_info)
+			return wi.netname;
+	}
+	return s;
+}
+string W_NameWeaponOrder(string order)
+{
+	return mapPriorityList(order, W_NameWeaponOrder_MapFunc);
+}
+string W_NumberWeaponOrder_MapFunc(string s)
+{
+	float i;
+	if(s == "0" || stof(s))
+		return s;
+	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+		if(s == get_weaponinfo(i).netname)
+			return ftos(i);
+	return s;
+}
+string W_NumberWeaponOrder(string order)
+{
+	return mapPriorityList(order, W_NumberWeaponOrder_MapFunc);
 }

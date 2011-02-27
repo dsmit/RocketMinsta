@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(PORTO, w_porto, 0, 0, WEP_TYPE_OTHER, 0, "porto" , "porto", "Port-O-Launch");
+#else
 .entity porto_current;
 .vector porto_v_angle; // holds "held" view angles
 .float porto_v_angle_held;
@@ -179,10 +182,10 @@ void W_Porto_Attack (void)
 	gren.nextthink = time + cvar("g_balance_porto_primary_lifetime");
 	gren.think = W_Porto_Think;
 	gren.touch = W_Porto_Touch;
-	gren.velocity = w_shotdir * cvar("g_balance_porto_primary_speed");
 	if(self.items & IT_STRENGTH)
-		gren.velocity = gren.velocity * cvar("g_balance_powerup_strength_force");
-	W_SetupProjectileVelocity(gren);
+		W_SetupProjectileVelocity(gren, cvar("g_balance_porto_primary_speed") * cvar("g_balance_powerup_strength_force"), 0);
+	else
+		W_SetupProjectileVelocity(gren, cvar("g_balance_porto_primary_speed"), 0);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
@@ -190,7 +193,7 @@ void W_Porto_Attack (void)
 	gren.portal_id = time;
 	self.porto_current = gren;
 	gren.playerid = self.playerid;
-	fixedmakevectors(vectoangles(gren.velocity));
+	fixedmakevectors(fixedvectoangles(gren.velocity));
 	gren.right_vector = v_right;
 
 	gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
@@ -275,3 +278,4 @@ float w_porto(float req)
 	}
 	return TRUE;
 };
+#endif

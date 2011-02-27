@@ -29,10 +29,7 @@ float Nagger_SendEntity(entity to, float sendflags)
 
 	if(nags & 128)
 	{
-		if(votecalled)
-			WriteString(MSG_ENTITY, votecalledvote_display);
-		else
-			WriteString(MSG_ENTITY, "");
+		WriteString(MSG_ENTITY, votecalledvote_display);
 	}
 
 	if(nags & 1)
@@ -97,42 +94,6 @@ entity GetPlayer(string name)
 	return world;
 }
 
-float drag_lastcnt;
-void DragBox_Think()
-{
-	if(self.aiment && self.enemy)
-	{
-		self.origin_x = (self.aiment.origin_x + self.enemy.origin_x) * 0.5;
-		self.origin_y = (self.aiment.origin_y + self.enemy.origin_y) * 0.5;
-		self.origin_z = (self.aiment.origin_z + self.enemy.origin_z) * 0.5;
-		self.maxs_x = fabs(self.aiment.origin_x - self.enemy.origin_x) * 0.5;
-		self.maxs_y = fabs(self.aiment.origin_y - self.enemy.origin_y) * 0.5;
-		self.maxs_z = fabs(self.aiment.origin_z - self.enemy.origin_z) * 0.5;
-		self.mins = -1 * self.maxs;
-		setorigin(self, self.origin); setsize(self, self.mins, self.maxs); // link edict
-	}
-
-	if(self.cnt == -1) // actually race_place -1
-	{
-		// show "10 10" for qualifying spawns
-		setmodel(self.killindicator, "models/sprites/10.spr32");
-		setmodel(self.killindicator.killindicator, "models/sprites/10.spr32");
-	}
-	else if(self.cnt == -2) // actually race_place 0
-	{
-		// show "10 0" for loser spawns
-		setmodel(self.killindicator, "models/sprites/10.spr32");
-		setmodel(self.killindicator.killindicator, "models/sprites/0.spr32");
-	}
-	else
-	{
-		setmodel(self.killindicator, strcat("models/sprites/", ftos(mod(self.cnt, 10)), ".spr32"));
-		setmodel(self.killindicator.killindicator, strcat("models/sprites/", ftos(floor(self.cnt / 10)), ".spr32"));
-	}
-
-	self.nextthink = time;
-}
-
 //float ctf_clientcommand();
 float readyrestart_happened;
 .float lms_spectate_warning;
@@ -161,9 +122,9 @@ float cmd_floodcheck()
 
 void SV_ParseClientCommand(string s) {
 	string cmd;
-	float tokens, f, effectnum;
-	vector start, end;
-	entity e, oldself;
+	float tokens;
+	float i;
+	entity e;
 
 	tokens = tokenize_console(s);
 
@@ -197,7 +158,7 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 		if (argv(1) == "$gameversion") {
-			//versionmsg = "^1client is too old to get versioninfo.\nUPDATE!!! (http://www.nexuiz.com)^8";
+			//versionmsg = "^1client is too old to get versioninfo.\nUPDATE!!! (http://www.alientrap.org/nexuiz/)^8";
 			// either that or someone wants to be funny
 			self.version = 1;
 		} else {
@@ -221,6 +182,16 @@ void SV_ParseClientCommand(string s) {
 			tokens = tokenize_console(s);
 		}
 		GetCvars(1);
+#ifdef UID
+	} else if(cmd == "uid") {
+		if not(self.uid)
+		{
+			self.uid = strzone(argv(1));
+			self.uid_kicktime = 0;
+			print("Client ", etos(self), " has UID ", self.uid, "\n");
+			Ban_MaybeEnforceBan(self);
+		}
+#endif
 	} else if(cmd == "sentcvar") { // new system
 		if(tokens == 2) // undefined cvar: use the default value on the server then
 		{
@@ -257,6 +228,8 @@ void SV_ParseClientCommand(string s) {
 			kh_Key_DropAll(self, TRUE);
 			WaypointSprite_PlayerDead();
 			self.classname = "observer";
+			if(g_ca)
+				self.caplayer = 0;
 			if(blockSpectators)
 				sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
 			PutClientInServer();
@@ -269,8 +242,11 @@ void SV_ParseClientCommand(string s) {
 		{
 			if(isJoinAllowed()) {
 				self.classname = "player";
+				if(g_ca)
+					self.caplayer = 1;
 				PlayerScore_Clear(self);
 				bprint ("^4", self.netname, "^4 is playing now\n");
+				self.stat_count = WEP_LAST;
 				PutClientInServer();
 				if(cvar("g_campaign"))
 					campaign_bots_may_start = 1;
@@ -333,8 +309,13 @@ void SV_ParseClientCommand(string s) {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {
 		sprint(self, lsmaps_reply);
+	} else if(cmd == "lsnewmaps") {
+		sprint(self, lsnewmaps_reply);
 	} else if(cmd == "records") {
-		sprint(self, records_reply);
+		for(i = 0; i < 10; ++i)
+			sprint(self, records_reply[i]);
+	} else if(cmd == "rankings") {
+		sprint(self, rankings_reply);
 	} else if(cmd == "voice") {
 		if(tokens >= 3)
 			VoiceMessage(argv(1), substring(s, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
@@ -362,7 +343,7 @@ void SV_ParseClientCommand(string s) {
 		}
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "info") {
-		cmd = cvar_string(strcat("sv_info_", argv(1)));
+		cmd = cvar_string_builtin(strcat("sv_info_", argv(1))); // This needed fixed for the cvar check
 		if(cmd == "")
 			sprint(self, "ERROR: unsupported info command\n");
 		else
@@ -392,324 +373,12 @@ void SV_ParseClientCommand(string s) {
 		Score_NicePrint(self);
 	} else if(cmd == "cvar_changes") {
 		sprint(self, cvar_changes);
-	} else if(cmd == "pointparticles") {
-		if((sv_cheats || self.maycheat) && tokens == 5)
-		{
-			// arguments:
-			//   effectname
-			//   origin (0..1, on crosshair line)
-			//   velocity
-			//   howmany
-			effectnum = particleeffectnum(argv(1));
-			f = stof(argv(2));
-			start = (1-f) * self.origin + f * self.cursor_trace_endpos;
-			end = stov(argv(3));
-			f = stof(argv(4));
-			pointparticles(effectnum, start, end, f);
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd pointparticles effectname position(0..1) velocityvector multiplier\n");
-	} else if(cmd == "trailparticles") {
-		if((sv_cheats || self.maycheat) && tokens == 2)
-		{
-			// arguments:
-			//   effectname
-			effectnum = particleeffectnum(argv(1));
-			W_SetupShot(self, FALSE, FALSE, "",0);
-			traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
-			trailparticles(self, effectnum, w_shotorg, trace_endpos);
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd trailparticles effectname\n");
-	} else if(cmd == "make") {
-		if((sv_cheats || self.maycheat) && tokens == 3)
-		{
-			// arguments:
-			//   modelname mode
-			f = stof(argv(2));
-			W_SetupShot(self, FALSE, FALSE, "", 0);
-			traceline(w_shotorg, w_shotorg + w_shotdir * 2048, MOVE_NORMAL, self);
-			if((trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || trace_fraction == 1)
-			{
-				sprint(self, "cannot make stuff there (bad surface)\n");
-			}
-			else
-			{
-				oldself = self;
-				self = spawn();
-				self.model = strzone(argv(1));
-				self.mdl = "rocket_explode";
-				self.health = 1000;
-				setorigin(self, trace_endpos);
-				self.effects = EF_NOMODELFLAGS;
-				if(f == 1)
-				{
-					self.angles = fixedvectoangles2(trace_plane_normal, v_forward);
-					self.angles = AnglesTransform_Multiply(self.angles, '-90 0 0'); // so unrotated models work
-				}
-				spawnfunc_func_breakable();
-				// now, is it valid?
-				if(f == 0)
-				{
-					tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_NORMAL, self);
-					if(trace_startsolid)
-					{
-						sprint(oldself, "cannot make stuff there (no space)\n");
-						remove(self);
-					}
-				}
-				self = oldself;
-			}
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd make models/... 0/1/2\n");
-	} else if(cmd == "penalty") {
-		if((sv_cheats || self.maycheat) && tokens == 3)
-			race_ImposePenaltyTime(self, stof(argv(1)), argv(2));
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd penalty 5.0 AHAHAHAHAHAHAH))\n");
-	} else if(cmd == "dragbox_spawn") {
-		if(sv_cheats || self.maycheat)
-		{
-			e = spawn();
-			e.classname = "dragbox_box";
-			e.think = DragBox_Think;
-			e.nextthink = time;
-			e.solid = -1; // black
-			setmodel(e, "null"); // network it
-			if(tokens == 4)
-				e.cnt = stof(argv(1));
-			else
-				e.cnt = max(0, drag_lastcnt);
-
-			e.aiment = spawn();
-			e.aiment.classname = "dragbox_corner_1";
-			e.aiment.owner = e;
-			setmodel(e.aiment, "models/marker.md3");
-			e.aiment.skin = 0;
-			setsize(e.aiment, '0 0 0', '0 0 0');
-			if(tokens == 4)
-				setorigin(e.aiment, stov(argv(2)));
-			else
-				setorigin(e.aiment, self.cursor_trace_endpos);
-
-			e.enemy = spawn();
-			e.enemy.classname = "dragbox_corner_2";
-			e.enemy.owner = e;
-			setmodel(e.enemy, "models/marker.md3");
-			e.enemy.skin = 1;
-			setsize(e.enemy, '0 0 0', '0 0 0');
-			end = normalize(self.cursor_trace_start - e.aiment.origin);
-			end_x = (end_x > 0) * 2 - 1;
-			end_y = (end_y > 0) * 2 - 1;
-			end_z = (end_z > 0) * 2 - 1;
-			if(tokens == 4)
-				setorigin(e.enemy, stov(argv(3)));
-			else
-				setorigin(e.enemy, e.aiment.origin + 32 * end);
-
-			e.killindicator = spawn();
-			e.killindicator.classname = "drag_digit";
-			e.killindicator.owner = e;
-			setattachment(e.killindicator, e, "");
-			setorigin(e.killindicator, '0 0 -8');
-			e.killindicator.killindicator = spawn();
-			e.killindicator.killindicator.classname = "drag_digit";
-			e.killindicator.killindicator.owner = e;
-			setattachment(e.killindicator.killindicator, e, "");
-			setorigin(e.killindicator.killindicator, '0 0 8');
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; r_showbboxes 1.5; restart; cmd dragbox_spawn\n");
-	} else if(cmd == "dragpoint_spawn") {
-		if(sv_cheats || self.maycheat)
-		{
-			e = spawn();
-			e.classname = "dragpoint";
-			e.think = DragBox_Think;
-			e.nextthink = time;
-			e.solid = 0; // nothing special
-			setmodel(e, "models/marker.md3");
-			setsize(e, PL_MIN, PL_MAX);
-			e.skin = 2;
-			if(tokens == 3)
-				e.cnt = stof(argv(1));
-			else
-				e.cnt = drag_lastcnt;
-			if(tokens == 3)
-				setorigin(e, stov(argv(2)));
-			else
-			{
-				setorigin(e, self.cursor_trace_endpos + normalize(self.cursor_trace_start - self.cursor_trace_endpos));
-				move_out_of_solid(e);
-			}
-
-			e.killindicator = spawn();
-			e.killindicator.classname = "drag_digit";
-			e.killindicator.owner = e;
-			setattachment(e.killindicator, e, "");
-			setorigin(e.killindicator, '0 0 40');
-			e.killindicator.killindicator = spawn();
-			e.killindicator.killindicator.classname = "drag_digit";
-			e.killindicator.killindicator.owner = e;
-			setattachment(e.killindicator.killindicator, e, "");
-			setorigin(e.killindicator.killindicator, '0 0 56');
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; r_showbboxes 1.5; restart; cmd dragbox_spawn\n");
-	} else if(cmd == "drag_remove") {
-		if(sv_cheats || self.maycheat)
-		{
-			RandomSelection_Init();
-			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
-			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
-			if(RandomSelection_chosen_ent)
-			{
-				remove(RandomSelection_chosen_ent.killindicator.killindicator);
-				remove(RandomSelection_chosen_ent.killindicator);
-				if(RandomSelection_chosen_ent.aiment)
-					remove(RandomSelection_chosen_ent.aiment);
-				if(RandomSelection_chosen_ent.enemy)
-					remove(RandomSelection_chosen_ent.enemy);
-				remove(RandomSelection_chosen_ent);
-			}
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_remove\n");
-	} else if(cmd == "drag_setcnt") {
-		if((sv_cheats || self.maycheat) && tokens >= 2)
-		{
-			RandomSelection_Init();
-			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
-			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
-			if(RandomSelection_chosen_ent)
-			{
-				if(substring(argv(1), 0, 1) == "*")
-					RandomSelection_chosen_ent.cnt = drag_lastcnt = RandomSelection_chosen_ent.cnt + stof(substring(argv(1), 1, -1));
-				else
-					RandomSelection_chosen_ent.cnt = drag_lastcnt = stof(argv(1));
-			}
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_setcnt cnt\n");
-	} else if(cmd == "drag_save") {
-		if((sv_cheats || self.maycheat) && tokens >= 2)
-		{
-			f = fopen(argv(1), FILE_WRITE);
-			fputs(f, "cmd drag_clear\n");
-			for(e = world; (e = find(e, classname, "dragbox_box")); )
-			{
-				fputs(f, strcat("cmd dragbox_spawn ", ftos(e.cnt), " \"", vtos(e.aiment.origin), "\" \"", vtos(e.enemy.origin), "\"\n"));
-			}
-			for(e = world; (e = find(e, classname, "dragpoint")); )
-			{
-				fputs(f, strcat("cmd dragpoint_spawn ", ftos(e.cnt), " \"", vtos(e.origin), "\"\n"));
-			}
-			fclose(f);
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_save filename\n");
-	} else if(cmd == "drag_saveraceent") {
-		if((sv_cheats || self.maycheat) && tokens >= 2)
-		{
-			f = fopen(argv(1), FILE_WRITE);
-			for(e = world; (e = find(e, classname, "dragbox_box")); )
-			{
-				fputs(f, "{\n");
-				fputs(f, "\"classname\" \"trigger_race_checkpoint\"\n");
-				fputs(f, strcat("\"origin\" \"", ftos(e.absmin_x), " ", ftos(e.absmin_y), " ", ftos(e.absmin_z), "\"\n"));
-				fputs(f, strcat("\"maxs\" \"", ftos(e.absmax_x - e.absmin_x), " ", ftos(e.absmax_y - e.absmin_y), " ", ftos(e.absmax_z - e.absmin_z), "\"\n"));
-				fputs(f, strcat("\"cnt\" \"", ftos(e.cnt), "\"\n"));
-				fputs(f, strcat("\"targetname\" \"checkpoint", ftos(e.cnt), "\"\n"));
-				fputs(f, "}\n");
-			}
-			for(e = world; (e = find(e, classname, "dragpoint")); )
-			{
-				start = '0 0 0';
-				effectnum = 0;
-				for(oldself = world; (oldself = find(oldself, classname, "dragbox_box")); )
-				{
-					if(e.cnt <= 0 && oldself.cnt == 0 || e.cnt == oldself.cnt)
-					{
-						start = start + oldself.origin;
-						++effectnum;
-					}
-				}
-				start *= 1 / effectnum;
-				fputs(f, "{\n");
-				fputs(f, "\"classname\" \"info_player_race\"\n");
-				fputs(f, strcat("\"angle\" \"", ftos(vectoyaw(start - e.origin)), "\"\n"));
-				fputs(f, strcat("\"origin\" \"", ftos(e.origin_x), " ", ftos(e.origin_y), " ", ftos(e.origin_z), "\"\n"));
-				if(e.cnt == -2)
-				{
-					fputs(f, "\"target\" \"checkpoint0\"\n");
-					fputs(f, "\"race_place\" \"0\"\n");
-				}
-				else if(e.cnt == -1)
-				{
-					fputs(f, "\"target\" \"checkpoint0\"\n");
-					fputs(f, "\"race_place\" \"-1\"\n");
-				}
-				else
-				{
-					fputs(f, strcat("\"target\" \"checkpoint", ftos(e.cnt), "\"\n"));
-					if(e.cnt == 0)
-					{
-						// these need race_place
-						// counting...
-						effectnum = 1;
-						for(oldself = world; (oldself = find(oldself, classname, "dragpoint")); )
-						if(oldself.cnt == 0)
-						{
-							if(vlen(oldself.origin - start) < vlen(e.origin - start))
-								++effectnum;
-							else if(vlen(oldself.origin - start) == vlen(e.origin - start) && num_for_edict(oldself) < num_for_edict(e))
-								++effectnum;
-						}
-						fputs(f, strcat("\"race_place\" \"", ftos(effectnum), "\"\n"));
-					}
-				}
-				fputs(f, "}\n");
-			}
-			fclose(f);
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_save filename\n");
-	} else if(cmd == "drag_clear") {
-		if(sv_cheats || self.maycheat)
-		{
-			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				remove(e);
-			for(e = world; (e = find(e, classname, "dragbox_corner_1")); )
-				remove(e);
-			for(e = world; (e = find(e, classname, "dragbox_corner_2")); )
-				remove(e);
-			for(e = world; (e = find(e, classname, "dragpoint")); )
-				remove(e);
-			for(e = world; (e = find(e, classname, "drag_digit")); )
-				remove(e);
-		}
-		else
-			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
+	} else if(CheatCommand(tokens)) {
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
 		// grep for Cmd_AddCommand_WithClientCommand to find them all
 		if(cmd != "status")
-		if(cmd != "max")
-		if(cmd != "monster")
-		if(cmd != "scrag")
-		if(cmd != "wraith")
-		if(cmd != "gimme")
-		if(cmd != "god")
-		if(cmd != "notarget")
-		if(cmd != "fly")
-		if(cmd != "noclip")
-		if(cmd != "give")
 		//if(cmd != "say") // handled above
 		//if(cmd != "say_team") // handled above
 		if(cmd != "kill")
@@ -771,7 +440,9 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + RESTART_COUNTDOWN;
+	game_starttime = time;
+	if(!g_ca)
+		game_starttime += RESTART_COUNTDOWN;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage
@@ -918,7 +589,7 @@ void evaluateTimeout() {
 	timeoutHandler.nextthink = time; //always let the entity think asap
 
 	//inform all connected clients about the timeout call
-	play2all("announcer/robotic/timeoutcalled.wav");
+	Announce("timeoutcalled");
 }
 
 /**

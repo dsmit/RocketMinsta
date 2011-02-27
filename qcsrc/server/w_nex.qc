@@ -1,13 +1,18 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(NEX, w_nex, IT_CELLS, 7, WEP_FLAG_NORMAL | WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "nex", "nex", "Nex");
+#else
 void SendCSQCNexBeamParticle() {
+	vector v;
+	v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte(MSG_BROADCAST, TE_CSQC_NEXGUNBEAMPARTICLE);
 	
 	WriteCoord(MSG_BROADCAST, w_shotorg_x);
 	WriteCoord(MSG_BROADCAST, w_shotorg_y);
 	WriteCoord(MSG_BROADCAST, w_shotorg_z);
-	WriteCoord(MSG_BROADCAST, trace_endpos_x);
-	WriteCoord(MSG_BROADCAST, trace_endpos_y);
-	WriteCoord(MSG_BROADCAST, trace_endpos_z);
+	WriteCoord(MSG_BROADCAST, v_x);
+	WriteCoord(MSG_BROADCAST, v_y);
+	WriteCoord(MSG_BROADCAST, v_z);
 }
 
 void W_Nex_Attack (void)
@@ -21,7 +26,7 @@ void W_Nex_Attack (void)
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_damage"), cvar("g_balance_nex_force"), cvar("g_balance_nex_damagefalloff_mindist"), cvar("g_balance_nex_damagefalloff_maxdist"), cvar("g_balance_nex_damagefalloff_halflife"), cvar("g_balance_nex_damagefalloff_forcehalflife"), WEP_NEX);
 
 	if(yoda && flying)
-		announce(self, "announcer/male/yoda.wav");
+		AnnounceTo(self, "yoda");
 
 	//beam and muzzle flash done on client
 	SendCSQCNexBeamParticle();
@@ -74,3 +79,4 @@ float w_nex(float req)
 		w_deathtypestring = "has been vaporized by";
 	return TRUE;
 };
+#endif

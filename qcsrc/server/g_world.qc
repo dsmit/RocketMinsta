@@ -1,3 +1,43 @@
+entity pingplreport;
+void PingPLReport_Think()
+{
+	float delta;
+	entity e;
+
+	delta = 3 / maxclients;
+	if(delta < sys_frametime)
+		delta = 0;
+	self.nextthink = time + delta;
+
+	e = edict_num(self.cnt + 1);
+	if(clienttype(e) == CLIENTTYPE_REAL)
+	{
+		WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
+		WriteByte(MSG_BROADCAST, TE_CSQC_PINGPLREPORT);
+		WriteByte(MSG_BROADCAST, self.cnt);
+		WriteShort(MSG_BROADCAST, max(1, e.ping));
+		WriteByte(MSG_BROADCAST, ceil(e.ping_packetloss * 255));
+		WriteByte(MSG_BROADCAST, ceil(e.ping_movementloss * 255));
+	}
+	else
+	{
+		WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
+		WriteByte(MSG_BROADCAST, TE_CSQC_PINGPLREPORT);
+		WriteByte(MSG_BROADCAST, self.cnt);
+		WriteShort(MSG_BROADCAST, 0);
+		WriteByte(MSG_BROADCAST, 0);
+		WriteByte(MSG_BROADCAST, 0);
+	}
+	self.cnt = mod(self.cnt + 1, maxclients);
+}
+void PingPLReport_Spawn()
+{
+	pingplreport = spawn();
+	pingplreport.classname = "pingplreport";
+	pingplreport.think = PingPLReport_Think;
+	pingplreport.nextthink = time;
+}
+
 float SPAWNFLAG_NO_WAYPOINTS_FOR_ITEMS = 1;
 string redirection_target;
 float world_initialized;
@@ -100,7 +140,7 @@ void timeoutHandler_Think() {
 				}
 			}
 			if(remainingTimeoutTime == cvar("sv_timeout_resumetime")) { //play a warning sound when only <sv_timeout_resumetime> seconds are left
-				play2all("announcer/robotic/prepareforbattle.wav");
+				Announce("prepareforbattle");
 			}
 			remainingTimeoutTime -= 1;
 			self.nextthink = time + TIMEOUT_SLOWMO_VALUE;
@@ -216,6 +256,7 @@ void cvar_changes_init()
 		BADCVAR("mod_q3bsp_nolightmaps");
 
 		// private
+		BADCVAR("serverconfig");
 		BADPREFIX("g_ban_");
 		BADPREFIX("g_chat_flood_");
 		BADPREFIX("g_voice_flood_");
@@ -233,7 +274,7 @@ void cvar_changes_init()
 		BADCVAR("net_address");
 		BADCVAR("port");
 		BADCVAR("savedgamecfg");
-		BADCVAR("sv_heartbeatperoid");
+		BADCVAR("sv_heartbeatperiod");
 		BADCVAR("sv_vote_master_password");
 		BADCVAR("sys_colortranslation");
 		BADCVAR("sys_specialcharactertranslation");
@@ -243,6 +284,7 @@ void cvar_changes_init()
 		BADCVAR("timelimit");
 		BADCVAR("fraglimit");
 		BADCVAR("g_arena");
+		BADCVAR("g_ca");
 		BADCVAR("g_assault");
 		BADCVAR("g_ctf");
 		BADCVAR("g_dm");
@@ -349,10 +391,9 @@ void spawnfunc___init_dedicated_server(void)
 	// handler for _init/_init map (only for dedicated server initialization)
 
 	world_initialized = -1; // don't complain
-	cvar = cvar_builtin;
-	cvar_string = cvar_string_builtin;
-	cvar_set = cvar_set_builtin;
-	dprint_load(); // load dprint status from cvar
+	cvar = cvar_normal;
+	cvar_string = cvar_string_normal;
+	cvar_set = cvar_set_normal;
 
 	remove = remove_unsafely;
 
@@ -382,10 +423,9 @@ void spawnfunc_worldspawn (void)
 	float fd, l, i, j, n;
 	string s, col;
 
-	cvar = cvar_builtin;
-	cvar_string = cvar_string_builtin;
-	cvar_set = cvar_set_builtin;
-	dprint_load(); // load dprint status from cvar
+	cvar = cvar_normal;
+	cvar_string = cvar_string_normal;
+	cvar_set = cvar_set_normal;
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -394,15 +434,6 @@ void spawnfunc_worldspawn (void)
 	remove = remove_safely; // during spawning, watch what you remove!
 
 	check_unacceptable_compiler_bugs();
-
-	if(cvar_string("cvar_check_default") != "bypass")
-	{
-		if(cvar_string("cvar_check_default") != CVAR_CHECK_DEFAULT)
-			error("Config file mismatch! Please update defaultNexuiz.cfg to match the QuakeC code, and restart the engine!");
-
-		if(cvar_string("cvar_check_balance") != CVAR_CHECK_BALANCE)
-			error("Config file mismatch! Please update balance*.cfg to match the QuakeC code, and restart the engine!");
-	}
 
 	compressShortVector_init();
 
@@ -418,10 +449,7 @@ void spawnfunc_worldspawn (void)
 	// needs to be done so early as they would still spawn
 	RegisterWeapons();
 
-	if(sv_cheats)
-		ServerProgsDB = db_create();
-	else
-		ServerProgsDB = db_load("server.db");
+	ServerProgsDB = db_load("server.db");
 
 	TemporaryDB = db_create();
 
@@ -517,8 +545,6 @@ void spawnfunc_worldspawn (void)
 			s = strcat(s, ":no_use_ammunition");
 		if(!cvar("g_pickup_items"))
 			s = strcat(s, ":no_pickup_items");
-		if(cvar("g_instagib"))
-			s = strcat(s, ":instagib");
 		if(cvar_string("g_weaponarena") != "0")
 			s = strcat(s, ":", cvar_string("g_weaponarena"), " arena");
 		if(cvar("g_nixnex"))
@@ -600,8 +626,8 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_INVINCIBLE_FINISHED, AS_FLOAT, invincible_finished);
 	addstat(STAT_PRESSED_KEYS, AS_FLOAT, pressedkeys);
 	addstat(STAT_FUEL, AS_INT, ammo_fuel);
-	addstat(STAT_DAMAGE_HITS, AS_INT, damage_hits);
- 	addstat(STAT_DAMAGE_FIRED, AS_INT, maxdamage_fired);
+	addstat(STAT_DAMAGE_HITS, AS_INT, stat_hit);
+	addstat(STAT_DAMAGE_FIRED, AS_INT, stat_fired);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
@@ -612,6 +638,7 @@ void spawnfunc_worldspawn (void)
 	detect_maptype();
 
 	lsmaps_reply = "^7Maps available: ";
+	lsnewmaps_reply = "^7Maps without a record set: ";
 	for(i = 0, j = 0; i < MapInfo_count; ++i)
 	{
 		if(MapInfo_Get_ByID(i))
@@ -623,9 +650,16 @@ void spawnfunc_worldspawn (void)
 					col = "^3";
 				++j;
 				lsmaps_reply = strcat(lsmaps_reply, col, MapInfo_Map_bspname, " ");
+				if(g_race && !stof(db_get(ServerProgsDB, strcat(MapInfo_Map_bspname, RACE_RECORD, "time"))))
+					lsnewmaps_reply = strcat(lsnewmaps_reply, col, MapInfo_Map_bspname, " ");
+				else if(g_cts && !stof(db_get(ServerProgsDB, strcat(MapInfo_Map_bspname, CTS_RECORD, "time"))))
+					lsnewmaps_reply = strcat(lsnewmaps_reply, col, MapInfo_Map_bspname, " ");
 			}
 	}
 	lsmaps_reply = strzone(strcat(lsmaps_reply, "\n"));
+	if (!g_race && !g_cts)
+		lsnewmaps_reply = "Need to be playing race or CTS for lsnewmaps to work.";
+	lsnewmaps_reply = strzone(strcat(lsnewmaps_reply, "\n"));
 
 	maplist_reply = "^7Maps in list: ";
 	n = tokenize_console(cvar_string("g_maplist"));
@@ -644,19 +678,20 @@ void spawnfunc_worldspawn (void)
 	maplist_reply = strzone(strcat(maplist_reply, "\n"));
 	MapInfo_ClearTemps();
 
-	records_reply = strzone(getrecords());
+	for(i = 0; i < 10; ++i)
+	{
+		records_reply[i] = strzone(getrecords(i));
+	}
+
+	rankings_reply = strzone(getrankings());
 
 	ClientInit_Spawn();
 	RandomSeed_Spawn();
+	PingPLReport_Spawn();
+
+	CheatInit();
 
 	localcmd("\n_sv_hook_gamestart ", GetGametype(), ";");
-
-
-	//<akari>
-	//Executes a config file for each map, special for ari
-	localcmd("exec startup_allmaps.cfg;");
-	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
-	//</akari>
 
 	world_initialized = 1;
 }
@@ -1212,7 +1247,7 @@ void DumpStats(float final)
 		{
 			s = strcat(":player:see-labels:", GetPlayerScoreString(other, 0), ":");
 			s = strcat(s, ftos(rint(time - other.jointime)), ":");
-			if(other.classname == "player" || g_arena || g_lms)
+			if(other.classname == "player" || g_arena || g_ca || g_lms)
 				s = strcat(s, ftos(other.team), ":");
 			else
 				s = strcat(s, "spectator:");
@@ -1303,10 +1338,7 @@ only called if a time or frag limit has expired
 */
 void NextLevel()
 {
-	float minTotalFrags;
-	float maxTotalFrags;
-	float score;
-	float f;
+	float i;
 
 	gameover = TRUE;
 
@@ -1336,31 +1368,51 @@ void NextLevel()
 
 	GameLogClose();
 
-	FOR_EACH_CLIENT(other)
-	{
-		FixIntermissionClient(other);
+// TO DO
 
-		if(other.winning)
-			bprint(other.netname, " ^7wins.\n");
-	}
+// save the stats to a text file on the client
+// stuffcmd(other, log_stats "stats/file_name");
+// bprint stats
+// stuffcmd(other, log_stats "");
+// use a filename similar to the demo name
+	// string file_name;
+	// file_name = strcat("\nlog_file \"stats/", strftime(TRUE, "%Y-%m-%d_%H-%M"), "_", mapname, ".txt\"");  // open the log file
 
-	minTotalFrags = 0;
-	maxTotalFrags = 0;
-	FOR_EACH_PLAYER(other)
-	{
-		if(maxTotalFrags < other.totalfrags)
-			maxTotalFrags = other.totalfrags;
-		if(minTotalFrags > other.totalfrags)
-			minTotalFrags = other.totalfrags;
-	}
+// write a stats parser for the menu
 
-	if(!currentbots)
-	{
-		FOR_EACH_PLAYER(other)
-		{
-			score = (other.totalfrags - minTotalFrags) / max(maxTotalFrags - minTotalFrags, 1);
-			f = bound(0, other.play_time / max(time, 1), 1);
-			// store some statistics?
+	if(cvar("sv_accuracy_data_send")) {
+		string stats_to_send;
+
+		FOR_EACH_CLIENT(other) {  // make the string to send
+			FixIntermissionClient(other);
+
+			if(other.cvar_cl_accuracy_data_share) {
+				stats_to_send = strcat(stats_to_send, ":hits:", other.netname);
+
+				for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+					stats_to_send = strcat(stats_to_send, ":", ftos(other.stats_hit[i-1]));
+
+				stats_to_send = strcat(stats_to_send, "\n:fired:", other.netname);
+
+				for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+					stats_to_send = strcat(stats_to_send, ":", ftos(other.stats_fired[i-1]));
+
+				stats_to_send = strcat(stats_to_send, "\n");
+			}
+		}
+
+		FOR_EACH_REALCLIENT(other) {  // only spam humans
+			Score_NicePrint(other);  // print the score
+
+			if(other.cvar_cl_accuracy_data_receive)  // send the stats string to all the willing clients
+				bprint(stats_to_send);
+		}
+	} else { // ye olde message
+		FOR_EACH_PLAYER(other) {
+			FixIntermissionClient(other);
+
+			if(other.winning)
+				bprint(other.netname, " ^7wins.\n");
 		}
 	}
 
@@ -1368,9 +1420,7 @@ void NextLevel()
 		CampaignPreIntermission();
 
 	localcmd("\nsv_hook_gameend;");
-
-	// WriteByte (MSG_ALL, SVC_INTERMISSION);
-};
+}
 
 /*
 ============
@@ -1401,7 +1451,7 @@ float WINNING_YES = 1; // winner found
 float WINNING_NEVER = 2; // no winner, enter overtime if time limit is reached
 float WINNING_STARTSUDDENDEATHOVERTIME = 3; // no winner, enter suddendeath overtime NOW
 
-void InitiateOvertime()
+float InitiateSuddenDeath()
 {
 	// Check first whether normal overtimes could be added before initiating suddendeath mode
 	// - for this timelimit_overtime needs to be >0 of course
@@ -1409,26 +1459,7 @@ void InitiateOvertime()
 	//   again, if at the point at which timelimit would be extended again, still no winner was found
 	if ((checkrules_overtimesadded >= 0) && (checkrules_overtimesadded < cvar("timelimit_overtimes")) && cvar("timelimit_overtime") && !(g_race && !g_race_qualifying))
 	{
-		++checkrules_overtimesadded;
-		//add one more overtime by simply extending the timelimit
-		float tl;
-		tl = cvar("timelimit");
-		tl += cvar("timelimit_overtime");
-		cvar_set("timelimit", ftos(tl));
-		string minutesPlural;
-		if (cvar("timelimit_overtime") == 1)
-			minutesPlural = " ^3minute";
-		else
-			minutesPlural = " ^3minutes";
-
-		bcenterprint(
-			strcat(
-				"^3Now playing ^1OVERTIME^3!\n\n^3Added ^1",
-				ftos(cvar("timelimit_overtime")),
-				minutesPlural,
-				" to the game!"
-			)
-		);
+		return 1; // need to call InitiateOvertime later
 	}
 	else
 	{
@@ -1438,7 +1469,32 @@ void InitiateOvertime()
 			if(g_race && !g_race_qualifying)
 				race_StartCompleting();
 		}
+		return 0;
 	}
+}
+
+void InitiateOvertime() // ONLY call this if InitiateSuddenDeath returned true
+{
+	++checkrules_overtimesadded;
+	//add one more overtime by simply extending the timelimit
+	float tl;
+	tl = cvar("timelimit");
+	tl += cvar("timelimit_overtime");
+	cvar_set("timelimit", ftos(tl));
+	string minutesPlural;
+	if (cvar("timelimit_overtime") == 1)
+		minutesPlural = " ^3minute";
+	else
+		minutesPlural = " ^3minutes";
+
+	bcenterprint(
+		strcat(
+			"^3Now playing ^1OVERTIME^3!\n\n^3Added ^1",
+			ftos(cvar("timelimit_overtime")),
+			minutesPlural,
+			" to the game!"
+		)
+	);
 }
 
 float GetWinningCode(float fraglimitreached, float equality)
@@ -1703,7 +1759,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 	if(WinningConditionHelper_zeroisworst)
 		leadlimit = 0; // not supported in this mode
 
-	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
+	if(g_dm || g_tdm || g_arena || g_ca || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
 		if(leaderfrags != WinningConditionHelper_topscore)
@@ -1712,11 +1768,11 @@ float WinningCondition_Scores(float limit, float leadlimit)
 
 			if (limit)
 			if (leaderfrags == limit - 1)
-				play2all("announcer/robotic/1fragleft.wav");
+				Announce("1fragleft");
 			else if (leaderfrags == limit - 2)
-				play2all("announcer/robotic/2fragsleft.wav");
+				Announce("2fragsleft");
 			else if (leaderfrags == limit - 3)
-				play2all("announcer/robotic/3fragsleft.wav");
+				Announce("3fragsleft");
 		}
 	}
 
@@ -1777,7 +1833,7 @@ float WinningCondition_RanOutOfSpawns()
 {
 	entity head;
 
-	if(!have_team_spawns)
+	if(have_team_spawns <= 0)
 		return WINNING_NO;
 
 	if(!some_spawn_has_been_used)
@@ -1903,6 +1959,9 @@ void CheckRules_World()
 		return;
 	}
 
+	float wantovertime;
+	wantovertime = 0;
+
 	if(checkrules_suddendeathend)
 	{
 		if(!checkrules_suddendeathwarning)
@@ -1943,10 +2002,10 @@ void CheckRules_World()
 					return;
 				}
 				else
-					InitiateOvertime();
+					wantovertime |= InitiateSuddenDeath();
 			}
 			else
-				InitiateOvertime();
+				wantovertime |= InitiateSuddenDeath();
 		}
 	}
 
@@ -1994,12 +2053,20 @@ void CheckRules_World()
 	{
 		checkrules_status = WINNING_NEVER;
 		checkrules_overtimesadded = -1;
-		InitiateOvertime();
+		wantovertime |= InitiateSuddenDeath();
 	}
 
 	if(checkrules_status == WINNING_NEVER)
 		// equality cases! Nobody wins if the overtime ends in a draw.
 		ClearWinners();
+
+	if(wantovertime)
+	{
+		if(checkrules_status == WINNING_NEVER)
+			InitiateOvertime();
+		else
+			checkrules_status = WINNING_YES;
+	}
 
 	if(checkrules_suddendeathend)
 		if(checkrules_status != WINNING_NEVER || time >= checkrules_suddendeathend)
@@ -2017,11 +2084,15 @@ float mapvote_initialized;
 float mapvote_keeptwotime;
 float mapvote_timeout;
 string mapvote_message;
-string mapvote_screenshot_dir;
+#define MAPVOTE_SCREENSHOT_DIRS_COUNT 4
+string mapvote_screenshot_dirs[MAPVOTE_SCREENSHOT_DIRS_COUNT];
+float mapvote_screenshot_dirs_count;
 
 float mapvote_count;
 float mapvote_count_real;
 string mapvote_maps[MAPVOTE_COUNT];
+float mapvote_maps_screenshot_dir[MAPVOTE_COUNT];
+string mapvote_maps_pakfile[MAPVOTE_COUNT];
 float mapvote_maps_suggested[MAPVOTE_COUNT];
 string mapvote_suggestions[MAPVOTE_COUNT];
 float mapvote_suggestion_ptr;
@@ -2051,7 +2122,7 @@ string MapVote_Suggest(string m)
 	m = MapInfo_FixName(m);
 	if(!m)
 		return "The map you suggested is not available on this server.";
-	if(!cvar("g_maplist_votable_override_mostrecent"))
+	if(!cvar("g_maplist_votable_suggestions_override_mostrecent"))
 		if(Map_IsRecent(m))
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
 
@@ -2079,7 +2150,9 @@ string MapVote_Suggest(string m)
 
 void MapVote_AddVotable(string nextMap, float isSuggestion)
 {
-	float j;
+	float j, i, o;
+	string pakfile, mapfile;
+
 	if(nextMap == "")
 		return;
 	for(j = 0; j < mapvote_count; ++j)
@@ -2089,6 +2162,26 @@ void MapVote_AddVotable(string nextMap, float isSuggestion)
 		mapvote_maxlen = strlen(nextMap);
 	mapvote_maps[mapvote_count] = strzone(nextMap);
 	mapvote_maps_suggested[mapvote_count] = isSuggestion;
+
+	for(i = 0; i < mapvote_screenshot_dirs_count; ++i)
+	{
+		mapfile = strcat(mapvote_screenshot_dirs[i], "/", mapvote_maps[i]);
+		pakfile = whichpack(strcat(mapfile, ".tga"));
+		if(pakfile == "")
+			pakfile = whichpack(strcat(mapfile, ".jpg"));
+		if(pakfile == "")
+			pakfile = whichpack(strcat(mapfile, ".png"));
+		if(pakfile != "")
+			break;
+	}
+	if(i >= mapvote_screenshot_dirs_count)
+		i = 0; // FIXME maybe network this error case, as that means there is no mapshot on the server?
+	for(o = strstr(pakfile, "/", 0)+1; o > 0; o = strstr(pakfile, "/", 0)+1)
+		pakfile = substring(pakfile, o, -1);
+
+	mapvote_maps_screenshot_dir[mapvote_count] = i;
+	mapvote_maps_pakfile[mapvote_count] = strzone(pakfile);
+
 	mapvote_count += 1;
 }
 
@@ -2109,6 +2202,14 @@ void MapVote_Init()
 	else
 		nmax = min(MAPVOTE_COUNT, cvar("g_maplist_votable"));
 	smax = min3(nmax, cvar("g_maplist_votable_suggestions"), mapvote_suggestion_ptr);
+
+	// we need this for AddVotable, as that cycles through the screenshot dirs
+	mapvote_screenshot_dirs_count = tokenize_console(cvar_string("g_maplist_votable_screenshot_dir"));
+	if(mapvote_screenshot_dirs_count == 0)
+		mapvote_screenshot_dirs_count = tokenize_console("maps levelshots");
+	mapvote_screenshot_dirs_count = min(mapvote_screenshot_dirs_count, MAPVOTE_SCREENSHOT_DIRS_COUNT);
+	for(i = 0; i < mapvote_screenshot_dirs_count; ++i)
+		mapvote_screenshot_dirs[i] = strzone(argv(i));
 
 	if(mapvote_suggestion_ptr)
 		for(i = 0; i < 100 && mapvote_count < smax; ++i)
@@ -2140,11 +2241,6 @@ void MapVote_Init()
 		mapvote_keeptwotime = 0;
 	mapvote_message = "Choose a map and press its key!";
 
-	mapvote_screenshot_dir = cvar_string("g_maplist_votable_screenshot_dir");
-	if(mapvote_screenshot_dir == "")
-		mapvote_screenshot_dir = "maps";
-	mapvote_screenshot_dir = strzone(mapvote_screenshot_dir);
-
 	MapVote_Spawn();
 }
 
@@ -2154,7 +2250,7 @@ void MapVote_SendPicture(float id)
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_PICTURE);
 	WriteByte(MSG_ONE, id);
-	WritePicture(MSG_ONE, strcat(mapvote_screenshot_dir, "/", mapvote_maps[id]), 3072);
+	WritePicture(MSG_ONE, strcat(mapvote_screenshot_dirs[mapvote_maps_screenshot_dir[id]], "/", mapvote_maps[id]), 3072);
 }
 
 float GameCommand_MapVote(string cmd)
@@ -2184,8 +2280,7 @@ float MapVote_GetMapMask()
 entity mapvote_ent;
 float MapVote_SendEntity(entity to, float sf)
 {
-	string mapfile, pakfile;
-	float i, o;
+	float i;
 
 	if(sf & 1)
 		sf &~= 2; // if we send 1, we don't need to also send 2
@@ -2196,7 +2291,9 @@ float MapVote_SendEntity(entity to, float sf)
 	if(sf & 1)
 	{
 		// flag 1 == initialization
-		WriteString(MSG_ENTITY, mapvote_screenshot_dir);
+		for(i = 0; i < mapvote_screenshot_dirs_count; ++i)
+			WriteString(MSG_ENTITY, mapvote_screenshot_dirs[i]);
+		WriteString(MSG_ENTITY, "");
 		WriteByte(MSG_ENTITY, mapvote_count);
 		WriteByte(MSG_ENTITY, mapvote_abstain);
 		WriteByte(MSG_ENTITY, mapvote_detail);
@@ -2212,19 +2309,13 @@ float MapVote_SendEntity(entity to, float sf)
 				{
 					WriteString(MSG_ENTITY, ""); // abstain needs no text
 					WriteString(MSG_ENTITY, ""); // abstain needs no pack
+					WriteByte(MSG_ENTITY, 0); // abstain needs no screenshot dir
 				}
 				else
 				{
 					WriteString(MSG_ENTITY, mapvote_maps[i]);
-					mapfile = strcat(mapvote_screenshot_dir, "/", mapvote_maps[i]);
-					pakfile = whichpack(strcat(mapfile, ".tga"));
-					if(pakfile == "")
-						pakfile = whichpack(strcat(mapfile, ".jpg"));
-					if(pakfile == "")
-						pakfile = whichpack(strcat(mapfile, ".png"));
-					for(o = strstr(pakfile, "/", 0)+1; o > 0; o = strstr(pakfile, "/", 0)+1)
-						pakfile = substring(pakfile, o, 999);
-					WriteString(MSG_ENTITY, pakfile);
+					WriteString(MSG_ENTITY, mapvote_maps_pakfile[i]);
+					WriteByte(MSG_ENTITY, mapvote_maps_screenshot_dir[i]);
 				}
 			}
 	}
@@ -2388,6 +2479,8 @@ float MapVote_CheckRules_2()
 							{
 								strunzone(mapvote_maps[i]);
 								mapvote_maps[i] = "";
+								strunzone(mapvote_maps_pakfile[i]);
+								mapvote_maps_pakfile[i] = "";
 							}
 						}
 				}
@@ -2467,6 +2560,26 @@ void MapVote_Think()
 
 	if(!mapvote_initialized)
 	{
+		if(cvar("rescan_pending") == 1)
+		{
+			cvar_set("rescan_pending", "2");
+			localcmd("fs_rescan\nrescan_pending 3\n");
+			return;
+		}
+		else if(cvar("rescan_pending") == 2)
+		{
+			return;
+		}
+		else if(cvar("rescan_pending") == 3)
+		{
+			// now build missing mapinfo files
+			if(!MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
+				return;
+
+			// we're done, start the timer
+			cvar_set("rescan_pending", "0");
+		}
+
 		mapvote_initialized = TRUE;
 		if(DoNextMapOverride())
 			return;
@@ -2587,10 +2700,7 @@ void RestoreGame()
 	// some things then break, so let's work around them...
 
 	// Progs DB (capture records)
-	if(sv_cheats)
-		ServerProgsDB = db_create();
-	else
-		ServerProgsDB = db_load("server.db");
+	ServerProgsDB = db_load("server.db");
 
 	// Mapinfo
 	MapInfo_Shutdown();
@@ -2611,10 +2721,11 @@ void SV_Shutdown()
 		world_initialized = 0;
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
-		if(!sv_cheats)
+		if(!cheatcount_total)
 			db_save(ServerProgsDB, "server.db");
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");
+		CheatShutdown(); // must be after cheatcount check
 		db_close(ServerProgsDB);
 		db_close(TemporaryDB);
 		print("done!\n");

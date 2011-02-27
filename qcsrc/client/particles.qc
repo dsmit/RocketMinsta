@@ -1,42 +1,4 @@
-vector PointInBrush_vec;
-entity PointInBrush_brush;
 .float dphitcontentsmask;
-float PointInBrush_Recurse()
-{
-	float s;
-	entity se;
-	float f;
-
-	traceline(PointInBrush_vec, PointInBrush_vec, 0, world);
-	if not(trace_ent)
-		return 0;
-	if(trace_ent == PointInBrush_brush)
-		return 1;
-
-	se = trace_ent;
-	s = se.solid;
-	se.solid = SOLID_NOT;
-	f = PointInBrush_Recurse();
-	se.solid = s;
-
-	return f;
-}
-float PointInBrush(entity brush, vector point)
-{
-	float f, s;
-
-	if not(brush.modelindex)
-		return 1;
-
-	s = brush.solid;
-	brush.solid = SOLID_BSP;
-	PointInBrush_vec = point;
-	PointInBrush_brush = brush;
-	f = PointInBrush_Recurse();
-	brush.solid = s;
-
-	return f;
-}
 
 .float cnt; // effect number
 .vector velocity; // particle velocity
@@ -81,7 +43,7 @@ void Draw_PointParticles()
 		p_x += random() * sz_x;
 		p_y += random() * sz_y;
 		p_z += random() * sz_z;
-		if(PointInBrush(self, p))
+		if(WarpZoneLib_BoxTouchesBrush(p, p, self, world))
 		{
 			if(self.movedir != '0 0 0')
 			{
@@ -331,7 +293,7 @@ void Net_ReadNexgunBeamParticle()
 	
 	//draw either the old v2.3 beam or the new beam
 	if (cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
-		trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
+		WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
 	else
-		trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
+		WarpZone_TrailParticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
 }
