@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(HLAC, w_hlac, IT_CELLS, 6, WEP_FLAG_NORMAL | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_MID, "hlac", "hlac", "Heavy Laser Assault Cannon");
+#else
 .float HLAC_bulletcounter;
 void W_HLAC_Touch (void)
 {
@@ -58,9 +61,7 @@ void W_HLAC_Attack (void)
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
 
-    missile.velocity = (w_shotdir + randomvec() * spread) * cvar("g_balance_hlac_primary_speed");
-
-	W_SetupProjectileVelocity(missile);
+	W_SetupProjectileVelocity(missile, cvar("g_balance_hlac_primary_speed"), spread);
 	missile.angles = vectoangles (missile.velocity);
 
 	missile.touch = W_HLAC_Touch;
@@ -102,9 +103,7 @@ void W_HLAC_Attack2f (void)
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
 
-    missile.velocity = (w_shotdir + randomvec() * spread) * cvar("g_balance_hlac_secondary_speed");
-
-	W_SetupProjectileVelocity(missile);
+	W_SetupProjectileVelocity(missile, cvar("g_balance_hlac_secondary_speed"), spread);
 	missile.angles = vectoangles (missile.velocity);
 
 	missile.touch = W_HLAC_Touch2;
@@ -136,7 +135,6 @@ void W_HLAC_Attack2 (void)
 		self.punchangle_y = random () - 0.5;
 	}
 }
-
 
 // weapon frames
 void HLAC_fire1_02()
@@ -186,7 +184,7 @@ float w_hlac(float req)
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_hlac_primary_refire"), HLAC_fire1_02);
 		}
 
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && cvar("g_balance_hlac_secondary"))
 		if (weapon_prepareattack(1, cvar("g_balance_hlac_secondary_refire")))
 		{
 			W_HLAC_Attack2();
@@ -214,3 +212,4 @@ float w_hlac(float req)
 		w_deathtypestring = "was cut down by";
 	return TRUE;
 };
+#endif

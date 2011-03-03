@@ -2,15 +2,15 @@
 
 /**
     Simulate drag
-    self.velocity = movelib_vdrag(self.velocity,0.02,0.5);
+    self.velocity = movelib_dragvec(self.velocity,0.02,0.5);
 **/
-vector movelib_dragvec(float drag, float exp)
+vector movelib_dragvec(float drag, float exp_)
 {
     float lspeed,ldrag;
 
     lspeed = vlen(self.velocity);
     ldrag = lspeed * drag;
-    ldrag = ldrag * (drag * exp);
+    ldrag = ldrag * (drag * exp_);
     ldrag = 1 - (ldrag / lspeed);
 
     return self.velocity * ldrag;
@@ -18,14 +18,14 @@ vector movelib_dragvec(float drag, float exp)
 
 /**
     Simulate drag
-    self.velocity = movelib_vdrag(somespeed,0.01,0.7);
+    self.velocity *= movelib_dragflt(somespeed,0.01,0.7);
 **/
-float movelib_dragflt(float fspeed,float drag,float exp)
+float movelib_dragflt(float fspeed,float drag,float exp_)
 {
     float ldrag;
 
     ldrag = fspeed * drag;
-    ldrag = ldrag * ldrag * exp;
+    ldrag = ldrag * ldrag * exp_;
     ldrag = 1 - (ldrag / fspeed);
 
     return ldrag;
@@ -34,7 +34,7 @@ float movelib_dragflt(float fspeed,float drag,float exp)
 /**
     Do a inertia simulation based on velocity.
     Basicaly, this allows you to simulate loss of steering with higher speed.
-    self.velocity = movelib_inertia_fromspeed(self.velocity,newvel,1000,0.1,0.9);
+    self.velocity = movelib_inertmove_byspeed(self.velocity,newvel,1000,0.1,0.9);
 **/
 vector movelib_inertmove_byspeed(vector vel_new, float vel_max,float newmin,float oldmax)
 {
@@ -53,7 +53,7 @@ vector movelib_inertmove(vector new_vel,float new_bias)
 }
 
 .float  movelib_lastupdate;
-void movelib_move(vector force,float max_velocity,float drag,float mass,float breakforce)
+void movelib_move(vector force,float max_velocity,float drag,float theMass,float breakforce)
 {
     float deltatime;
     float acceleration;
@@ -67,8 +67,8 @@ void movelib_move(vector force,float max_velocity,float drag,float mass,float br
 
     mspeed = vlen(self.velocity);
 
-    if (mass)
-        acceleration = vlen(force) / mass;
+    if (theMass)
+        acceleration = vlen(force) / theMass;
     else
         acceleration = vlen(force);
 
@@ -76,7 +76,7 @@ void movelib_move(vector force,float max_velocity,float drag,float mass,float br
     {
         if (breakforce)
         {
-            breakvec = (normalize(self.velocity) * (breakforce / mass) * deltatime);
+            breakvec = (normalize(self.velocity) * (breakforce / theMass) * deltatime);
             self.velocity = self.velocity - breakvec;
         }
 
@@ -165,6 +165,7 @@ void movelib_move_simple(vector newdir,float velo,float blendrate)
 {
     self.velocity = self.velocity * (1 - blendrate) + (newdir * blendrate) * velo;
 }
+
 void movelib_beak_simple(float force)
 {
     float mspeed;
@@ -178,18 +179,21 @@ void movelib_beak_simple(float force)
     self.velocity_z = vz;
 }
 
-
-void movelib_groundalign4point(float spring_length,float spring_up,float blendrate)
+/**
+Pitches and rolls the entity to match the gound.
+Yed need to set v_up and v_forward (generally by calling makevectors) before calling this.
+**/
+void movelib_groundalign4point(float spring_length, float spring_up, float blendrate)
 {
-    vector a,b,c,d,e,r,push_angle, ahead,side;
+    vector a, b, c, d, e, r, push_angle, ahead, side;
 
     push_angle_y = 0;
     r = (self.absmax + self.absmin) * 0.5 + (v_up * spring_up);
     e = v_up * spring_length;
 
     // Put springs slightly inside bbox
-    ahead = v_forward * (self.maxs_x * 0.85);
-    side  = v_right   * (self.maxs_y * 0.85);
+    ahead = v_forward * (self.maxs_x * 0.8);
+    side  = v_right   * (self.maxs_y * 0.8);
 
     a = r + ahead + side;
     b = r + ahead - side;

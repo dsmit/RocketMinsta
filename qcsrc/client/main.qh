@@ -96,8 +96,12 @@ float teamscores_flags[MAX_SCORE];
 
 
 vector sbar_fontsize;
+vector sbar_oldfontsize;
 vector sbar_fontsize_spec;
 
+float RANKINGS_RECEIVED_CNT;
+string grecordholder[RANKINGS_CNT];
+float grecordtime[RANKINGS_CNT];
 //float csqc_flags;
 
 entity playerslots[255]; // 255 is engine limit on maxclients
@@ -122,7 +126,6 @@ float ignore_plus_zoom;
 float ignore_minus_zoom;
 float warmup_stage;
 
-float weaponimpulse[24];
 string getcommandkey(string text, string command);
 float sbar_showbinds;
 float sbar_showbinds_limit;
@@ -152,8 +155,11 @@ void centerprint(string strMessage);
 #define ALPHA_MIN_VISIBLE 0.003
 
 float armorblockpercent;
+float g_weaponswitchdelay;
 
 //hooks
 float calledhooks;
 #define HOOK_START    1
 #define HOOK_END      2
+
+.float ping, ping_packetloss, ping_movementloss;

@@ -22,8 +22,10 @@ void W_SwitchWeapon(float imp)
 .float weaponcomplainindex;
 float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, float complain)
 {
-	float n, i, weaponwant, first_valid, prev_valid, switchtonext, switchtolast, c;
-	n = tokenize_console(weaponorder);
+	// We cannot tokenize in this function, as GiveItems calls this
+	// function. Thus we must use car/cdr.
+	float weaponwant, first_valid, prev_valid, switchtonext, switchtolast, c;
+	string rest;
 	switchtonext = switchtolast = 0;
 	first_valid = prev_valid = 0;
 
@@ -32,9 +34,10 @@ float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, floa
 
 	c = 0;
 
-	for(i = 0; i < n; ++i)
+	rest = weaponorder;
+	while(rest != "")
 	{
-		weaponwant = stof(argv(i));
+		weaponwant = stof(car(rest)); rest = cdr(rest);
 		if(imp >= 0)
 			if((get_weaponinfo(weaponwant)).impulse != imp)
 				continue;
@@ -71,9 +74,10 @@ float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, floa
 	{
 		self.weaponcomplainindex += 1;
 		c = mod(self.weaponcomplainindex, c) + 1;
-		for(i = 0; i < n; ++i)
+		rest = weaponorder;
+		while(rest != "")
 		{
-			weaponwant = stof(argv(i));
+			weaponwant = stof(car(rest)); rest = cdr(rest);
 			if(imp >= 0)
 				if((get_weaponinfo(weaponwant)).impulse != imp)
 					continue;
@@ -135,7 +139,7 @@ string W_FixWeaponOrder_AllowIncomplete(string order)
 string W_FixWeaponOrder_ForceComplete(string order)
 {
 	if(order == "")
-		order = cvar_string("cl_weaponpriority");
+		order = W_NumberWeaponOrder(cvar_string("cl_weaponpriority"));
 	return W_FixWeaponOrder(order, 1);
 }
 
@@ -273,6 +277,12 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 		return;
 	if (!cvar("g_pickup_items"))
 		return;
+	if (g_ca)
+		return;
+	if(!cvar("g_weapon_throwable"))
+		return;
+	if(cvar("g_weapon_stay") == 1)
+		return;
 	if(!W_IsWeaponThrowable(w))
 		return;
 
@@ -299,7 +309,10 @@ void W_WeaponFrame()
 {
 	vector fo, ri, up;
 
-	if((arena_roundbased && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
+	if (frametime)
+		self.weapon_frametime = frametime;
+
+	if(((arena_roundbased || g_ca) && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
 		return;
 
 	if (!self.weaponentity || self.health < 1)
@@ -335,7 +348,7 @@ void W_WeaponFrame()
 		else if (self.weaponentity.state == WS_READY)
 		{
 #ifndef INDEPENDENT_ATTACK_FINISHED
-			if(ATTACK_FINISHED(self) <= time + frametime * 0.5)
+			if(ATTACK_FINISHED(self) <= time + self.weapon_frametime * 0.5)
 			{
 #endif
 			// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds
@@ -349,6 +362,10 @@ void W_WeaponFrame()
 #endif
 		}
 	}
+
+	// LordHavoc: network timing test code
+	//if (self.button0)
+	//	print(ftos(frametime), " ", ftos(time), " >= ", ftos(ATTACK_FINISHED(self)), " >= ", ftos(self.weapon_nextthink), "\n");
 
 	float wb;
 	wb = W_WeaponBit(self.weapon);
@@ -373,7 +390,7 @@ void W_WeaponFrame()
 			v_up = up;
 			weapon_action(self.weapon, WR_THINK);
 		}
-		if (time + frametime * 0.5 >= self.weapon_nextthink)
+		if (time + self.weapon_frametime * 0.5 >= self.weapon_nextthink)
 		{
 			if(self.weapon_think)
 			{
@@ -433,7 +450,7 @@ float NixNex_CanChooseWeapon(float wpn)
 	{
 		if(wpn == WEP_LASER && g_nixnex_with_laser)
 			return FALSE;
-		if not(e.spawnflags & WEPSPAWNFLAG_NORMAL)
+		if not(e.spawnflags & WEP_FLAG_NORMAL)
 			return FALSE;
 	}
 	return TRUE;

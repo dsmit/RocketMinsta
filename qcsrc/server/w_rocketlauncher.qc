@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(ROCKET_LAUNCHER, w_rlauncher, IT_ROCKETS, 9, WEP_FLAG_NORMAL | WEP_FLAG_CANCLIMB | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_HIGH, "rl", "rocketlauncher", "Rocket Launcher");
+#else
 .float rl_release;
 .float rl_detonate_later;
 
@@ -18,7 +21,7 @@ void W_Rocket_Explode (void)
 		if(other.classname == "player")
 			if(IsDifferentTeam(self.owner, other))
 				if(IsFlying(other))
-					announce(self.owner, "announcer/male/airshot.wav");
+					AnnounceTo(self.owner, "airshot");
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -210,7 +213,8 @@ void W_Rocket_Think (void)
 		else
 		{
 			if(self == self.owner.lastrocket)
-			if(!self.owner.rl_release)
+			if not(self.owner.rl_release)
+			if not(self.BUTTON_ATCK2)
 			if(cvar("g_balance_rocketlauncher_guiderate"))
 			if(time > self.pushltime)
 			if(self.owner.deadflag == DEAD_NO)
@@ -224,8 +228,8 @@ void W_Rocket_Think (void)
 				velspeed = vlen(self.velocity);
 
 				makevectors(self.owner.v_angle);
-				desireddir = v_forward;
-				desiredorigin = self.owner.origin + self.owner.view_ofs;
+				desireddir = WarpZone_RefSys_TransformVelocity(self.owner, self, v_forward);
+				desiredorigin = WarpZone_RefSys_TransformOrigin(self.owner, self, self.owner.origin + self.owner.view_ofs);
 				olddir = normalize(self.velocity);
 
 #if 0
@@ -294,7 +298,7 @@ void W_Rocket_Attack (void)
 	W_SetupShot_ProjectileSize (self, '-3 -3 -3', '3 3 3', FALSE, 5, "weapons/rocket_fire.wav", cvar("g_balance_rocketlauncher_damage"));
 	pointparticles(particleeffectnum("rocketlauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
-	missile = spawn ();
+	missile = WarpZone_RefSys_SpawnSameRefSys(self);
 	missile.owner = self;
 	self.lastrocket = missile;
 	if(cvar("g_balance_rocketlauncher_detonatedelay") >= 0)
@@ -304,7 +308,7 @@ void W_Rocket_Attack (void)
 	missile.pushltime = time + cvar("g_balance_rocketlauncher_guidedelay");
 	missile.classname = "rocket";
 	missile.bot_dodge = TRUE;
-	missile.bot_dodgerating = cvar("g_balance_rocketlauncher_primary_damage") * 2; // * 2 because it can be detonated inflight which makes it even more dangerous
+	missile.bot_dodgerating = cvar("g_balance_rocketlauncher_damage") * 2; // * 2 because it can be detonated inflight which makes it even more dangerous
 
 	missile.takedamage = DAMAGE_YES;
 	missile.damageforcescale = cvar("g_balance_rocketlauncher_damageforcescale");
@@ -318,10 +322,9 @@ void W_Rocket_Attack (void)
 
 	setorigin (missile, w_shotorg - v_forward * 3); // move it back so it hits the wall at the right point
 	if(g_laserguided_missile && self.laser_on)
-		missile.velocity = w_shotdir * cvar("g_balance_rocketlauncher_laserguided_speedstart") * g_weaponspeedfactor;
+		W_SetupProjectileVelocity(missile, cvar("g_balance_rocketlauncher_laserguided_speedstart"), 0);
 	else
-		missile.velocity = w_shotdir * cvar("g_balance_rocketlauncher_speedstart") * g_weaponspeedfactor;
-	W_SetupProjectileVelocity(missile);
+		W_SetupProjectileVelocity(missile, cvar("g_balance_rocketlauncher_speedstart"), 0);
 	missile.angles = vectoangles (missile.velocity);
 
 	missile.touch = W_Rocket_Touch;
@@ -544,24 +547,12 @@ float w_rlauncher(float req)
 		w_deathtypestring = "exploded";
 	else if (req == WR_KILLMESSAGE)
 	{
-		//<akari>
-		//
-		// Changed death messages for minstanex's explosive attack
-		// Fucks up the RL, but who gives a shit?
-		//
-		
-		/*
 		if(w_deathtype & HITTYPE_BOUNCE) // (remote detonation)
 			w_deathtypestring = "got too close to #'s rocket";
 		else if(w_deathtype & HITTYPE_SPLASH)
 			w_deathtypestring = "almost dodged #'s rocket";
 		else
 			w_deathtypestring = "ate #'s rocket";
-		*/
-		
-		w_deathtypestring = "got too close to #'s beam";
-		
-		//</akari>
 	}
 	else if (req == WR_RESETPLAYER)
 	{
@@ -569,3 +560,4 @@ float w_rlauncher(float req)
 	}
 	return TRUE;
 };
+#endif

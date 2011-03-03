@@ -167,25 +167,26 @@ void bot_setnameandstuff()
 	self.bot_forced_team = stof(argv(5));
 
 	prio = 6;
-#define READSKILL(f,w,r) if(argv(prio) != "") self.f = stof(argv(prio)) * (w); else self.f = (!cvar("g_campaign")) * (2 * random() - 1) * (r) * (w); ++prio
+
+	#define READSKILL(f,w,r) if(argv(prio) != "") self.f = stof(argv(prio)) * (w); else self.f = (!cvar("g_campaign")) * (2 * random() - 1) * (r) * (w); ++prio
 	//print(bot_name, ": ping=", argv(9), "\n");
 
-	READSKILL(havocbot_keyboardskill, 0.5, 0.5); // keyboards kill
-	READSKILL(bot_moveskill, 2, 0); // moves kill
-	READSKILL(bot_dodgeskill, 2, 0); // dodges kill
+	READSKILL(havocbot_keyboardskill, 0.5, 0.5); // keyboard skill
+	READSKILL(bot_moveskill, 2, 0); // move skill
+	READSKILL(bot_dodgeskill, 2, 0); // dodge skill
 
-	READSKILL(bot_pingskill, 0.5, 0); // pings kill
+	READSKILL(bot_pingskill, 0.5, 0); // ping skill
 
-	READSKILL(bot_weaponskill, 2, 0); // weapons kill
-	READSKILL(bot_aggresskill, 1, 0); // aggres kill
-	READSKILL(bot_rangepreference, 1, 0); // reads kill
+	READSKILL(bot_weaponskill, 2, 0); // weapon skill
+	READSKILL(bot_aggresskill, 1, 0); // aggre skill
+	READSKILL(bot_rangepreference, 1, 0); // read skill
 
-	READSKILL(bot_aimskill, 2, 0); // aims kill
-	READSKILL(bot_offsetskill, 2, 0.5); // offsets kill
-	READSKILL(bot_mouseskill, 1, 0.5); // mouses kill
+	READSKILL(bot_aimskill, 2, 0); // aim skill
+	READSKILL(bot_offsetskill, 2, 0.5); // offset skill
+	READSKILL(bot_mouseskill, 1, 0.5); // mouse skill
 
-	READSKILL(bot_thinkskill, 1, 0.5); // thinks kill
-	READSKILL(bot_aiskill, 2, 0); // "ai"s kill
+	READSKILL(bot_thinkskill, 1, 0.5); // think skill
+	READSKILL(bot_aiskill, 2, 0); // "ai" skill
 
 	self.bot_config_loaded = TRUE;
 
@@ -206,6 +207,9 @@ void bot_setnameandstuff()
 	self.playerskin = self.playerskin_freeme = strzone(bot_skin);
 
 	self.netname = self.netname_freeme = strzone(strcat(prefix, name, suffix));
+
+	self.cvar_cl_accuracy_data_share = 1;  // share the bots weapon accuracy data with the world
+	self.cvar_cl_accuracy_data_receive = 0;  // don't receive any weapon accuracy data
 };
 
 void bot_custom_weapon_priority_setup()
@@ -241,7 +245,7 @@ void bot_custom_weapon_priority_setup()
 	bot_weapons_close[0] = -1;
 
 	// Parse far distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_far")," ");
+	tokens = tokenizebyseparator(W_NumberWeaponOrder(cvar_string("bot_ai_custom_weapon_priority_far"))," ");
 
 	c = 0;
 	for(i=0; i < tokens && c < WEP_COUNT; ++i){
@@ -255,7 +259,7 @@ void bot_custom_weapon_priority_setup()
 		bot_weapons_far[c] = -1;
 
 	// Parse mid distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_mid")," ");
+	tokens = tokenizebyseparator(W_NumberWeaponOrder(cvar_string("bot_ai_custom_weapon_priority_mid"))," ");
 
 	c = 0;
 	for(i=0; i < tokens && c < WEP_COUNT; ++i){
@@ -269,7 +273,7 @@ void bot_custom_weapon_priority_setup()
 		bot_weapons_mid[c] = -1;
 
 	// Parse close distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_close")," ");
+	tokens = tokenizebyseparator(W_NumberWeaponOrder(cvar_string("bot_ai_custom_weapon_priority_close"))," ");
 
 	c = 0;
 	for(i=0; i < tokens && i < WEP_COUNT; ++i){

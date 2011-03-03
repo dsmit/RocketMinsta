@@ -29,12 +29,6 @@ float sv_warsowbunny_backtosideratio;
 .float wasFlying;
 .float spectatorspeed;
 
-#define SHTEST_DELTA 10
-#define SHTEST_THRESHOLD 1.1
-.float shtest_next;
-.float shtest_accumulator;
-.float doublejump_nextjumptime;
-
 /*
 =============
 PlayerJump
@@ -69,10 +63,6 @@ void PlayerJump (void)
 	if(self.health <= g_bloodloss)
 		return;
 
-	if(sv_doublejump)
-		if(time < self.doublejump_nextjumptime)
-			return;
-
 	if(g_runematch)
 	{
 		if(self.runes & RUNE_SPEED)
@@ -93,12 +83,26 @@ void PlayerJump (void)
 		mjumpheight = mjumpheight * cvar("g_minstagib_speed_jumpheight");
 	}
 
+	if(cvar_string("sv_jumpspeedcap_min") != "")
+		self.velocity_z = max(cvar("sv_jumpvelocity") * cvar("sv_jumpspeedcap_min"), self.velocity_z);
+	if(cvar_string("sv_jumpspeedcap_max") != "") {
+		if(trace_fraction < 1 && trace_plane_normal_z < 0.98 && cvar("sv_jumpspeedcap_max_disable_on_ramps")) {
+			// don't do jump speedcaps on ramps to preserve old nexuiz ramjump style
+			//print("Trace plane normal z: ", ftos(trace_plane_normal_z), ", disabling speed cap!\n");
+		}
+		else
+			self.velocity_z = min(cvar("sv_jumpvelocity") * cvar("sv_jumpspeedcap_max"), self.velocity_z) + trace_ent.velocity_z;
+	}
+
 	if(!(self.lastflags & FL_ONGROUND))
 	{
 		if(cvar("speedmeter"))
 			dprint(strcat("landing velocity: ", vtos(self.velocity), " (abs: ", ftos(vlen(self.velocity)), ")\n"));
 		if(self.lastground < time - 0.3)
-			self.velocity = self.velocity * (1 - cvar("sv_friction_on_land"));
+		{
+			self.velocity_x *= (1 - cvar("sv_friction_on_land"));
+			self.velocity_y *= (1 - cvar("sv_friction_on_land"));
+		}
 		if(self.jumppadcount > 1)
 			dprint(strcat(ftos(self.jumppadcount), "x jumppad combo\n"));
 		self.jumppadcount = 0;
@@ -117,17 +121,6 @@ void PlayerJump (void)
 
 	if(g_jump_grunt)
 		PlayerSound(playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
-
-	if(sv_doublejump)
-	{
-		// we're moving upwards at self.velocity_z
-		// only allow jumping after we got 3 units upwards
-		// so we for sure leave the FL_ONGROUND check
-		//
-		// but as this sucks because of factoring in gravity, we'll just do it
-		// for 4 units, and constant velocity
-		self.doublejump_nextjumptime = time + 4 / max(40, self.velocity_z); // max 0.1s blocking of jumps
-	}
 
 	self.restart_jump = -1; // restart jump anim next time
 	// value -1 is used to not use the teleport bit (workaround for tiny hitch when re-jumping)
@@ -388,66 +381,120 @@ void RaceCarPhysics()
 	self.angles_z =  smoothangles_z;
 }
 
+float IsMoveInDirection(vector mv, float angle) // key mix factor
+{
+	if(mv_x == 0 && mv_y == 0)
+		return 0; // avoid division by zero
+	angle = RAD2DEG * atan2(mv_y, mv_x);
+	angle = remainder(angle, 360) / 45;
+	if(angle >  1)
+		return 0;
+	if(angle < -1)
+		return 0;
+	return 1 - fabs(angle);
+}
+
 void CPM_PM_Aircontrol(vector wishdir, float wishspeed)
 {
 	float zspeed, xyspeed, dot, k;
 
+#if 0
+	// this doesn't play well with analog input
 	if(self.movement_x == 0 || self.movement_y != 0)
 		return; // can't control movement if not moving forward or backward
+	k = 32;
+#else
+	k = 32 * (2 * IsMoveInDirection(self.movement, 0) - 1);
+	if(k <= 0)
+		return;
+#endif
+
+	k *= bound(0, wishspeed / sv_maxairspeed, 1);
 
 	zspeed = self.velocity_z;
 	self.velocity_z = 0;
-	xyspeed = vlen(self.velocity);
-	self.velocity = normalize(self.velocity);
+	xyspeed = vlen(self.velocity); self.velocity = normalize(self.velocity);
 
 	dot = self.velocity * wishdir;
-	k = 32;
 	k *= sv_aircontrol*dot*dot*frametime;
 
 	if(dot > 0) // we can't change direction while slowing down
+	{
 		self.velocity = normalize(self.velocity * xyspeed + wishdir * k);
+	}
 
 	self.velocity = self.velocity * xyspeed;
 	self.velocity_z = zspeed;
 }
 
+// example config for alternate speed clamping:
+//   sv_airaccel_qw 0.8
+//   sv_airaccel_sideways_friction 0
+//   prvm_globalset server speedclamp_mode 1
+//     (or 2)
 void PM_Accelerate(vector wishdir, float wishspeed, float wishspeed0, float accel, float accelqw, float sidefric)
 {
 	float vel_straight;
 	float vel_z;
 	vector vel_perpend;
-	float addspeed;
-	float savespeed;
+	float step;
+
+	vector vel_xy;
+	float vel_xy_current;
+	float vel_xy_backward, vel_xy_forward;
+	float speedclamp;
+
+	speedclamp = (accelqw < 0);
+	if(speedclamp)
+		accelqw = -accelqw;
 
 	if(cvar("sv_gameplayfix_q2airaccelerate"))
 		wishspeed0 = wishspeed;
 
-	savespeed = self.velocity * self.velocity;
-
 	vel_straight = self.velocity * wishdir;
 	vel_z = self.velocity_z;
-	vel_perpend = self.velocity - vel_straight * wishdir - vel_z * '0 0 1';
+	vel_xy = self.velocity - vel_z * '0 0 1';
+	vel_perpend = vel_xy - vel_straight * wishdir;
 
-	addspeed = wishspeed - vel_straight;
-	if(addspeed > 0)
-		vel_straight = vel_straight + min(addspeed, accel * frametime * wishspeed0) * accelqw;
-	if(wishspeed > 0)
-		vel_straight = vel_straight + min(wishspeed, accel * frametime * wishspeed0) * (1 - accelqw);
+	step = accel * frametime * wishspeed0;
+
+	vel_xy_current  = vlen(vel_xy);
+	vel_xy_forward  = vel_xy_current + bound(0, wishspeed - vel_xy_current, step) * accelqw + step * (1 - accelqw);
+	vel_xy_backward = vel_xy_current - bound(0, wishspeed + vel_xy_current, step) * accelqw - step * (1 - accelqw);
+	if(vel_xy_backward < 0)
+		vel_xy_backward = 0; // not that it REALLY occurs that this would cause wrong behaviour afterwards
+
+	vel_straight = vel_straight + bound(0, wishspeed - vel_straight, step) * accelqw + step * (1 - accelqw);
 
 	if(sidefric < 0 && (vel_perpend*vel_perpend))
+		// negative: only apply so much sideways friction to stay below the speed you could get by "braking"
 	{
-		float f, fmin;
-		f = (1 + frametime * wishspeed * sidefric);
-		fmin = (savespeed - vel_straight*vel_straight) / (vel_perpend*vel_perpend);
-		if(fmin <= 0)
-			vel_perpend = vel_perpend * f;
+		float f, fminimum;
+		f = max(0, 1 + frametime * wishspeed * sidefric);
+		fminimum = (vel_xy_backward*vel_xy_backward - vel_straight*vel_straight) / (vel_perpend*vel_perpend);
+		// this cannot be > 1
+		if(fminimum <= 0)
+			vel_perpend = vel_perpend * max(0, f);
 		else
-			vel_perpend = vel_perpend * min(1, max(fmin, f));
+		{
+			fminimum = sqrt(fminimum);
+			vel_perpend = vel_perpend * max(fminimum, f);
+		}
 	}
 	else
-		vel_perpend = vel_perpend * (1 - frametime * wishspeed * sidefric);
+		vel_perpend = vel_perpend * max(0, 1 - frametime * wishspeed * sidefric);
+	
+	vel_xy = vel_straight * wishdir + vel_perpend;
+	
+	if(speedclamp)
+	{
+		// ensure we don't get too fast or decelerate faster than we should
+		vel_xy_current = min(vlen(vel_xy), vel_xy_forward);
+		if(vel_xy_current > 0) // prevent division by zero
+			vel_xy = normalize(vel_xy) * vel_xy_current;
+	}
 
-	self.velocity = vel_straight * wishdir + vel_z * '0 0 1' + vel_perpend;
+	self.velocity = vel_xy + vel_z * '0 0 1';
 }
 
 void PM_AirAccelerate(vector wishdir, float wishspeed)
@@ -505,73 +552,59 @@ void SpecialCommand()
 #ifdef TETRIS
 	TetrisImpulse();
 #else
-	if(sv_cheats || self.maycheat)
-		self.impulse = 99;
-	else
+	if(!CheatImpulse(99))
 		print("A hollow voice says \"Plugh\".\n");
 #endif
 }
 
+float speedaward_speed;
+string speedaward_holder;
+void race_send_speedaward(float msg)
+{
+	// send the best speed of the round
+	WriteByte(msg, SVC_TEMPENTITY);
+	WriteByte(msg, TE_CSQC_RACE);
+	WriteByte(msg, RACE_NET_SPEED_AWARD);
+	WriteInt24_t(msg, floor(speedaward_speed+0.5));
+	WriteString(msg, speedaward_holder);
+}
+
+float speedaward_alltimebest;
+string speedaward_alltimebest_holder;
+void race_send_speedaward_alltimebest(float msg)
+{
+	// send the best speed
+	WriteByte(msg, SVC_TEMPENTITY);
+	WriteByte(msg, TE_CSQC_RACE);
+	WriteByte(msg, RACE_NET_SPEED_AWARD_BEST);
+	WriteInt24_t(msg, floor(speedaward_alltimebest+0.5));
+	WriteString(msg, speedaward_alltimebest_holder);
+}
+
+string GetMapname(void);
+float speedaward_lastupdate;
+float speedaward_lastsent;
+.float jumppadusetime;
 void SV_PlayerPhysics()
 {
 	local vector wishvel, wishdir, v;
-	local float wishspeed, f, maxspd_mod, spd, maxairspd, airaccel, swampspd_mod, shtest_score, buttons;
+	local float wishspeed, f, maxspd_mod, spd, maxairspd, airaccel, swampspd_mod, buttons;
 	string temps;
 	float buttons_prev;
 	float not_allowed_to_move;
 	string c;
-	
-	if(g_race || g_cts)
-	{
-		// if record times matter
-		// ensure nothing EVIL is being done (i.e. strafebot)
-		// this hinders joystick users though
-		// but it still gives SOME analog control
-		// TODO implement this for engine cl_movement code too (basically, clipping to the four axes)
-		wishvel_x = fabs(self.movement_x);
-		wishvel_y = fabs(self.movement_y);
-		if(wishvel_x != 0 && wishvel_y != 0 && wishvel_x != wishvel_y)
-		{
-			wishvel_z = 0;
-			wishspeed = vlen(wishvel);
-			if(wishvel_x >= 2 * wishvel_y)
-			{
-				// pure X motion
-				if(self.movement_x > 0)
-					self.movement_x = wishspeed;
-				else
-					self.movement_x = -wishspeed;
-				self.movement_y = 0;
-			}
-			else if(wishvel_y >= 2 * wishvel_x)
-			{
-				// pure Y motion
-				self.movement_x = 0;
-				if(self.movement_y > 0)
-					self.movement_y = wishspeed;
-				else
-					self.movement_y = -wishspeed;
-			}
-			else
-			{
-				// diagonal
-				if(self.movement_x > 0)
-					self.movement_x = 0.70710678118654752440 * wishspeed;
-				else
-					self.movement_x = -0.70710678118654752440 * wishspeed;
-				if(self.movement_y > 0)
-					self.movement_y = 0.70710678118654752440 * wishspeed;
-				else
-					self.movement_y = -0.70710678118654752440 * wishspeed;
-			}
-		}
-	}
+
+    if(self.PlayerPhysplug)
+        if(self.PlayerPhysplug())
+            return;
 
 	self.race_movetime_frac += frametime;
 	f = floor(self.race_movetime_frac);
 	self.race_movetime_frac -= f;
 	self.race_movetime_count += f;
 	self.race_movetime = self.race_movetime_frac + self.race_movetime_count;
+
+	anticheat_physics();
 
 	buttons = self.BUTTON_ATCK + 2 * self.BUTTON_JUMP + 4 * self.BUTTON_ATCK2 + 8 * self.BUTTON_ZOOM + 16 * self.BUTTON_CROUCH + 32 * self.BUTTON_HOOK + 64 * self.BUTTON_USE + 128 * (self.movement_x < 0) + 256 * (self.movement_x > 0) + 512 * (self.movement_y < 0) + 1024 * (self.movement_y > 0);
 
@@ -604,10 +637,6 @@ void SV_PlayerPhysics()
 	}
 	else if(self.specialcommand_pos && (c != substring(specialcommand, self.specialcommand_pos - 1, 1)))
 		self.specialcommand_pos = 0;
-	
-    if(self.PlayerPhysplug)
-        if(self.PlayerPhysplug())
-            return;
 
 	if(!sv_maxidle_spectatorsareidle || self.movetype == MOVETYPE_WALK)
 	{
@@ -635,27 +664,31 @@ void SV_PlayerPhysics()
 		}
 	}
 
-	if(time > self.shtest_next)
+	if (self.punchangle != '0 0 0')
 	{
-		if(self.shtest_next > 0)
-		{
-			// self.shtest_accumulator:
-			//   started at time - SHTEST_DELTA
-			//   should be at SHTEST_DELTA
-			shtest_score = self.shtest_accumulator / (SHTEST_DELTA + time - self.shtest_next);
-			if(shtest_score > SHTEST_THRESHOLD)
-				print("TIME PARADOX: shtest for ", self.netname, " said ", ftos(shtest_score), "\n");
-			else if(cvar("developer_shtest"))
-				dprint("okay: shtest for ", self.netname, " said ", ftos(shtest_score), "\n");
-		}
-		self.shtest_next = time + SHTEST_DELTA;
-		self.shtest_accumulator = 0;
+		f = vlen(self.punchangle) - 10 * frametime;
+		if (f > 0)
+			self.punchangle = normalize(self.punchangle) * f;
+		else
+			self.punchangle = '0 0 0';
 	}
-	self.shtest_accumulator += frametime;
+
+	if (self.punchvector != '0 0 0')
+	{
+		f = vlen(self.punchvector) - 30 * frametime;
+		if (f > 0)
+			self.punchvector = normalize(self.punchvector) * f;
+		else
+			self.punchvector = '0 0 0';
+	}
 
 	if (clienttype(self) == CLIENTTYPE_BOT)
+	{
+		if(playerdemo_read())
+			return;
 		bot_think();
-
+	}
+	
 	self.items &~= IT_USING_JETPACK;
 
 	if(self.classname == "player")
@@ -687,24 +720,6 @@ void SV_PlayerPhysics()
 
 	if (self.movetype == MOVETYPE_NONE)
 		return;
-
-	if (self.punchangle != '0 0 0')
-	{
-		f = vlen(self.punchangle) - 10 * frametime;
-		if (f > 0)
-			self.punchangle = normalize(self.punchangle) * f;
-		else
-			self.punchangle = '0 0 0';
-	}
-
-	if (self.punchvector != '0 0 0')
-	{
-		f = vlen(self.punchvector) - 30 * frametime;
-		if (f > 0)
-			self.punchvector = normalize(self.punchvector) * f;
-		else
-			self.punchvector = '0 0 0';
-	}
 
 	maxspd_mod = 1;
 
@@ -813,10 +828,10 @@ void SV_PlayerPhysics()
 
 	if(self.classname == "player")
 	{
-		if(sv_doublejump)
+		if(sv_doublejump && time - self.jumppadusetime > 2 * sys_frametime)
 		{
+			tracebox(self.origin + '0 0 0.01', self.mins, self.maxs, self.origin - '0 0 0.01', MOVE_NORMAL, self);
 			self.flags &~= FL_ONGROUND;
-			tracebox(self.origin + '0 0 1', self.mins, self.maxs, self.origin - '0 0 1', MOVE_NORMAL, self);
 			if(trace_fraction < 1 && trace_plane_normal_z > 0.7)
 				self.flags |= FL_ONGROUND;
 		}
@@ -1130,6 +1145,9 @@ void SV_PlayerPhysics()
 			if(sv_airstopaccelerate)
 				if(self.velocity * wishdir < 0)
 					airaccel = sv_airstopaccelerate*maxspd_mod;
+			// this doesn't play well with analog input, but can't r
+			// fixed like the AirControl can. So, don't set the maxa
+			// cvars when you want to support analog input.
 			if(self.movement_x == 0 && self.movement_y != 0)
 			{
 				if(sv_maxairstrafespeed)
@@ -1157,6 +1175,29 @@ void SV_PlayerPhysics()
 		}
 	}
 
+	if((g_cts || g_race) && self.classname != "observer") {
+		if(vlen(self.velocity - self.velocity_z * '0 0 1') > speedaward_speed) {
+			speedaward_speed = vlen(self.velocity - self.velocity_z * '0 0 1');
+			speedaward_holder = self.netname;
+			speedaward_lastupdate = time;
+		}
+		if(speedaward_speed > speedaward_lastsent && time - speedaward_lastupdate > 1) {
+			string rr;
+			if(g_cts)
+				rr = CTS_RECORD;
+			else
+				rr = RACE_RECORD;
+			race_send_speedaward(MSG_ALL);
+			speedaward_lastsent = speedaward_speed;
+			if (speedaward_speed > speedaward_alltimebest) {
+				speedaward_alltimebest = speedaward_speed;
+				speedaward_alltimebest_holder = speedaward_holder;
+				db_put(ServerProgsDB, strcat(GetMapname(), rr, "speed/speed"), ftos(speedaward_alltimebest));
+				db_put(ServerProgsDB, strcat(GetMapname(), rr, "speed/netname"), speedaward_alltimebest_holder);
+				race_send_speedaward_alltimebest(MSG_ALL);
+			}
+		}
+	}
 :end
 	if(self.flags & FL_ONGROUND)
 		self.lastground = time;

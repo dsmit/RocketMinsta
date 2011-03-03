@@ -6,10 +6,19 @@ Defs.qc
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc
+
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/client.qh
+
 ../common/util.qh
 ../common/items.qh
 
 ../common/mapinfo.qh
+
+autocvars.qh
+
 interpolate.qh
 teamradar.qh
 waypointsprites.qh
@@ -39,6 +48,7 @@ casings.qc
 effects.qc
 wall.qc
 modeleffects.qc
+tuba.qc
 
 //vehicles/spiderbot.qc
 Main.qc
@@ -54,3 +64,8 @@ bgmscript.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc
 ../common/items.qc
+
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/client.qc

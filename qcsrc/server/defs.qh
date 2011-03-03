@@ -17,7 +17,7 @@ float require_spawnfunc_prefix; // if this float exists, only functions with spa
 
 float ctf_score_value(string parameter);
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts;
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_ca, g_lms, g_runematch, g_race, g_nexball, g_cts;
 float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss;
 float g_warmup_limit;
 float g_warmup_allguns;
@@ -42,13 +42,10 @@ float g_pickup_respawntimejitter_powerup;
 float g_jetpack;
 
 float sv_clones;
-float sv_cheats;
 float sv_gentle;
 float sv_foginterval;
 
 entity	activator;
-string	string_null;
-const var void(void)	func_null;
 
 float player_count;
 float currentbots;
@@ -287,7 +284,7 @@ float isJoinAllowed();
 
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
-float sys_ticrate; // gets initialised in worlspawn, saves the value from cvar("sys_ticrate")
+float sys_frametime; // gets initialised in worlspawn, saves the value from cvar("sys_ticrate")
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
@@ -338,6 +335,10 @@ float sv_clforceplayermodels;
 float sv_loddistance1;
 float sv_loddistance2;
 .float cvar_cl_gunalign;
+.float cvar_cl_noantilag;
+
+void Announce(string snd);
+void AnnounceTo(entity e, string snd);
 
 .float version_nagtime;
 
@@ -390,7 +391,7 @@ void centerprint(entity e, string s);
 
 float bot_waypoints_for_items;
 
-.float	attack_finished_for[WEP_COUNT];
+.float attack_finished_for[WEP_MAXCOUNT];
 .float attack_finished_single;
 #ifdef INDEPENDENT_ATTACK_FINISHED
 #define ATTACK_FINISHED_FOR(ent,w) ((ent).(attack_finished_for[(w) - WEP_FIRST]))
@@ -419,7 +420,7 @@ float TemporaryDB;
 .float team_saved;
 
 float some_spawn_has_been_used;
-float have_team_spawns;
+float have_team_spawns; // 0 = no team spawns requested, -1 = team spawns requested but none found, 1 = team spawns requested and found
 
 // set when showing a kill countdown
 .entity killindicator;
@@ -576,8 +577,6 @@ vector debug_shotorg; // if non-zero, overrides the shot origin of all weapons
 
 float servertime, serverprevtime, serverframetime;
 
-void Drag_MoveDrag(entity from, entity to);
-
 .entity soundentity;
 
 .float ammo_fuel;
@@ -599,8 +598,16 @@ string matchid;
 .float hitplotfh;
 .string noise4;
 
-.float damage_hits, maxdamage_fired;
-.float maycheat;
+.float stat_hit;
+.float stat_fired;
+.float stat_count;
+
+.float stats_hit[WEP_MAXCOUNT];  // for hitscan bullets hit
+.float stats_fired[WEP_MAXCOUNT];  // for hitscan bullets fired
+
+FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(stats_hit);
+FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(stats_fired);
+
 .float stat_leadlimit;
 
 float radar_showennemies;
@@ -623,3 +630,10 @@ float client_cefc_accumulatortime;
 
 .entity clientdata;
 .entity personal;
+
+string deathmessage;
+
+.float just_joined;
+
+.float cvar_cl_accuracy_data_share;
+.float cvar_cl_accuracy_data_receive;

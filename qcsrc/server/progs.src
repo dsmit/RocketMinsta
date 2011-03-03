@@ -6,6 +6,13 @@ pre-builtins.qh
 builtins.qh
 extensions.qh
 post-builtins.qh
+
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/util_server.qh
+../warpzonelib/server.qh
+
 constants.qh
 ../common/constants.qh
 ../common/util.qh
@@ -24,6 +31,9 @@ campaign.qh
 csqcprojectile.qh
 csqceffects.qc
 
+anticheat.qh
+cheats.qh
+
 portals.qh
 
 g_hook.qh
@@ -39,6 +49,8 @@ keyhunt.qh
 antilag.qh
 
 vote.qh
+
+playerdemo.qh
 
 scores_rules.qc
 
@@ -83,22 +95,7 @@ g_models.qc
 cl_weaponsystem.qc
 w_common.qc
 
-w_laser.qc
-w_shotgun.qc
-w_uzi.qc
-w_grenadelauncher.qc
-w_electro.qc
-w_crylink.qc
-w_nex.qc
-w_minstanex.qc
-w_hagar.qc
-w_rocketlauncher.qc
-w_porto.qc
-w_hook.qc
-w_hlac.qc
-w_campingrifle.qc
-w_tuba.qc
-w_fireball.qc
+w_all.qc
 
 t_items.qc
 cl_weapons.qc
@@ -165,5 +162,16 @@ monsters/defs.qc
 monsters/fight.qc
 monsters/ai.qc
 monsters/m_monsters.qc
-
+monsters/monster_zombie.qc
 csqcprojectile.qc
+
+playerdemo.qc
+
+anticheat.qc
+cheats.qc
+
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/util_server.qc
+../warpzonelib/server.qc

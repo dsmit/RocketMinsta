@@ -1,3 +1,43 @@
+// checkextension wrapper for log
+float sqrt(float f); // declared later
+float exp(float f); // declared later
+float pow(float f, float e); // declared later
+float checkextension(string s); // declared later
+float log_synth(float f)
+{
+	float p, l;
+	if(f < 0)
+		return sqrt(-1); // nan? -inf?
+	if(f == 0)
+		return sqrt(-1); // ACTUALLY this should rather be -inf, but we cannot create a +inf in QC
+	if(f + f == f)
+		return l; // +inf
+	if(f < 1)
+	{
+		f = 1 / f;
+		p = -1;
+	}
+	else
+		p = 1;
+	while(f > 2)
+	{
+		f = sqrt(f);
+		p *= 2;
+	}
+	// two steps are good enough
+	l = ((6-f) * f - 5) / 4.32808512266689022212;
+	l += exp(-l) * f - 1;
+	l += exp(-l) * f - 1;
+	return l * p;
+}
+float log(float f)
+{
+	if(checkextension("DP_QC_LOG"))
+		return log_builtin(f);
+	else
+		return log_synth(f);
+}
+
 string wordwrap_buffer;
 
 void wordwrap_buffer_put(string s)
@@ -422,6 +462,7 @@ string GametypeNameFromType(float g)
 	else if (g == GAME_RUNEMATCH) return "rune";
 	else if (g == GAME_LMS) return "lms";
 	else if (g == GAME_ARENA) return "arena";
+	else if (g == GAME_CA) return "ca";
 	else if (g == GAME_KEYHUNT) return "kh";
 	else if (g == GAME_ONSLAUGHT) return "ons";
 	else if (g == GAME_ASSAULT) return "as";
@@ -645,13 +686,6 @@ float CheckWireframeBox(entity forent, vector v0, vector dvx, vector dvy, vector
 	traceline(v0 + dvy + dvz, v0 + dvx + dvy + dvz, TRUE, forent); if(trace_fraction < 1) return 0;
 	return 1;
 }
-
-void fixedmakevectors(vector a)
-{
-	// a makevectors that actually inverts vectoangles
-	a_x = -a_x;
-	makevectors(a);
-}
 #endif
 
 string fixPriorityList(string order, float from, float to, float subtract, float complete)
@@ -660,6 +694,7 @@ string fixPriorityList(string order, float from, float to, float subtract, float
 	float i, n, w;
 
 	n = tokenize_console(order);
+	neworder = "";
 	for(i = 0; i < n; ++i)
 	{
 		w = stof(argv(i));
@@ -688,6 +723,19 @@ string fixPriorityList(string order, float from, float to, float subtract, float
 				neworder = strcat(neworder, ftos(w), " ");
 		}
 	}
+	
+	return substring(neworder, 0, strlen(neworder) - 1);
+}
+
+string mapPriorityList(string order, string(string) mapfunc)
+{
+	string neworder;
+	float i, n;
+
+	n = tokenize_console(order);
+	neworder = "";
+	for(i = 0; i < n; ++i)
+		neworder = strcat(neworder, mapfunc(argv(i)), " ");
 	
 	return substring(neworder, 0, strlen(neworder) - 1);
 }
@@ -882,16 +930,20 @@ void cvar_settemp_restore()
 #else
 void cvar_settemp(string pKey, string pValue)
 {
+	float i;
+	string settemp_var;
 	if(cvar_string(pKey) == pValue)
 		return;
-	cvar_set("settemp_list", strcat("1 ", pKey, " ", cvar_string("settemp_var"), " ", cvar_string("settemp_list")));
+	i = cvar("settemp_idx");
+	cvar_set("settemp_idx", ftos(i+1));
+	settemp_var = strcat("_settemp_x", ftos(i));
 #ifdef MENUQC
-	registercvar(cvar_string("settemp_var"), "", 0);
+	registercvar(settemp_var, "", 0);
 #else
-	registercvar(cvar_string("settemp_var"), "");
+	registercvar(settemp_var, "");
 #endif
-	cvar_set(cvar_string("settemp_var"), cvar_string(pKey));
-	cvar_set("settemp_var", strcat(cvar_string("settemp_var"), "x"));
+	cvar_set("settemp_list", strcat("1 ", pKey, " ", settemp_var, " ", cvar_string("settemp_list")));
+	cvar_set(settemp_var, cvar_string(pKey));
 	cvar_set(pKey, pValue);
 }
 
@@ -1152,56 +1204,78 @@ float boxesoverlap(vector m1, vector m2, vector m3, vector m4) {return m2_x >= m
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs) {return smins_x >= bmins_x && smaxs_x <= bmaxs_x && smins_y >= bmins_y && smaxs_y <= bmaxs_y && smins_z >= bmins_z && smaxs_z <= bmaxs_z;};
 
 #ifndef MENUQC
-// angles transforms
-// angles in fixedmakevectors/fixedvectoangles space
-vector AnglesTransform_Apply(vector transform, vector v)
-{
-	fixedmakevectors(transform);
-	return v_forward * v_x
-	     + v_right   * (-v_y)
-		 + v_up      * v_z;
-}
-
-vector AnglesTransform_Multiply(vector t1, vector t2)
-{
-	vector m_forward, m_up;
-	fixedmakevectors(t2); m_forward = v_forward; m_up = v_up;
-	m_forward = AnglesTransform_Apply(t1, m_forward); m_up = AnglesTransform_Apply(t1, m_up);
-	return fixedvectoangles2(m_forward, m_up);
-}
-
-vector AnglesTransform_Invert(vector transform)
-{
-	vector i_forward, i_up;
-	fixedmakevectors(transform);
-	// we want angles that turn v_forward into '1 0 0', v_right into '0 1 0' and v_up into '0 0 1'
-	// but these are orthogonal unit vectors!
-	// so to invert, we can simply fixedvectoangles the TRANSPOSED matrix
-	// TODO is this always -transform?
-	i_forward_x = v_forward_x;
-	i_forward_y = -v_right_x;
-	i_forward_z = v_up_x;
-	i_up_x = v_forward_z;
-	i_up_y = -v_right_z;
-	i_up_z = v_up_z;
-	return fixedvectoangles2(i_forward, i_up);
-}
-
-vector AnglesTransform_TurnDirection(vector transform)
-{
-	// turn 180 degrees around v_up
-	// changes in-direction to out-direction
-	fixedmakevectors(transform);
-	return fixedvectoangles2(-1 * v_forward, 1 * v_up);
-}
-
-vector AnglesTransform_Divide(vector to_transform, vector from_transform)
-{
-	return AnglesTransform_Multiply(to_transform, AnglesTransform_Invert(from_transform));
-}
 #endif
 
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t w)
+float textLengthUpToWidth(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w)
+{
+	float ICanHasKallerz;
+
+	// detect color codes support in the width function
+	ICanHasKallerz = (w("^7", theSize) == 0);
+
+	// STOP.
+	// The following function is SLOW.
+	// For your safety and for the protection of those around you...
+	// DO NOT CALL THIS AT HOME.
+	// No really, don't.
+	if(w(theText, theSize) <= maxWidth)
+		return strlen(theText); // yeah!
+
+	// binary search for right place to cut string
+	float ch;
+	float left, right, middle; // this always works
+	left = 0;
+	right = strlen(theText); // this always fails
+	do
+	{
+		middle = floor((left + right) / 2);
+		if(w(substring(theText, 0, middle), theSize) <= maxWidth)
+			left = middle;
+		else
+			right = middle;
+	}
+	while(left < right - 1);
+
+	if(ICanHasKallerz)
+	{
+		// NOTE: when color codes are involved, this binary search is,
+		// mathematically, BROKEN. However, it is obviously guaranteed to
+		// terminate, as the range still halves each time - but nevertheless, it is
+		// guaranteed that it finds ONE valid cutoff place (where "left" is in
+		// range, and "right" is outside).
+		
+		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
+		// and decrease left on the basis of the chars detected of the truncated tag
+		// Even if the ^xrgb tag is not complete/correct, left is decreased
+		// (sometimes too much but with a correct result)
+		// it fixes also ^[0-9]
+		while(left >= 1 && substring(theText, left-1, 1) == "^")
+			left-=1;
+
+		if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
+			left-=2;
+		else if (left >= 3 && substring(theText, left-3, 2) == "^x")
+			{
+				ch = str2chr(theText, left-1);
+				if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
+					left-=3;
+			}
+		else if (left >= 4 && substring(theText, left-4, 2) == "^x")
+			{
+				ch = str2chr(theText, left-2);
+				if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
+				{
+					ch = str2chr(theText, left-1);
+					if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
+						left-=4;
+				}
+			}
+	}
+	
+	return left;
+}
+
+float textLengthUpToLength(string theText, float maxWidth, textLengthUpToLength_lenFunction_t w)
 {
 	float ICanHasKallerz;
 
@@ -1270,7 +1344,7 @@ float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 	return left;
 }
 
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
+string getWrappedLine(float w, vector theFontSize, textLengthUpToWidth_widthFunction_t tw)
 {
 	float cantake;
 	float take;
@@ -1278,7 +1352,7 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 
 	s = getWrappedLine_remaining;
 
-	cantake = textLengthUpToWidth(s, w, tw);
+	cantake = textLengthUpToWidth(s, w, theFontSize, tw);
 	if(cantake > 0 && cantake < strlen(s))
 	{
 		take = cantake - 1;
@@ -1306,12 +1380,56 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 	}
 }
 
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw)
+string getWrappedLineLen(float w, textLengthUpToLength_lenFunction_t tw)
+{
+	float cantake;
+	float take;
+	string s;
+
+	s = getWrappedLine_remaining;
+
+	cantake = textLengthUpToLength(s, w, tw);
+	if(cantake > 0 && cantake < strlen(s))
+	{
+		take = cantake - 1;
+		while(take > 0 && substring(s, take, 1) != " ")
+			--take;
+		if(take == 0)
+		{
+			getWrappedLine_remaining = substring(s, cantake, strlen(s) - cantake);
+			if(getWrappedLine_remaining == "")
+				getWrappedLine_remaining = string_null;
+			return substring(s, 0, cantake);
+		}
+		else
+		{
+			getWrappedLine_remaining = substring(s, take + 1, strlen(s) - take);
+			if(getWrappedLine_remaining == "")
+				getWrappedLine_remaining = string_null;
+			return substring(s, 0, take);
+		}
+	}
+	else
+	{
+		getWrappedLine_remaining = string_null;
+		return s;
+	}
+}
+
+string textShortenToWidth(string theText, float maxWidth, vector theFontSize, textLengthUpToWidth_widthFunction_t tw)
+{
+	if(tw(theText, theFontSize) <= maxWidth)
+		return theText;
+	else
+		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("...", theFontSize), theFontSize, tw)), "...");
+}
+
+string textShortenToLength(string theText, float maxWidth, textLengthUpToLength_lenFunction_t tw)
 {
 	if(tw(theText) <= maxWidth)
 		return theText;
 	else
-		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("..."), tw)), "...");
+		return strcat(substring(theText, 0, textLengthUpToLength(theText, maxWidth - tw("..."), tw)), "...");
 }
 
 float isGametypeInFilter(float gt, float tp, string pattern)
@@ -1486,11 +1604,20 @@ float compressShotOrigin(vector v)
 	y = rint(v_y * 4) + 128;
 	z = rint(v_z * 4) + 128;
 	if(x > 255 || x < 0)
-		error("shot origin x out of bounds");
+	{
+		print("shot origin ", vtos(v), " x out of bounds\n");
+		x = bound(0, x, 255);
+	}
 	if(y > 255 || y < 0)
-		error("shot origin y out of bounds");
+	{
+		print("shot origin ", vtos(v), " y out of bounds\n");
+		y = bound(0, y, 255);
+	}
 	if(z > 255 || z < 0)
-		error("shot origin z out of bounds");
+	{
+		print("shot origin ", vtos(v), " z out of bounds\n");
+		z = bound(0, z, 255);
+	}
 	return x * 0x10000 + y * 0x100 + z;
 }
 vector decompressShotOrigin(float f)
@@ -1645,4 +1772,96 @@ void WriteInt24_t(float dest, float val)
 	WriteByte(dest, val - v * 256); // 0..255
 }
 #endif
+#endif
+
+float float2range11(float f)
+{
+	// continuous function mapping all reals into -1..1
+	return f / (fabs(f) + 1);
+}
+
+float float2range01(float f)
+{
+	// continuous function mapping all reals into 0..1
+	return 0.5 + 0.5 * float2range11(f);
+}
+
+// from the GNU Scientific Library
+float gsl_ran_gaussian_lastvalue;
+float gsl_ran_gaussian_lastvalue_set;
+float gsl_ran_gaussian(float sigma)
+{
+	float a, b;
+	if(gsl_ran_gaussian_lastvalue_set)
+	{
+		gsl_ran_gaussian_lastvalue_set = 0;
+		return sigma * gsl_ran_gaussian_lastvalue;
+	}
+	else
+	{
+		a = random() * 2 * M_PI;
+		b = sqrt(-2 * log(random()));
+		gsl_ran_gaussian_lastvalue = cos(a) * b;
+		gsl_ran_gaussian_lastvalue_set = 1;
+		return sigma * sin(a) * b;
+	}
+}
+
+string car(string s)
+{
+	float o;
+	o = strstrofs(s, " ", 0);
+	if(o < 0)
+		return s;
+	return substring(s, 0, o);
+}
+string cdr(string s)
+{
+	float o;
+	o = strstrofs(s, " ", 0);
+	if(o < 0)
+		return string_null;
+	return substring(s, o + 1, strlen(s) - (o + 1));
+}
+float matchacl(string acl, string str)
+{
+	string t, s;
+	float r, d;
+	r = 0;
+	while(acl)
+	{
+		t = car(acl); acl = cdr(acl);
+		d = 1;
+		if(substring(t, 0, 1) == "-")
+		{
+			d = -1;
+			t = substring(t, 1, strlen(t) - 1);
+		}
+		else if(substring(t, 0, 1) == "+")
+			t = substring(t, 1, strlen(t) - 1);
+		if(substring(t, -1, 1) == "*")
+		{
+			t = substring(t, 0, strlen(t) - 1);
+			s = substring(s, 0, strlen(t));
+		}
+		else
+			s = str;
+
+		if(s == t)
+		{
+			r = d;
+		}
+	}
+	return r;
+}
+float startsWith(string haystack, string needle)
+{
+	return substring(haystack, 0, strlen(needle)) == needle;
+}
+float startsWithNocase(string haystack, string needle)
+{
+	return strcasecmp(substring(haystack, 0, strlen(needle)), needle) == 0;
+}
+
+#ifndef MENUQC
 #endif

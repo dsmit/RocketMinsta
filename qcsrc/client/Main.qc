@@ -42,6 +42,7 @@ float __engine_check;
 #endif
 
 string forcefog;
+string cl_announcer_prev;
 void WaypointSprite_Load();
 void CSQC_Init(void)
 {
@@ -61,10 +62,10 @@ void CSQC_Init(void)
 
 	float i;
 	CSQC_CheckEngine();
-	dprint_load();
 
 	binddb = db_create();
 	tempdb = db_create();
+	ClientProgsDB = db_load("client.db");
 	compressShortVector_init();
 
 	drawfont = 0;
@@ -128,11 +129,35 @@ void CSQC_Init(void)
 
 	WaypointSprite_Load();
 
+	// precaches
 	Projectile_Precache();
 	GibSplash_Precache();
 	Casings_Precache();
 	DamageInfo_Precache();
-	Announcer_Precache();
+	if(cvar_string("cl_announcer") != cl_announcer_prev) {
+		Announcer_Precache();
+		if(cl_announcer_prev)
+			strunzone(cl_announcer_prev);
+		cl_announcer_prev = strzone(cvar_string("cl_announcer"));
+	}
+	Tuba_Precache();
+
+#ifdef UID
+	{
+		// find the user ID
+		string uid;
+		registercvar("_cl_userid", "", CVAR_SAVE);
+		uid = cvar_string("_cl_userid");
+		if(strlen(uid) < 16)
+		{
+			uid = "";
+			for(i = 0; i < 4; ++i)
+				uid = strcat(uid, substring(ftos(floor(10000 + random() * 10000)), 1, -1));
+		}
+		cvar_set("_cl_userid", uid);
+		localcmd(strcat("\ncmd uid ", uid, "\n"));
+	}
+#endif
 
 	get_mi_min_max_texcoords(1); // try the CLEVER way first
 	minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
@@ -151,8 +176,8 @@ void CSQC_Init(void)
 	mi_center = (mi_min + mi_max) * 0.5;
 	mi_scale = mi_max - mi_min;
 	minimapname = strzone(minimapname);
-	
-	vote_statstring = strzone("");
+
+	WarpZone_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -165,10 +190,14 @@ void CSQC_Shutdown(void)
 #pragma TARGET fte
 #endif
 
+	WarpZone_Shutdown();
+
 	remove(teams);
 	remove(players);
 	db_close(binddb);
 	db_close(tempdb);
+	db_save(ClientProgsDB, "client.db");
+	db_close(ClientProgsDB);
 
 	cvar_clientsettemp_restore();
 
@@ -288,6 +317,9 @@ void Playerchecker_Think()
 				if not(e)
 					playerslots[i] = e = spawn();
 				e.sv_entnum = i;
+				e.ping = 0;
+				e.ping_packetloss = 0;
+				e.ping_movementloss = 0;
 				//e.gotscores = 0; // we might already have the scores...
 				SetTeam(e, GetPlayerColor(i)); // will not hurt; later updates come with Sbar_UpdatePlayerTeams
 				RegisterPlayer(e);
@@ -423,7 +455,7 @@ void ShotOrg_Draw2D()
 	coord2d_topleft = project_3d_to_2d(self.origin + view_up * 4 - view_right * 4);
 	coord2d_topright = project_3d_to_2d(self.origin + view_up * 4 + view_right * 4);
 
-	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE));
+	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE, '8 8 0'));
 
 	coord2d = coord2d_topleft;
 	if(fs_x < 8)
@@ -449,9 +481,24 @@ void ShotOrg_Spawn()
 	debug_shotorg.view_ofs = '25 8 -8';
 }
 
+void DrawDebugModel()
+{
+	if(time - floor(time) > 0.5)
+	{
+		PolyDrawModel(self);
+	}
+	else
+	{
+		self.renderflags = 0;
+		R_AddEntity(self);
+	}
+}
+
 void GameCommand(string msg)
 {
+	string s;
 	float argc;
+	entity e;
 	argc = tokenize_console(msg);
 
 	if(argv(0) == "help" || argc == 0)
@@ -536,10 +583,23 @@ void GameCommand(string msg)
 		}
 		localcmd("sv_cmd debug_shotorg\n");
 	}
-	else if(cmd == "votestat")
-	{
-		strunzone(vote_statstring);
-		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
+	else if(cmd == "sendcvar") {
+		s = cvar_string(argv(1));
+		if(argv(1) == "cl_weaponpriority")
+			s = W_FixWeaponOrder(W_NumberWeaponOrder(s), 1);
+		else if(substring(argv(1), 0, 17) == "cl_weaponpriority" && strlen(argv(1)) == 18)
+			s = W_FixWeaponOrder(W_NumberWeaponOrder(s), 0);
+		localcmd("cmd sentcvar ", argv(1), " \"", s, "\"\n");
+	}
+	else if(cmd == "spawn") {
+		s = argv(1);
+		e = spawn();
+		precache_model(s);
+		setmodel(e, s);
+		setorigin(e, view_origin);
+		e.angles = view_angles;
+		e.draw = DrawDebugModel;
+		e.classname = "debugmodel";
 	}
 	else
 	{
@@ -559,6 +619,9 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 {
 	local float bSkipKey;
 	bSkipKey = false;
+
+	if (MapVote_InputEvent(bInputType, nPrimary, nSecondary))
+		return true;
 
 	if(menu_visible)
 		if(menu_action(bInputType, nPrimary, nSecondary))
@@ -723,6 +786,13 @@ void Ent_ClientData()
 
 	if(newspectatee_status != spectatee_status)
 	{
+		float i;
+		// clear the weapon accuracy stats
+		for(i = WEP_FIRST; i <= WEP_LAST; ++i) {
+			weapon_hits[i] = 0;
+			weapon_fired[i] = 0;
+		}
+
 		// clear race stuff
 		race_laptime = 0;
 		race_checkpointtime = 0;
@@ -829,6 +899,9 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
+		case ENT_CLIENT_TUBANOTE: Ent_TubaNote(bIsNewEntity); break;
+		case ENT_CLIENT_WARPZONE: WarpZone_Read(bIsNewEntity); break;
+		case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -895,12 +968,14 @@ void CSQC_Parse_CenterPrint(string strMessage)
 	centerprint(strMessage);
 }
 
+string notranslate_fogcmd1 = "\nfog ";
+string notranslate_fogcmd2 = "\nr_fog_exp2 0\nr_drawfog 1\n";
 void Fog_Force()
 {
 	// TODO somehow thwart prvm_globalset client ...
 
 	if(forcefog != "")
-		localcmd(strcat("\nfog ", forcefog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+		localcmd(strcat(notranslate_fogcmd1, forcefog, notranslate_fogcmd2));
 }
 
 void Gamemode_Init();
@@ -925,13 +1000,10 @@ void Ent_ScoresInfo()
 
 void Ent_Init()
 {
-	float i;
 	self.classname = "ent_client_init";
 
 	nb_pb_period = ReadByte() / 32; //Accuracy of 1/32th
 
-	for(i = 0; i < 24; ++i)
-		weaponimpulse[i] = ReadByte() - 1;
 	hook_shotorigin_x = ReadCoord();
 	hook_shotorigin_y = ReadCoord();
 	hook_shotorigin_z = ReadCoord();
@@ -941,6 +1013,8 @@ void Ent_Init()
 	forcefog = strzone(ReadString());
 
 	armorblockpercent = ReadByte() / 255.0;
+
+	g_weaponswitchdelay = ReadByte() / 255.0;
 
 	if(!postinit)
 		PostInit();
@@ -1031,6 +1105,74 @@ void Net_ReadRace()
 				strunzone(race_penaltyreason);
 			race_penaltyreason = strzone(ReadString());
 			break;
+
+		case RACE_NET_SERVER_RECORD:
+			race_server_record = ReadInt24_t();
+			break;
+		case RACE_NET_SPEED_AWARD:
+			race_speedaward = ReadInt24_t();
+			if(race_speedaward_holder)
+				strunzone(race_speedaward_holder);
+			race_speedaward_holder = strzone(ReadString());
+			break;
+		case RACE_NET_SPEED_AWARD_BEST:
+			race_speedaward_alltimebest = ReadInt24_t();
+			if(race_speedaward_alltimebest_holder)
+				strunzone(race_speedaward_alltimebest_holder);
+			race_speedaward_alltimebest_holder = strzone(ReadString());
+			break;
+		case RACE_NET_SERVER_RANKINGS:
+			float pos, prevpos, del;
+			pos = ReadShort();
+			prevpos = ReadShort();
+			del = ReadShort();
+
+			// move other rankings out of the way
+			float i;
+			if (prevpos) {
+				for (i=prevpos-1;i>pos-1;--i) {
+					grecordtime[i] = grecordtime[i-1];
+					if(grecordholder[i])
+						strunzone(grecordholder[i]);
+					grecordholder[i] = strzone(grecordholder[i-1]);
+				}
+			} else if (del) { // a record has been deleted by the admin
+				for (i=pos-1; i<= RANKINGS_CNT-1; ++i) {
+					if (i == RANKINGS_CNT-1) { // clear out last record
+						grecordtime[i] = 0;
+						if (grecordholder[i])
+							strunzone(grecordholder[i]);
+						grecordholder[i] = string_null;
+					}
+					else {
+						grecordtime[i] = grecordtime[i+1];
+						if (grecordholder[i])
+							strunzone(grecordholder[i]);
+						grecordholder[i] = strzone(grecordholder[i+1]);
+					}
+				}
+			} else { // player has no ranked record yet
+				for (i=RANKINGS_CNT-1;i>pos-1;--i) {
+					grecordtime[i] = grecordtime[i-1];
+					if(grecordholder[i])
+						strunzone(grecordholder[i]);
+					grecordholder[i] = strzone(grecordholder[i-1]);
+				}
+			}
+
+			// store new ranking
+			if(grecordholder[pos-1] != "")
+				strunzone(grecordholder[pos-1]);
+			grecordholder[pos-1] = strzone(ReadString());
+			grecordtime[pos-1] = ReadInt24_t();
+			if(grecordholder[pos-1] == GetPlayerName(player_localentnum -1))
+				race_myrank = pos;
+			break;
+		case RACE_NET_SERVER_STATUS:
+			race_status = ReadShort();
+			if(race_status_name)
+				strunzone(race_status_name);
+			race_status_name = strzone(ReadString());
 	}
 }
 
@@ -1038,6 +1180,41 @@ void Net_ReadSpawn()
 {
 	zoomin_effect = 1;
 	current_viewzoom = 0.6;
+}
+
+void Net_TeamNagger()
+{
+	teamnagger = 1;
+}
+
+void Net_ReadPingPLReport()
+{
+	float e, pi, pl, ml;
+	e = ReadByte();
+	pi = ReadShort();
+	pl = ReadByte();
+	ml = ReadByte();
+	if not(playerslots[e])
+		return;
+	playerslots[e].ping = pi;
+	playerslots[e].ping_packetloss = pl / 255.0;
+	playerslots[e].ping_movementloss = ml / 255.0;
+}
+
+void Net_VoteDialog(float highlight) {
+	if(highlight) {
+		vote_highlighted = ReadShort();
+		return;
+	}
+
+	vote_yescount = ReadShort();
+	vote_nocount = ReadShort();
+	vote_needed = ReadShort();
+	vote_active = 1;
+}
+
+void Net_VoteDialogReset() {
+	vote_active = 0;
 }
 
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
@@ -1078,10 +1255,30 @@ float CSQC_Parse_TempEntity()
 			Net_ReadNexgunBeamParticle();
 			bHandled = true;
 			break;
-        case TE_CSQC_LIGHTNINGARC:
-            Net_ReadLightningarc();
-            bHandled = true;
-            break;
+		case TE_CSQC_TEAMNAGGER:
+			Net_TeamNagger();
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTE:
+			Net_VoteDialog(ReadByte());
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTERESET:
+			Net_VoteDialogReset();
+			bHandled = true;
+			break;
+		case TE_CSQC_LIGHTNINGARC:
+			Net_ReadLightningarc();
+			bHandled = true;
+			break;
+		case TE_CSQC_PINGPLREPORT:
+			Net_ReadPingPLReport();
+			bHandled = true;
+			break;
+		case TE_CSQC_ANNOUNCE:
+			announce_snd = strzone(ReadString());
+			bHandled = true;
+			break;
 		default:
 			// No special logic for this temporary entity; return 0 so the engine can handle it
 			bHandled = false;

@@ -38,6 +38,60 @@ void spawnfunc_item_armor_body()     { spawnfunc_item_armor_large();   }
 void spawnfunc_item_armor_combat()   { spawnfunc_item_armor_big();     }
 void spawnfunc_item_armor_shard()    { spawnfunc_item_armor_small();   }
 void spawnfunc_item_enviro()         { spawnfunc_item_invincible();    }
+
+// weapon remove ent from defrag
+void spawnfunc_target_init()         
+{
+	self.spawnflags = 0; // remove all weapons except the ones listed below
+	self.netname = "laser uzi"; // keep these weapons through the remove trigger
+	spawnfunc_target_items();
+}
+
+// weapon give ent from defrag
+void target_give_init()
+{
+	entity targ;
+	for (targ = world; (targ = find(targ, targetname, self.target)); ) {
+		if (targ.classname == "weapon_rocketlauncher") {
+			self.ammo_rockets += targ.count * cvar("g_balance_rocketlauncher_ammo");
+			self.netname = "rocketlauncher";
+		}
+		else if (targ.classname == "weapon_plasmagun") {
+			self.ammo_rockets += targ.count * cvar("g_balance_hagar_primary_ammo");
+			if(self.netname == "")
+				self.netname = "hagar";
+			else
+				self.netname = strcat(self.netname, " hagar");
+		}
+		else if (targ.classname == "weapon_bfg") {
+			self.ammo_cells += targ.count * cvar("g_balance_crylink_primary_ammo");
+			if(self.netname == "")
+				self.netname = "crylink";
+			else
+				self.netname = strcat(self.netname, " crylink");
+		}
+		else if (targ.classname == "weapon_grenadelauncher") {
+			self.ammo_rockets += targ.count * cvar("g_balance_grenadelauncher_primary_ammo");
+			if(self.netname == "")
+				self.netname = "grenadelauncher";
+			else
+				self.netname = strcat(self.netname, " grenadelauncher");
+		}
+		else if (targ.classname == "item_armor_body")
+			self.armorvalue = 100;
+		else if (targ.classname == "item_health_mega")
+			self.health = 200;
+		remove(targ);
+	}
+	self.spawnflags = 2;
+	spawnfunc_target_items();
+}
+
+void spawnfunc_target_give()
+{
+	InitializeEntity(self, target_give_init, INITPRIO_FINDTARGET);
+}
+
 //void spawnfunc_item_flight()       /* not supported */
 //void spawnfunc_item_haste()        /* not supported */
 //void spawnfunc_item_health()       /* handled in t_quake.qc */

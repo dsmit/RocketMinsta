@@ -7,6 +7,8 @@
 ===========================================================================
 */
 
+.float weapon_frametime;
+
 float W_WeaponRateFactor()
 {
 	float t;
@@ -138,18 +140,29 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	else
 		ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	if(antilag)
-		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
+		WarpZone_traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
 		// passing world, because we do NOT want it to touch dphitcontentsmask
 	else
-		traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+		WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
 	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	trueaimpoint = trace_endpos;
 
-	// Track max damage and set the stat to be sent later in g_world.qc
-	if not(inWarmupStage)
-	{
-		ent.max_damage[ent.weapon] += maxdamage;
-		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
+	vector vf, vr, vu;
+	vf = v_forward;
+	vr = v_right;
+	vu = v_up;
+	trueaimpoint = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos); // warpzone support
+	v_forward = vf;
+	v_right = vr;
+	v_up = vu;
+
+	// track max damage
+	if not(inWarmupStage) {
+		entity w;
+		w = get_weaponinfo(ent.weapon);
+		if(w.spawnflags & WEP_TYPE_SPLASH) {  // splash damage
+			ent.stats_fired[ent.weapon - 1] += maxdamage;
+			ent.stat_fired = ent.weapon + 64 * floor(ent.stats_fired[ent.weapon - 1]);
+		}
 	}
 
 	W_HitPlotAnalysis(ent, v_forward, v_right, v_up);
@@ -182,77 +195,8 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	// calculate the shotdir from the chosen shotorg
 	w_shotdir = normalize(trueaimpoint - w_shotorg);
 
-#if 0
-	// explanation of g_antilag:
-	// if client reports it was aiming at a player, and the serverside trace
-	// says it would miss, change the aim point to the player's new origin,
-	// but only if the shot at the player's new origin would hit of course
-	//
-	// FIXME: a much better method for bullet weapons would be to leave a
-	// trail of lagged 'ghosts' behind players, and see if the bullet hits the
-	// ghost corresponding to this player's ping time, and if so it would do
-	// damage to the real player
 	if (antilag)
-	if (ent.cursor_trace_ent)                 // client was aiming at someone
-	if (ent.cursor_trace_ent != ent)         // just to make sure
-	if (ent.cursor_trace_ent.takedamage)      // and that person is killable
-	if (ent.cursor_trace_ent.classname == "player") // and actually a player
-	if (cvar("g_antilag") == 1)
-	{
-		// verify that the shot would miss without antilag
-		// (avoids an issue where guns would always shoot at their origin)
-		traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-		if (!trace_ent.takedamage)
-		{
-			// verify that the shot would hit if altered
-			traceline(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
-			if (trace_ent == ent.cursor_trace_ent)
-			{
-				// verify that the shot would hit in the past
-				if(ent.antilag_debug)
-					antilag_takeback(ent.cursor_trace_ent, time - ent.antilag_debug);
-				else
-					antilag_takeback(ent.cursor_trace_ent, time - ANTILAG_LATENCY(ent));
-
-				traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + v_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-				antilag_restore(ent.cursor_trace_ent);
-
-				if(trace_ent == ent.cursor_trace_ent)
-				{
-					// HIT!
-					w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
-					dprint("ANTILAG HIT for ", ent.netname, "\n");
-				}
-				else
-				{
-					// prydon cursor aimbot or odd network conditions
-					dprint("WARNING: antilag ghost trace for ", ent.netname, " failed!\n");
-				}
-
-				if(cvar("developer") >= 2)
-				{
-					vector v, vplus, vel;
-					float X;
-					v     = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent)       ));
-					vplus = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent) + 0.01));
-					vel = (vplus - v) * (1 / 0.01);
-					// solve: v + X * vel = closest to ent.origin + ent.view_ofs, v_forward axis
-					v     -= (ent.origin + ent.view_ofs);
-					// solve: v + X * vel = closest to v_forward axis
-					// project into 2D by subtracting v_forward components:
-					v   -= (v   * v_forward) * v_forward;
-					vel -= (vel * v_forward) * v_forward;
-					// solve: v + X * vel = closest to origin
-					// (v + X * vel)^2 closest to 0
-					// v^2 + 2 * X * (v * vel) + X^2 * vel^2 closest to 0
-					X = -(v * vel) / (vel * vel);
-					dprint("dead center needs adjustment of ", ftos(X), " (that is, ", ftos(ANTILAG_LATENCY(ent) + X), " instead of ", ftos(ANTILAG_LATENCY(ent)), "\n");
-				}
-			}
-		}
-	}
-#else
-	if (antilag)
+	if (!ent.cvar_cl_noantilag)
 	{
 		if (cvar("g_antilag") == 1) // switch to "ghost" if not hitting original
 		{
@@ -272,6 +216,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		}
 		else if(cvar("g_antilag") == 3) // client side hitscan
 		{
+			// this part MUST use prydon cursor
 			if (ent.cursor_trace_ent)                 // client was aiming at someone
 			if (ent.cursor_trace_ent != ent)         // just to make sure
 			if (ent.cursor_trace_ent.takedamage)      // and that person is killable
@@ -292,7 +237,6 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			}
 		}
 	}
-#endif
 
 	ent.dphitcontentsmask = oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
@@ -407,7 +351,7 @@ vector weapon_adjust = '10 0 -15';
 /*
  * supported formats:
  *
- * 1. simple animated model, muzzlr flash handling on h_ model:
+ * 1. simple animated model, muzzle flash handling on h_ model:
  *    h_tuba.dpm, h_tuba.dpm.framegroups - invisible model controlling the animation
  *      tags:
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
@@ -416,7 +360,17 @@ vector weapon_adjust = '10 0 -15';
  *    v_tuba.md3 - first and third person model
  *    g_tuba.md3 - pickup model
  *
- * 2. fully animated model, muzzle flash handling on h_ model:
+ * 2. simple animated model, muzzle flash handling on v_ model:
+ *    h_tuba.dpm, h_tuba.dpm.framegroups - invisible model controlling the animation
+ *      tags:
+ *        weapon = attachment for v_tuba.md3
+ *    v_tuba.md3 - first and third person model
+ *      tags:
+ *        shot = muzzle end (shot origin, also used for muzzle flashes)
+ *        shell = casings ejection point (must be on the right hand side of the gun)
+ *    g_tuba.md3 - pickup model
+ *
+ * 3. fully animated model, muzzle flash handling on h_ model:
  *    h_tuba.dpm, h_tuba.dpm.framegroups - animated first person model
  *      tags:
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
@@ -425,7 +379,7 @@ vector weapon_adjust = '10 0 -15';
  *    v_tuba.md3 - third person model
  *    g_tuba.md3 - pickup model
  *
- * 3. fully animated model, muzzle flash handling on v_ model:
+ * 4. fully animated model, muzzle flash handling on v_ model:
  *    h_tuba.dpm, h_tuba.dpm.framegroups - animated first person model
  *      tags:
  *        shot = muzzle end (shot origin)
@@ -471,6 +425,8 @@ void CL_Weaponentity_Think()
 				self.weaponentity.model = "";
 			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
 			v_shot_idx = gettagindex(self, "shot"); // used later
+			if(!v_shot_idx)
+				v_shot_idx = gettagindex(self, "tag_shot");
 
 			if(qcweaponanimation)
 			{
@@ -512,6 +468,13 @@ void CL_Weaponentity_Think()
 					setmodel(self.weaponentity, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision does not matter
 					setattachment(self.weaponentity, self, "weapon");
 				}
+				else if(gettagindex(self, "tag_weapon"))
+				{
+					if (!self.weaponentity)
+						self.weaponentity = spawn();
+					setmodel(self.weaponentity, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision does not matter
+					setattachment(self.weaponentity, self, "tag_weapon");
+				}
 				else
 				{
 					if(self.weaponentity)
@@ -525,38 +488,67 @@ void CL_Weaponentity_Think()
 				self.viewmodelforclient = world;
 
 				float idx;
-				idx = gettagindex(self, "shot");
-				if(idx)
+
+				if(v_shot_idx) // v_ model attached to invisible h_ model
 				{
-					self.movedir = gettaginfo(self, idx);
+					self.movedir = gettaginfo(self.weaponentity, v_shot_idx);
 				}
 				else
 				{
-					print("WARNING: weapon model ", self.model, " does not support the 'shot' tag, will display shots TOTALLY wrong\n");
-					self.movedir = '0 0 0';
+					idx = gettagindex(self, "shot");
+					if(!idx)
+						idx = gettagindex(self, "tag_shot");
+					if(idx)
+						self.movedir = gettaginfo(self, idx);
+					else
+					{
+						print("WARNING: weapon model ", self.model, " does not support the 'shot' tag, will display shots TOTALLY wrong\n");
+						self.movedir = '0 0 0';
+					}
 				}
 
-				idx = gettagindex(self, "shell");
-				if(idx)
+				if(self.weaponentity) // v_ model attached to invisible h_ model
 				{
-					self.spawnorigin = gettaginfo(self, idx);
+					idx = gettagindex(self.weaponentity, "shell");
+					if(!idx)
+						idx = gettagindex(self.weaponentity, "tag_shell");
+					if(idx)
+						self.spawnorigin = gettaginfo(self.weaponentity, idx);
 				}
 				else
+					idx = 0;
+				if(!idx)
 				{
-					print("WARNING: weapon model ", self.model, " does not support the 'shell' tag, will display casings wrong\n");
-					self.spawnorigin = self.movedir;
+					idx = gettagindex(self, "shell");
+					if(!idx)
+						idx = gettagindex(self, "tag_shell");
+					if(idx)
+						self.spawnorigin = gettaginfo(self, idx);
+					else
+					{
+						print("WARNING: weapon model ", self.model, " does not support the 'shell' tag, will display casings wrong\n");
+						self.spawnorigin = self.movedir;
+					}
 				}
 
 				if(v_shot_idx)
 				{
-					self.oldorigin = '0 0 0';
+					self.oldorigin = '0 0 0'; // use regular attachment
 				}
 				else
 				{
 					if(self.weaponentity)
+					{
 						idx = gettagindex(self, "weapon");
+						if(!idx)
+							idx = gettagindex(self, "tag_weapon");
+					}
 					else
+					{
 						idx = gettagindex(self, "handle");
+						if(!idx)
+							idx = gettagindex(self, "tag_handle");
+					}
 					if(idx)
 					{
 						self.oldorigin = self.movedir - gettaginfo(self, idx);
@@ -622,14 +614,17 @@ void CL_Weaponentity_Think()
 		setanim(self, self.anim_idle, TRUE, FALSE, TRUE);
 	}
 
-	tb = (self.effects & EF_TELEPORT_BIT);
+	tb = (self.effects & (EF_TELEPORT_BIT | EF_RESTARTANIM_BIT));
 	self.effects = self.owner.effects & EFMASK_CHEAP;
 	self.effects &~= EF_LOWPRECISION;
 	self.effects &~= EF_FULLBRIGHT; // can mask team color, so get rid of it
 	self.effects &~= EF_TELEPORT_BIT;
+	self.effects &~= EF_RESTARTANIM_BIT;
 	self.effects |= tb;
 
-	if(self.owner.alpha != 0)
+	if(self.owner.alpha == default_player_alpha)
+		self.alpha = default_weapon_alpha;
+	else if(self.owner.alpha != 0)
 		self.alpha = self.owner.alpha;
 	else
 		self.alpha = 1;
@@ -805,6 +800,7 @@ void CL_Weaponentity_Think()
 void CL_ExteriorWeaponentity_Think()
 {
 	float tag_found;
+	vector ang;
 	self.nextthink = time;
 	if (self.owner.exteriorweaponentity != self)
 	{
@@ -838,12 +834,47 @@ void CL_ExteriorWeaponentity_Think()
 		if (!self.tag_index)
 			self.model = "";
 	}
-	self.effects = self.owner.effects | EF_LOWPRECISION;
+	self.effects = self.owner.effects;
+	if(sv_pitch_min == sv_pitch_max)
+		self.effects |= EF_LOWPRECISION;
+	else
+		self.effects &~= EF_LOWPRECISION;
 	self.effects = self.effects & EFMASK_CHEAP; // eat performance
-	if(self.owner.alpha != 0)
+	if(self.owner.alpha == default_player_alpha)
+		self.alpha = default_weapon_alpha;
+	else if(self.owner.alpha != 0)
 		self.alpha = self.owner.alpha;
 	else
 		self.alpha = 1;
+
+	ang_x = bound(sv_pitch_min, self.owner.v_angle_x, sv_pitch_max);
+	ang_y = 0;
+	ang_z = 0;
+
+	if(sv_pitch_fixyaw) // workaround for stupid player models that don't aim forward
+	{
+		ang_y = self.owner.v_angle_y;
+		makevectors(ang);
+		var vector v = v_forward;
+		var float t = self.tag_entity.frame1time;
+		var float f = self.tag_entity.frame;
+		self.tag_entity.frame1time = time;
+		self.tag_entity.frame = self.tag_entity.anim_idle_x;
+		gettaginfo(self.tag_entity, self.tag_index);
+		self.tag_entity.frame1time = t;
+		self.tag_entity.frame = f;
+		// untransform v according to this coordinate space
+		vector w;
+		w_x = v_forward * v;
+		w_y = -v_right * v;
+		w_z = v_up * v;
+		self.angles = vectoangles(w);
+	}
+	else
+	{
+		ang_x = -/* don't ask */ang_x;
+		self.angles = ang;
+	}
 
 	self.colormap = self.owner.colormap;
 };
@@ -1011,7 +1042,14 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
-		W_SwitchWeapon_Force(self, w_getbestweapon(self));
+		// hack to ensure it switches to an OTHER weapon (in case the other fire mode still has ammo, we want that anyway)
+		float w, ww;
+		w = W_WeaponBit(self.weapon);
+		self.weapons &~= w;
+		ww = w_getbestweapon(self);
+		self.weapons |= w;
+		if(ww)
+			W_SwitchWeapon_Force(self, ww);
 		return FALSE;
 	}
 
@@ -1025,7 +1063,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished
-		if (ATTACK_FINISHED(self) > time + frametime * 0.5)
+		if (ATTACK_FINISHED(self) > time + self.weapon_frametime * 0.5)
 			return FALSE;
 		// don't fire while changing weapon
 		if (self.weaponentity.state != WS_READY)
@@ -1038,7 +1076,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	// if the weapon hasn't been firing continuously, reset the timer
 	if(attacktime >= 0)
 	{
-		if (ATTACK_FINISHED(self) < time - frametime * 1.5)
+		if (ATTACK_FINISHED(self) < time - self.weapon_frametime * 1.5)
 		{
 			ATTACK_FINISHED(self) = time;
 			//dprint("resetting attack finished to ", ftos(time), "\n");
@@ -1168,7 +1206,7 @@ void weapon_thinkf(float fr, float t, void() func)
 		self.weapon_nextthink = time;
 		//dprint("started firing at ", ftos(time), "\n");
 	}
-	if (self.weapon_nextthink < time - frametime * 1.5 || self.weapon_nextthink > time + frametime * 1.5)
+	if (self.weapon_nextthink < time - self.weapon_frametime * 1.5 || self.weapon_nextthink > time + self.weapon_frametime * 1.5)
 	{
 		self.weapon_nextthink = time;
 		//dprint("reset weapon animation timer at ", ftos(time), "\n");
@@ -1183,7 +1221,7 @@ void weapon_thinkf(float fr, float t, void() func)
 	{
 		local vector anim;
 		anim = self.anim_shoot;
-		anim_z = anim_y / t;
+		anim_z = anim_y / (t + sys_frametime);
 		setanim(self, anim, FALSE, TRUE, TRUE);
 	}
 };
@@ -1265,14 +1303,6 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 	return outvelocity;
 }
 
-void W_SetupProjectileVelocity(entity missile)
-{
-	if(missile.owner == world)
-		error("Unowned missile");
-
-	missile.velocity = W_CalculateProjectileVelocity(missile.owner.velocity, missile.velocity);
-}
-
 void W_AttachToShotorg(entity flash, vector offset)
 {
 	entity xflash;
@@ -1305,3 +1335,234 @@ void W_AttachToShotorg(entity flash, vector offset)
 		}
 	}
 }
+
+vector cliptoplane(vector v, vector p)
+{
+	return v - (v * p) * p;
+}
+
+vector solve_cubic_pq(float p, float q)
+{
+	float D, u, v, a;
+	D = q*q/4.0 + p*p*p/27.0;
+	if(D < 0)
+	{
+		// irreducibilis
+		a = 1.0/3.0 * acos(-q/2.0 * sqrt(-27.0/(p*p*p)));
+		u = sqrt(-4.0/3.0 * p);
+		// a in range 0..pi/3
+		// cos(a)
+		// cos(a + 2pi/3)
+		// cos(a + 4pi/3)
+		return
+			u *
+			(
+				'1 0 0' * cos(a + 2.0/3.0*M_PI)
+				+
+				'0 1 0' * cos(a + 4.0/3.0*M_PI)
+				+
+				'0 0 1' * cos(a)
+			);
+	}
+	else if(D == 0)
+	{
+		// simple
+		if(p == 0)
+			return '0 0 0';
+		u = 3*q/p;
+		v = -u/2;
+		if(u >= v)
+			return '1 1 0' * v + '0 0 1' * u;
+		else
+			return '0 1 1' * v + '1 0 0' * u;
+	}
+	else
+	{
+		// cardano
+		u = cbrt(-q/2.0 + sqrt(D));
+		v = cbrt(-q/2.0 - sqrt(D));
+		return '1 1 1' * (u + v);
+	}
+}
+vector solve_cubic_abcd(float a, float b, float c, float d)
+{
+	// y = 3*a*x + b
+	// x = (y - b) / 3a
+	float p, q;
+	vector v;
+	p = (9*a*c - 3*b*b);
+	q = (27*a*a*d - 9*a*b*c + 2*b*b*b);
+	v = solve_cubic_pq(p, q);
+	v = (v -  b * '1 1 1') * (1.0 / (3.0 * a));
+	if(a < 0)
+		v += '1 0 -1' * (v_z - v_x); // swap x, z
+	return v;
+}
+
+vector findperpendicular(vector v)
+{
+	vector p;
+	p_x = v_z;
+	p_y = -v_x;
+	p_z = v_y;
+	return normalize(cliptoplane(p, v));
+}
+
+vector W_CalculateProjectileSpread(vector forward, float spread)
+{
+	float sigma;
+	vector v1, v2;
+	float dx, dy, r;
+	float sstyle;
+	spread *= g_weaponspreadfactor;
+	if(spread <= 0)
+		return forward;
+	sstyle = cvar("g_projectiles_spread_style");
+	
+	if(sstyle == 0)
+	{
+		// this is the baseline for the spread value!
+		// standard deviation: sqrt(2/5)
+		// density function: sqrt(1-r^2)
+		return forward + randomvec() * spread;
+	}
+	else if(sstyle == 1)
+	{
+		// same thing, basically
+		return normalize(forward + cliptoplane(randomvec() * spread, forward));
+	}
+	else if(sstyle == 2)
+	{
+		// circle spread... has at sigma=1 a standard deviation of sqrt(1/2)
+		sigma = spread * 0.89442719099991587855; // match baseline stddev
+		v1 = findperpendicular(forward);
+		v2 = cross(forward, v1);
+		// random point on unit circle
+		dx = random() * 2 * M_PI;
+		dy = sin(dx);
+		dx = cos(dx);
+		// radius in our dist function
+		r = random();
+		r = sqrt(r);
+		return normalize(forward + (v1 * dx + v2 * dy) * r * sigma);
+	}
+	else if(sstyle == 3) // gauss 3d
+	{
+		sigma = spread * 0.44721359549996; // match baseline stddev
+		// note: 2D gaussian has sqrt(2) times the stddev of 1D, so this factor is right
+		v1 = forward;
+		v1_x += gsl_ran_gaussian(sigma);
+		v1_y += gsl_ran_gaussian(sigma);
+		v1_z += gsl_ran_gaussian(sigma);
+		return v1;
+	}
+	else if(sstyle == 4) // gauss 2d
+	{
+		sigma = spread * 0.44721359549996; // match baseline stddev
+		// note: 2D gaussian has sqrt(2) times the stddev of 1D, so this factor is right
+		v1_x = gsl_ran_gaussian(sigma);
+		v1_y = gsl_ran_gaussian(sigma);
+		v1_z = gsl_ran_gaussian(sigma);
+		return normalize(forward + cliptoplane(v1, forward));
+	}
+	else if(sstyle == 5) // 1-r
+	{
+		sigma = spread * 1.154700538379252; // match baseline stddev
+		v1 = findperpendicular(forward);
+		v2 = cross(forward, v1);
+		// random point on unit circle
+		dx = random() * 2 * M_PI;
+		dy = sin(dx);
+		dx = cos(dx);
+		// radius in our dist function
+		r = random();
+		r = solve_cubic_abcd(-2, 3, 0, -r) * '0 1 0';
+		return normalize(forward + (v1 * dx + v2 * dy) * r * sigma);
+	}
+	else if(sstyle == 6) // 1-r^2
+	{
+		sigma = spread * 1.095445115010332; // match baseline stddev
+		v1 = findperpendicular(forward);
+		v2 = cross(forward, v1);
+		// random point on unit circle
+		dx = random() * 2 * M_PI;
+		dy = sin(dx);
+		dx = cos(dx);
+		// radius in our dist function
+		r = random();
+		r = sqrt(1 - r);
+		r = sqrt(1 - r);
+		return normalize(forward + (v1 * dx + v2 * dy) * r * sigma);
+	}
+	else if(sstyle == 7) // (1-r) (2-r)
+	{
+		sigma = spread * 1.224744871391589; // match baseline stddev
+		v1 = findperpendicular(forward);
+		v2 = cross(forward, v1);
+		// random point on unit circle
+		dx = random() * 2 * M_PI;
+		dy = sin(dx);
+		dx = cos(dx);
+		// radius in our dist function
+		r = random();
+		r = 1 - sqrt(r);
+		r = 1 - sqrt(r);
+		return normalize(forward + (v1 * dx + v2 * dy) * r * sigma);
+	}
+	else
+		error("g_projectiles_spread_style must be 0 (sphere), 1 (flattened sphere), 2 (circle), 3 (gauss 3D), 4 (gauss plane), 5 (linear falloff), 6 (quadratic falloff), 7 (stronger falloff)!");
+	return '0 0 0';
+	/*
+	 * how to derive falloff functions:
+	 * rho(r) := (2-r) * (1-r);
+	 * a : 0;
+	 * b : 1;
+	 * rhor(r) := r * rho(r);
+	 * cr(t) := integrate(rhor(r), r, a, t);
+	 * scr(t) := integrate(rhor(r) * r^2, r, a, t);
+	 * variance : scr(b) / cr(b);
+	 * solve(cr(r) = rand * cr(b), r), programmmode:false;
+	 * sqrt(0.4 / variance), numer;
+	 */
+}
+
+#if 0
+float mspercallsum;
+float mspercallsstyle;
+float mspercallcount;
+#endif
+void W_SetupProjectileVelocityEx(entity missile, vector dir, vector upDir, float pSpeed, float pUpSpeed, float pZSpeed, float spread)
+{
+	if(missile.owner == world)
+		error("Unowned missile");
+
+	dir = dir + upDir * (pUpSpeed / pSpeed);
+	dir_z += pZSpeed / pSpeed;
+	pSpeed *= vlen(dir);
+	dir = normalize(dir);
+
+#if 0
+	if(cvar("g_projectiles_spread_style") != mspercallsstyle)
+	{
+		mspercallsum = mspercallcount = 0;
+		mspercallsstyle = cvar("g_projectiles_spread_style");
+	}
+	mspercallsum -= gettime(GETTIME_HIRES);
+#endif
+	dir = W_CalculateProjectileSpread(dir, spread);
+#if 0
+	mspercallsum += gettime(GETTIME_HIRES);
+	mspercallcount += 1;
+	print("avg: ", ftos(mspercallcount / mspercallsum), " per sec\n");
+#endif
+
+	missile.velocity = W_CalculateProjectileVelocity(missile.owner.velocity, pSpeed * dir);
+}
+
+void W_SetupProjectileVelocity(entity missile, float pSpeed, float spread)
+{
+	W_SetupProjectileVelocityEx(missile, w_shotdir, v_up, pSpeed, 0, 0, spread);
+}
+
+#define W_SETUPPROJECTILEVELOCITY_UP(m,s) W_SetupProjectileVelocityEx(m, w_shotdir, v_up, cvar(#s "_speed"), cvar(#s "_speed_up"), cvar(#s "_speed_z"), cvar(#s "_spread"))
+#define W_SETUPPROJECTILEVELOCITY(m,s) W_SetupProjectileVelocityEx(m, w_shotdir, v_up, cvar(#s "_speed"), 0, 0, cvar(#s "_spread"))

@@ -475,8 +475,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	else
 		Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
 
-	if(g_arena)
-	if(numspawned < 2)
+	if((g_arena && numspawned < 2) || (g_ca && player_cnt < 2) && !inWarmupStage)
 		return;
 
 	if (!g_minstagib)
@@ -506,7 +505,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
 
-	if (time > self.spawnshieldtime)
+	if (time >= self.spawnshieldtime)
 	{
 		if (!(self.flags & FL_GODMODE))
 		{
@@ -529,8 +528,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 					}
 
 					if(sound_allowed(MSG_BROADCAST, attacker))
-					
-					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					if(!DEATH_ISWEAPON(deathtype, WEP_LASER) || attacker != self || self.health < 2 * cvar("g_balance_laser_primary_damage") * cvar("g_balance_selfdamagepercent") + 1)
 					// exclude pain sounds for laserjumps as long as you aren't REALLY low on health and would die of the next two
 					{
@@ -674,17 +671,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		// when to allow respawn
 		sdelay = 0;
 		waves = 0;
-		if(cvar("g_respawn_mapsettings"))
-		{
-			sdelay = cvar("g_respawn_mapsettings_delay");
-			waves = cvar("g_respawn_mapsettings_waves");
-		}
-		if(!sdelay)
-			sdelay = cvar(strcat("g_", GetGametype(), "_respawn_delay"));
+		sdelay = cvar(strcat("g_", GetGametype(), "_respawn_delay"));
 		if(!sdelay)
 			sdelay = cvar("g_respawn_delay");
-		if(!waves)
-			waves = cvar(strcat("g_", GetGametype(), "_respawn_waves"));
+		waves = cvar(strcat("g_", GetGametype(), "_respawn_waves"));
 		if(!waves)
 			waves = cvar("g_respawn_waves");
 		if(waves)
@@ -733,7 +723,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		if(defer_ClientKill_Now_TeamChange)
 			ClientKill_Now_TeamChange();
 
-		if(sv_gentle > 0) {
+		if(sv_gentle > 0 || cvar("ekg")) {
 			// remove corpse
 			PlayerCorpseDamage (inflictor, attacker, 100.0, deathtype, hitloc, force);
 		}
@@ -821,9 +811,10 @@ void UpdateSelectedPlayer()
 	makevectors(self.v_angle); // sets v_forward
 
 	// 1. cursor trace is always right
-	if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && !self.cursor_trace_ent.deadflag)
+	WarpZone_crosshair_trace(self);
+	if(trace_ent && trace_ent.classname == "player" && !trace_ent.deadflag)
 	{
-		selected = self.cursor_trace_ent;
+		selected = trace_ent;
 	}
 	else
 	{
@@ -1008,7 +999,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		lines = 0;
 		while(getWrappedLine_remaining && (!flood_lmax || lines <= flood_lmax))
 		{
-			msgstr = strcat(msgstr, " ", getWrappedLine(82.4289758859709, strlennocol)); // perl averagewidth.pl < gfx/vera-sans.width
+			msgstr = strcat(msgstr, " ", getWrappedLineLen(82.4289758859709, strlennocol)); // perl averagewidth.pl < gfx/vera-sans.width
 			++lines;
 		}
 		msgstr = substring(msgstr, 1, strlen(msgstr) - 1);
@@ -1402,4 +1393,32 @@ void VoiceMessage(string type, string msg)
 
 	if (!flood)
 		PlayerSound(sample, CHAN_VOICE, voicetype);
+}
+
+void MoveToTeam(entity client, float team_colour, float type, float show_message)
+{
+// 	show_message
+// 	0 (00) automove centerprint, admin message
+// 	1 (01) automove centerprint, no admin message
+// 	2 (10) no centerprint, admin message
+// 	3 (11) no centerprint, no admin message
+
+	float lockteams_backup;
+
+	lockteams_backup = lockteams;  // backup any team lock
+
+	lockteams = 0;  // disable locked teams
+
+	TeamchangeFrags(client);  // move the players frags
+	SetPlayerColors(client, team_colour - 1);  // set the players colour
+	Damage(client, client, client, 100000, ((show_message & 2) ? DEATH_QUIET : DEATH_AUTOTEAMCHANGE), client.origin, '0 0 0');  // kill the player
+
+	lockteams = lockteams_backup;  // restore the team lock
+
+	LogTeamchange(client.playerid, client.team, type);
+
+	if not(show_message & 1) // admin message
+		sprint(client, strcat("\{1}\{13}^3", admin_name(), "^7: You have been moved to the ", Team_ColorNameLowerCase(team_colour), " team\n"));  // send a chat message
+
+	bprint(strcat(client.netname, " joined the ", ColoredTeamName(client.team), "\n"));
 }

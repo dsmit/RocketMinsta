@@ -246,7 +246,7 @@ void PlayerScore_Clear(entity player)
 	if(teamscores_entities_count)
 		return;
 	if(g_lms) return;
-	if(g_arena) return;
+	if(g_arena || g_ca) return;
 	if(g_race && !g_race_qualifying) return;
 
 	sk = player.scorekeeper;
@@ -460,9 +460,6 @@ void WinningConditionHelper()
 		WinningConditionHelper_secondteam = -1; // no teamplay
 	}
 
-	if(teamscores_flags_primary & SFL_TIME)
-		WinningConditionHelper_topscore /= 10;
-
 	if(WinningConditionHelper_topscore == 0)
 	{
 		if(scores_flags_primary & SFL_ZERO_IS_WORST)
@@ -499,12 +496,12 @@ void WinningConditionHelper()
 				s = strcat(s, ":human");
 			else
 				s = strcat(s, ":bot");
-			if(p.classname != "player" && !g_arena && !g_lms)
+			if(p.classname != "player" && !g_arena && !g_ca && !g_lms)
 				s = strcat(s, ":spectator");
 		}
 		else
 		{
-			if(p.classname == "player" || g_arena || g_lms)
+			if(p.classname == "player" || g_arena || g_ca || g_lms)
 				s = GetPlayerScoreString(p, 2);
 			else
 				s = "-666";

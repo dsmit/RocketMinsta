@@ -1,3 +1,6 @@
+#ifdef REGISTER_WEAPON
+REGISTER_WEAPON(HAGAR, w_hagar, IT_ROCKETS, 8, WEP_FLAG_NORMAL | WEP_FLAG_CANCLIMB | WEP_TYPE_SPLASH, BOT_PICKUP_RATING_MID, "hagar", "hagar", "Hagar");
+#else
 // NO bounce protection, as bounces are limited!
 void W_Hagar_Explode (void)
 {
@@ -61,8 +64,7 @@ void W_Hagar_Attack (void)
 	setsize(missile, '0 0 0', '0 0 0');
 
 	missile.movetype = MOVETYPE_FLY;
-	missile.velocity = (w_shotdir + randomvec() * cvar("g_balance_hagar_primary_spread")) * cvar("g_balance_hagar_primary_speed");
-	W_SetupProjectileVelocity(missile);
+	W_SETUPPROJECTILEVELOCITY(missile, g_balance_hagar_primary);
 
 	missile.angles = vectoangles (missile.velocity);
 	missile.flags = FL_PROJECTILE;
@@ -88,7 +90,7 @@ void W_Hagar_Attack2 (void)
 	missile.bot_dodgerating = cvar("g_balance_hagar_secondary_damage");
 	missile.touch = W_Hagar_Touch2;
 	missile.cnt = 0;
-	missile.use = W_Hagar_Explode;
+	missile.use = W_Hagar_Explode2;
 	missile.think = adaptor_think2use;
 	missile.nextthink = time + cvar("g_balance_hagar_secondary_lifetime_min") + random() * cvar("g_balance_hagar_secondary_lifetime_rand");
 	PROJECTILE_MAKETRIGGER(missile);
@@ -97,9 +99,7 @@ void W_Hagar_Attack2 (void)
 	setsize(missile, '0 0 0', '0 0 0');
 
 	missile.movetype = MOVETYPE_BOUNCEMISSILE;
-	missile.velocity = (w_shotdir + randomvec() * cvar("g_balance_hagar_secondary_spread")) * cvar("g_balance_hagar_secondary_speed");
-	W_SetupProjectileVelocity(missile);
-	missile.avelocity = '100 10 10';
+	W_SETUPPROJECTILEVELOCITY(missile, g_balance_hagar_secondary);
 
 	missile.angles = vectoangles (missile.velocity);
 	missile.flags = FL_PROJECTILE;
@@ -130,7 +130,7 @@ float w_hagar(float req)
 			W_Hagar_Attack();
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_hagar_primary_refire"), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 && cvar("g_balance_hagar_secondary"))
 		if (weapon_prepareattack(1, cvar("g_balance_hagar_secondary_refire")))
 		{
 			W_Hagar_Attack2();
@@ -161,3 +161,4 @@ float w_hagar(float req)
 	}
 	return TRUE;
 };
+#endif

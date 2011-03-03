@@ -178,6 +178,8 @@ float GameCommand_Generic(string command)
 		print("    f1 f2 b when ----------------------> f   : f1 if b, f2 otherwise\n");
 		print("    s s union|intersection|difference -> s   : set operations\n");
 		print("    s shuffle -------------------------> s   : randomly arrange elements\n");
+		print("    /key /value put ------------------->     : set a database key\n");
+		print("    /key get --------------------------> s   : get a database value\n");
 		print("    x dbpush -------------------------->     : pushes the top onto the database\n");
 		print("    dbpop|dbget -----------------------> x   : removes/reads DB's top\n");
 		print("    dblen|dbat ------------------------> f   : gets the DB's size/cursor pos\n");
@@ -197,8 +199,10 @@ float GameCommand_Generic(string command)
 		print("  maplist cleanup\n");
 		print("  maplist maplist\n");
 		print("  maplist lsmaps\n");
+		print("  maplist lsnewmaps\n");
 		print("  addtolist variable addedvalue\n");
 		print("  records\n");
+		print("  rankings (map argument optional)\n");
 		return TRUE;
 	}
 	
@@ -255,6 +259,10 @@ float GameCommand_Generic(string command)
 		}
 		else if(argv(1) == "lsmaps") {
 			print(lsmaps_reply);
+			return TRUE;
+		}
+		else if(argv(1) == "lsnewmaps") {
+			print(lsnewmaps_reply);
 			return TRUE;
 		}
 	}
@@ -416,7 +424,11 @@ float GameCommand_Generic(string command)
 						rpn_error = TRUE;
 					}
 				} else if(rpncmd == "load") {
+#ifdef SVQC
+					rpn_set(cvar_string_builtin(rpn_get())); // cvar name comes from user
+#else
 					rpn_set(cvar_string(rpn_get()));
+#endif
 				} else if(rpncmd == "exch") {
 					s = rpn_pop();
 					s2 = rpn_get();
@@ -501,6 +513,18 @@ float GameCommand_Generic(string command)
 					rpn_setf(ceil(random() * rpn_getf()) - 1);
 				} else if(rpncmd == "crc16") {
 					rpn_setf(crc16(FALSE, rpn_get()));
+				} else if(rpncmd == "put") {
+					s2 = rpn_pop();
+					if (!rpn_error)
+					{
+						s = rpn_pop();
+						if (!rpn_error)
+							db_put(rpn_db, s, s2);
+					}
+				} else if(rpncmd == "get") {
+					s = rpn_pop();
+					if (!rpn_error)
+						rpn_push(db_get(rpn_db, s));
 				} else if(rpncmd == "dbpush") {
 					s = rpn_pop();
 					if(!rpn_error)
@@ -805,6 +829,10 @@ float GameCommand_Generic(string command)
 	}
 	else if(argv(0) == "records") {
 		print(records_reply);
+		return TRUE;
+	}
+	else if(argv(0) == "rankings") {
+		print(rankings_reply);
 		return TRUE;
 #ifdef MENUQC
 	} else if(argv(0) == "cp") {

@@ -1,15 +1,18 @@
 //--// Some support routines //--//
 
 #define anglemodss(a) (a - floor(a / 360) * 360)
+
 float(float v) anglemods =
 {
 	v = v - 360 * floor(v / 360);
 	return v;
-};
+}
+
 float safeangle(float a)
 {
-    if((a > -361) && (a < 361))
+    if((a >= -360) && (a <= 360))
         return a;
+
 
     a -= (360 * floor(a / 360));
 
@@ -268,7 +271,9 @@ float turret_tag_setup()
         return 0;
     }
 
-    setorigin(self.tur_head,gettaginfo(self,gettagindex(self,"tag_head")));
+    //if not(self.turrcaps_flags & TFL_TURRCAPS_HEADATTACHED)
+    //    setorigin(self.tur_head,gettaginfo(self,gettagindex(self,"tag_head")));
+
     self.tur_shotorg = gettaginfo(self.tur_head,gettagindex(self.tur_head,"tag_fire"));
 
     v_forward = normalize(v_forward);

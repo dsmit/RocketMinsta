@@ -19,14 +19,73 @@ float PlayerEdgeDistance(entity p, vector v)
 	return vbest * v;
 }
 
+vector Portal_ApplyTransformToPlayerAngle(vector transform, vector vangle)
+{
+	vector old_forward, old_up;
+	vector old_yawforward;
+	vector new_forward, new_up;
+	vector new_yawforward;
+
+	vector ang;
+	ang = vangle;
+	/*
+	   ang_x = bound(-89, mod(-ang_x + 180, 360) - 180, 89);
+	   ang = AnglesTransform_ApplyToVAngles(transform, ang);
+	 */
+
+	// PLAYERS use different math
+#ifndef POSITIVE_PITCH_IS_DOWN
+	ang_x = -ang_x;
+#endif
+
+	//print("reference: ", vtos(AnglesTransform_ApplyToVAngles(transform, ang)), "\n");
+
+	fixedmakevectors(ang);
+	old_forward = v_forward;
+	old_up = v_up;
+	fixedmakevectors(ang_y * '0 1 0');
+	old_yawforward = v_forward;
+
+	// their aiming directions are portalled...
+	new_forward = AnglesTransform_Apply(transform, old_forward);
+	new_up = AnglesTransform_Apply(transform, old_up);
+	new_yawforward = AnglesTransform_Apply(transform, old_yawforward);
+
+	// but now find a new sense of direction
+	// this is NOT easy!
+	// assume new_forward points straight up.
+	// What is our yaw?
+	//
+	// new_up could now point forward OR backward... which direction to choose?
+
+	if(new_forward_z > 0.7 || new_forward_z < -0.7) // far up; in this case, the "up" vector points backwards
+	{
+		// new_yawforward and new_yawup define the new aiming half-circle
+		// we "just" need to find out whether new_up or -new_up is in that half circle
+		ang = fixedvectoangles(new_forward); // this still gets us a nice pitch value...
+		if(new_up * new_yawforward < 0)
+			new_up = -1 * new_up;
+		ang_y = vectoyaw(new_up); // this vector is the yaw we want
+		//print("UP/DOWN path: ", vtos(ang), "\n");
+	}
+	else
+	{
+		// good angles; here, "forward" suffices
+		ang = fixedvectoangles(new_forward);
+		//print("GOOD path: ", vtos(ang), "\n");
+	}
+
+#ifndef POSITIVE_PITCH_IS_DOWN
+	ang_x = -ang_x;
+#endif
+	ang_z = vangle_z;
+	return ang;
+}
+
 .vector right_vector;
 float Portal_TeleportPlayer(entity teleporter, entity player)
 {
 	vector from, to, safe, step, transform, ang, newvel;
-	vector new_forward, new_up;
-	vector old_forward, old_up;
-	vector new_yawforward;
-	vector old_yawforward;
 	float planeshift, s, t;
 
 	if not(teleporter.enemy)
@@ -44,7 +103,7 @@ float Portal_TeleportPlayer(entity teleporter, entity player)
 	// this now is INSIDE the plane... can't use that
 
 	// shift it out
-	fixedmakevectors(teleporter.enemy.angles);
+	fixedmakevectors(teleporter.enemy.mangle);
 
 	// first shift it ON the plane if needed
 	planeshift = ((teleporter.enemy.origin - to) * v_forward) + PlayerEdgeDistance(player, v_forward) + 1;
@@ -87,61 +146,9 @@ float Portal_TeleportPlayer(entity teleporter, entity player)
 
 	// ang_x stuff works around weird quake angles
 	if(player.classname == "player")
-	{
-		ang = player.v_angle;
-		/*
-		ang_x = bound(-89, mod(-ang_x + 180, 360) - 180, 89);
-		ang = AnglesTransform_Multiply(transform, ang);
-		*/
-
-		// PLAYERS use different math
-		ang_x = -ang_x;
-
-		//print("reference: ", vtos(AnglesTransform_Multiply(transform, ang)), "\n");
-
-		fixedmakevectors(ang);
-		old_forward = v_forward;
-		old_up = v_up;
-		fixedmakevectors(ang_y * '0 1 0');
-		old_yawforward = v_forward;
-
-		// their aiming directions are portalled...
-		new_forward = AnglesTransform_Apply(transform, old_forward);
-		new_up = AnglesTransform_Apply(transform, old_up);
-		new_yawforward = AnglesTransform_Apply(transform, old_yawforward);
-
-		// but now find a new sense of direction
-		// this is NOT easy!
-		// assume new_forward points straight up.
-		// What is our yaw?
-		//
-		// new_up could now point forward OR backward... which direction to choose?
-
-		if(new_forward_z > 0.7 || new_forward_z < -0.7) // far up; in this case, the "up" vector points backwards
-		{
-			// new_yawforward and new_yawup define the new aiming half-circle
-			// we "just" need to find out whether new_up or -new_up is in that half circle
-			ang = fixedvectoangles(new_forward); // this still gets us a nice pitch value...
-			if(new_up * new_yawforward < 0)
-				new_up = -1 * new_up;
-			ang_y = vectoyaw(new_up); // this vector is the yaw we want
-			//print("UP/DOWN path: ", vtos(ang), "\n");
-		}
-		else
-		{
-			// good angles; here, "forward" suffices
-			ang = fixedvectoangles(new_forward);
-			//print("GOOD path: ", vtos(ang), "\n");
-		}
-
-		ang_x = -ang_x;
-		ang_z = player.angles_z;
-	}
+		ang = Portal_ApplyTransformToPlayerAngle(transform, player.v_angle);
 	else
-	{
-		ang = player.angles;
-		ang = AnglesTransform_Multiply(transform, player.angles);
-	}
+		ang = AnglesTransform_ApplyToAngles(transform, player.angles);
 
 	// factor -1 allows chaining portals, but may be weird
 	player.right_vector = -1 * AnglesTransform_Apply(transform, player.right_vector);
@@ -156,12 +163,12 @@ float Portal_TeleportPlayer(entity teleporter, entity player)
 	}
 
 	tdeath_hit = 0;
-	TeleportPlayer(teleporter, player, to, ang, newvel, teleporter.enemy.absmin, teleporter.enemy.absmax);
+	TeleportPlayer(teleporter, player, to, ang, newvel, teleporter.enemy.absmin, teleporter.enemy.absmax, TELEPORT_FLAGS_PORTAL);
 	if(tdeath_hit)
 	{
 		// telefrag within 1 second of portal creation = amazing
 		if(time < teleporter.teleport_time + 1)
-			announce(player, "announcer/male/amazing.wav");
+			AnnounceTo(player, "amazing");
 	}
 
 	if not(teleporter.enemy)
@@ -185,7 +192,7 @@ float Portal_FindSafeOrigin(entity portal)
 	o = portal.origin;
 	portal.mins = PL_MIN - SAFERNUDGE;
 	portal.maxs = PL_MAX + SAFERNUDGE;
-	fixedmakevectors(portal.angles);
+	fixedmakevectors(portal.mangle);
 	portal.origin += 16 * v_forward;
 	if(!move_out_of_solid(portal))
 	{
@@ -273,7 +280,7 @@ void Portal_Touch()
 		if(other.aiment.classname == "player")
 			if(IS_INDEPENDENT_PLAYER(other.aiment) || IS_INDEPENDENT_PLAYER(self.aiment))
 				return; // cannot go through someone else's portal
-	fixedmakevectors(self.angles);
+	fixedmakevectors(self.mangle);
 	g = frametime * '0 0 -1' * cvar("sv_gravity");
 	if(!Portal_WillHitPlane(other.origin, other.mins, other.maxs, other.velocity + g, self.origin, v_forward, self.maxs_x))
 		return;
@@ -348,7 +355,7 @@ void Portal_Disconnect(entity teleporter, entity destination)
 
 void Portal_Connect(entity teleporter, entity destination)
 {
-	teleporter.portal_transform = AnglesTransform_Divide(AnglesTransform_TurnDirection(destination.angles), teleporter.angles);
+	teleporter.portal_transform = AnglesTransform_Divide(AnglesTransform_TurnDirectionFR(destination.mangle), teleporter.mangle);
 
 	teleporter.enemy = destination;
 	destination.enemy = teleporter;
@@ -386,7 +393,7 @@ void Portal_Remove(entity portal, float killed)
 	// makes the portal vanish
 	if(killed)
 	{
-		fixedmakevectors(portal.angles);
+		fixedmakevectors(portal.mangle);
 		sound(portal, CHAN_PROJECTILE, "porto/explode.wav", VOL_BASE, ATTN_NORM);
 		pointparticles(particleeffectnum("rocket_explode"), portal.origin + v_forward * 16, v_forward * 1024, 4);
 		remove(portal);
@@ -442,7 +449,7 @@ void Portal_Think()
 
 	g = frametime * '0 0 -1' * cvar("sv_gravity");
 
-	fixedmakevectors(self.angles);
+	fixedmakevectors(self.mangle);
 
 	FOR_EACH_PLAYER(e)
 	{
@@ -599,7 +606,9 @@ entity Portal_Spawn(entity own, vector org, vector ang)
 	portal.classname = "portal";
 	portal.aiment = own;
 	setorigin(portal, org);
+	portal.mangle = ang;
 	portal.angles = ang;
+	portal.angles_x = -portal.angles_x; // is a bmodel
 	portal.think = Portal_Think;
 	portal.nextthink = 0;
 	portal.portal_activatetime = time + 0.1;

@@ -102,7 +102,7 @@ void ctf_captureshield_touch()
 	centerprint_atprio(other, CENTERPRIO_SHIELDING, "^3You are ^4shielded^3 from the flag\n^3for ^1too many unsuccessful attempts^3 to capture.\n\n^3Get some defensive scores before trying again.");
 }
 
-void ctf_captureshield_spawn()
+void ctf_flag_spawnstuff()
 {
 	entity e;
 	e = spawn();
@@ -119,6 +119,21 @@ void ctf_captureshield_spawn()
 	setmodel(e, "models/ctf/shield.md3");
 	e.scale = 0.5;
 	setsize(e, e.scale * e.mins, e.scale * e.maxs);
+
+	waypoint_spawnforitem_force(self, self.origin);
+	self.nearestwaypointtimeout = 0; // activate waypointing again
+	self.basewaypoint = self.nearestwaypoint;
+
+	if(self.team == COLOR_TEAM1)
+	{
+		WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 61', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+	}
+	else
+	{
+		WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 61', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+	}
 }
 
 float ctf_score_value(string parameter)
@@ -184,7 +199,8 @@ void place_flag()
 		droptofloor();
 		self.movetype = MOVETYPE_TOSS;
 	}
-	InitializeEntity(self, ctf_captureshield_spawn, INITPRIO_SETLOCATION);
+
+	InitializeEntity(self, ctf_flag_spawnstuff, INITPRIO_SETLOCATION);
 };
 
 void LogCTF(string mode, float flagteam, entity actor)
@@ -206,6 +222,9 @@ void RegenFlag(entity e)
 		backtrace("RegenFlag a non-flag");
 		return;
 	}
+
+	if(e.waypointsprite_attachedforcarrier)
+		WaypointSprite_DetachCarrier(e);
 
 	setattachment(e, world, "");
 	e.damageforcescale = 0;
@@ -281,6 +300,7 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	ctf_captureshield_update(p, 0); // shield only
 	e.playerid = attacker.playerid;
 	e.ctf_droptime = time;
+	WaypointSprite_Spawn("flagdropped", 0, 0, e, '0 0 1' * 61, world, COLOR_TEAM1 + COLOR_TEAM2 - e.team, e, waypointsprite_attachedforcarrier, FALSE);
 	
 	if(p.waypointsprite_attachedforcarrier)
 	{
@@ -447,7 +467,7 @@ void FlagTouch()
 			h0 = db_get(ServerProgsDB, strcat(GetMapname(), "/captimerecord/netname"));
 			h1 = other.netname;
 			if(h0 == h1)
-				h0 = "his";
+				h0 = "their";
 			else
 				h0 = strcat(h0, "^7's"); // h0: display text for previous netname
 			if (flagcaptimerecord == 0)
@@ -478,16 +498,6 @@ void FlagTouch()
 		LogCTF("capture", other.flagcarried.team, other);
 		// give credit to the individual player
 		UpdateFrags(other, ctf_score_value("score_capture"));
-
-		//<akari>
-		//Specially for Spook: restore health on flag capture
-		
-		if(cvar("g_balance_minstanex_explosive"))
-		if(cvar("g_explosive_ctf_capheals"))
-		if(other.health < 100)
-			other.health = 100;
-		
-		//</akari>
 
 		if (cvar("g_ctf_flag_capture_effects")) {
 			if (other.team == COLOR_TEAM1) { // red team scores effect
@@ -597,6 +607,9 @@ void FlagTouch()
 		}
 		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + cvar("g_balance_ctf_delay_collect")))
 		{
+			if(self.waypointsprite_attachedforcarrier)
+				WaypointSprite_DetachCarrier(self);
+
 			if (cvar("g_ctf_flag_pickup_effects")) // field pickup effect
 				pointparticles(particleeffectnum("smoke_ring"), 0.5 * (self.absmin + self.absmax), '0 0 0', 1);
 			
@@ -719,6 +732,8 @@ void spawnfunc_info_player_team4()
 void item_flag_reset()
 {
 	DropFlag(self, world, world);
+	if(self.waypointsprite_attachedforcarrier)
+		WaypointSprite_DetachCarrier(self);
 	ReturnFlag(self);
 }
 
@@ -836,13 +851,6 @@ void spawnfunc_item_flag_team1()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
-
-	WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
-
 	precache_model("models/ctf/shield.md3");
 	precache_model("models/ctf/shockwavetransring.md3");
 
@@ -943,14 +951,8 @@ void spawnfunc_item_flag_team2()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
-
-	WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
-
 	precache_model("models/ctf/shield.md3");
+	precache_model("models/ctf/shockwavetransring.md3");
 
 	self.reset = item_flag_reset;
 };

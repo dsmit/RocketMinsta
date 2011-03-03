@@ -51,8 +51,9 @@ And you should be done!
 .float aiment_deadflag;
 void SetMovetypeFollow(entity ent, entity e)
 {
+	// FIXME this may not be warpzone aware
 	ent.movetype = MOVETYPE_FOLLOW; // make the hole follow
-	ent.solid = SOLID_NOT; // MOVETYPE_FOLLOW is always non-solid
+	ent.solid = SOLID_NOT; // MOVETYPE_FOLLOW is always non-solid - this means this cannot be teleported by warpzones any more! Instead, we must notice when our owner gets teleported.
 	ent.aiment = e; // make the hole follow bmodel
 	ent.punchangle = e.angles; // the original angles of bmodel
 	ent.view_ofs = ent.origin - e.origin; // relative origin
@@ -86,12 +87,6 @@ float LostMovetypeFollow(entity ent)
 .float hook_length;
 .float hook_switchweapon;
 
-//<akari>
-.entity hooker;
-.entity hooked_to;
-//entity nobody;
-//</akari>
-
 void RemoveGrapplingHook(entity pl)
 {
 	if(pl.hook == world)
@@ -100,10 +95,6 @@ void RemoveGrapplingHook(entity pl)
 	pl.hook = world;
 	if(pl.movetype == MOVETYPE_FLY)
 		pl.movetype = MOVETYPE_WALK;
-
-	//<akari>
-	pl.hooked_to = nobody;
-	//</akari>
 
 	//pl.disableclientprediction = FALSE;
 }
@@ -126,7 +117,7 @@ void GrapplingHook_Stop()
 void GrapplingHookThink()
 {
 	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch;
-	vector dir, org, end, v0, dv;
+	vector dir, org, end, v0, dv, v, myorg;
 	if(self.owner.health <= 0 || self.owner.hook != self)	// how did that happen?
 	{														// well, better fix it anyway
 		remove(self);
@@ -137,39 +128,17 @@ void GrapplingHookThink()
 		RemoveGrapplingHook(self.owner);
 		return;
 	}
+	if(self.aiment)
+		WarpZone_RefSys_AddIncrementally(self, self.aiment);
 
 	self.nextthink = time;
 
 	makevectors(self.owner.v_angle);
 	org = self.owner.origin + self.owner.view_ofs + v_forward * hook_shotorigin_x + v_right * hook_shotorigin_y + v_up * hook_shotorigin_z;
-
-#if 0
-	tracebox(org, self.mins, self.maxs, self.origin, MOVE_NOMONSTERS, self.owner);
-	// do not hit players with this, as they tend to get in the way just too often
-	// NOTE: this assumes sky brushes cannot get in the way
-	// if they can, assume the map is broken! :P
-	if(trace_fraction < 1 && (!self.aiment || trace_ent != self.aiment))
-	{
-		// 0. stop it
-		if(self.state != 1)
-			GrapplingHook_Stop();
-
-		// 1. detach the hook
-		if(self.aiment)
-			UnsetMovetypeFollow(self);
-
-		// 2. cut it off
-		setorigin(self, trace_endpos);
-
-		// 3. reattach the hook
-		if(trace_ent)
-			if(trace_ent.movetype != MOVETYPE_NONE)
-				SetMovetypeFollow(self, trace_ent);
-	}
-#endif
+	myorg = WarpZone_RefSys_TransformOrigin(self.owner, self, org);
 
 	if(self.hook_length < 0)
-		self.hook_length = vlen(org - self.origin);
+		self.hook_length = vlen(myorg - self.origin);
 
 	if(self.state == 1)
 	{
@@ -194,13 +163,13 @@ void GrapplingHookThink()
 		// while hanging on the rope, this friction component will help you a
 		// bit to control the rope
 
-		dir = self.origin - org;
+		dir = self.origin - myorg;
 		dist = vlen(dir);
 		dir = normalize(dir);
 
 		if(cvar("g_grappling_hook_tarzan"))
 		{
-			v0 = self.owner.velocity;
+			v = v0 = WarpZone_RefSys_TransformVelocity(self.owner, self, self.owner.velocity);
 
 			// first pull the rope...
 			if(self.owner.hook_state & HOOK_PULLING)
@@ -211,8 +180,8 @@ void GrapplingHookThink()
 				if(newlength < dist - ropestretch) // overstretched?
 				{
 					newlength = dist - ropestretch;
-					if(self.owner.velocity * dir < 0) // only if not already moving in hook direction
-						self.owner.velocity = self.owner.velocity + frametime * dir * rubberforce_overstretch;
+					if(v * dir < 0) // only if not already moving in hook direction
+						v = v + frametime * dir * rubberforce_overstretch;
 				}
 
 				self.hook_length = newlength;
@@ -227,15 +196,15 @@ void GrapplingHookThink()
 			{
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
-				self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
-				self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+				v = v * (1 - frametime * ropeairfriction);
+				v = v + frametime * dir * spd * rubberforce;
 
-				dv = ((self.owner.velocity - v0) * dir) * dir;
+				dv = ((v - v0) * dir) * dir;
 				if(cvar("g_grappling_hook_tarzan") >= 2)
 				{
 					if(self.aiment.movetype == MOVETYPE_WALK)
 					{
-						self.owner.velocity = self.owner.velocity - dv * 0.5;
+						v = v - dv * 0.5;
 						self.aiment.velocity = self.aiment.velocity - dv * 0.5;
 						self.aiment.flags &~= FL_ONGROUND;
 						self.aiment.pusher = self.owner;
@@ -245,11 +214,13 @@ void GrapplingHookThink()
 
 				self.owner.flags &~= FL_ONGROUND;
 			}
+
+			self.owner.velocity = WarpZone_RefSys_TransformVelocity(self, self.owner, v);
 		}
 		else
 		{
 			end = self.origin - dir*50;
-			dist = vlen(end - org);
+			dist = vlen(end - myorg);
 			if(dist < 200)
 				spd = dist * (pullspeed / 200);
 			else
@@ -264,29 +235,8 @@ void GrapplingHookThink()
 	}
 
 	makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0');
-	te_beam(self.owner, self.origin + v_forward * (-9), org);
+	te_beam(self.owner, WarpZone_RefSys_TransformOrigin(self, self.owner, self.origin) + v_forward * (-9), org);
 }
-
-//<akari>
-void HookDamage_Think()
-{
-	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0)
-	{
-		remove(self);
-		return;
-	}
-	
-	if(!teams_matter || self.hooker.team != self.hooker.hooked_to.team)
-	{
-		play2(self.hooker, "misc/hit.wav");
-		Damage(self.hooker.hooked_to, self.hooker.hook, self.hooker, 1, DEATH_NOAMMO, self.origin, '0 0 0');
-		self.hooker.health += 1;
-		self.nextthink = time + 0.1;
-	}
-	else
-		remove(self);
-}
-//</akari>
 
 void GrapplingHookTouch (void)
 {
@@ -297,122 +247,31 @@ void GrapplingHookTouch (void)
 		RemoveGrapplingHook(self.owner);
 		return;
 	}
-
-	if(other == world)
-	{
-		vector tic;
-		tic = self.velocity * sys_ticrate;
-		tic = tic + normalize(tic) * vlen(self.maxs - self.mins);
-		traceline(self.origin - tic, self.origin + tic, MOVE_NORMAL, self);
-		if(trace_fraction >= 1)
-		{
-			dprint("Odd... did not hit...?\n");
-		}
-		else if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
-		{
-			dprint("Detected and prevented the sky-grapple bug.\n");
-			RemoveGrapplingHook(self.owner);
-			return;
-		}
-	}
-
-	//<akari>
-	if(other.classname == "player")
-	{
-		//sprint(self.owner, "\{0}Hooked ", other.netname, "\n");
-		self.owner.hooked_to = other;
-		other.hooker = self.owner;
-		
-		entity hookdmg = spawn();
-		hookdmg.classname = "hookdamage";
-		hookdmg.think = HookDamage_Think;
-		hookdmg.nextthink = time + 0.1;
-		hookdmg.hooker = self.owner;
-	}
-	//</akari>
+	PROJECTILE_TOUCH;
 
 	GrapplingHook_Stop();
 
 	if(other)
 		if(other.movetype != MOVETYPE_NONE)
+		{
 			SetMovetypeFollow(self, other);
+			WarpZone_RefSys_BeginAddingIncrementally(self, self.aiment);
+		}
 
 	//self.owner.disableclientprediction = TRUE;
 }
-
-//<akari>
-string GetHitSound(entity attacker, entity target)
-{
-	if(attacker == target)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	if(teams_matter) if(self.owner.team == attacker.team)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	//return GetHitSound_ENEMY();
-	return hook_hitsound;
-}
-//</akari>
 
 void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	if(self.health > 0)
 	{
-		//<akari>
-		if(cvar("g_balance_minstanex_explosive") || cvar("g_explosive_hook_forcerules"))
-		{	// If the explosive mode is activated or new hook rules are forced, use them.
-		
-			//If the hook is not breakable, do nothing
-			if(!cvar("g_explosive_hook_breakable"))
-			{
-				//bprint("The hook is not breakable!\n");
-				return;
-			}
-			
-			//If we shoot our own hook
-			if(self.owner == attacker)
-			if(!cvar("g_explosive_hook_breakable_self"))
-			{
-				//bprint("Own hook is not breakable!\n");
-				return;
-			}
-			
-			//If we shoot a teammate's hook
-			else if(self.owner.team == attacker.team)
-			if(!cvar("g_explosive_hook_breakable_team"))
-			{
-				//bprint("Team hook is not breakable!\n");
-				return;
-			}
-			
-			//Die if any amount of damage is recieved
-			if(damage)
-				self.health = 0;
-			
-			//Play a hitsound
-			play2(attacker, GetHitSound(attacker, self.owner));
-			
-			//Reflect the hook damage to it's owner
-			Damage(self.owner, inflictor, attacker, damage * cvar("g_explosive_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
-		}
-		else
-		{	//Otherwise, act normally
-			self.health = self.health - damage;
-		}
-		//</akari>
-		
+		self.health = self.health - damage;
 		if (self.health <= 0)
 		{
 			if(attacker != self.owner)
 			{
 				self.owner.pusher = attacker;
-				
-				//<akari>
-				//Please fucking shoot me. I use this number to identify a hookfrag in g_damage.qc.
-				self.owner.pushltime = 1337; //time + cvar("g_maxpushtime");
-				//</akari>
+				self.owner.pushltime = time + cvar("g_maxpushtime");
 			}
 			RemoveGrapplingHook(self.owner);
 		}
@@ -434,7 +293,7 @@ void FireGrapplingHook (void)
 	org = self.origin + self.view_ofs + v_forward * hook_shotorigin_x + v_right * hook_shotorigin_y + v_up * hook_shotorigin_z;
 	pointparticles(particleeffectnum("grapple_muzzleflash"), org, '0 0 0', 1);
 
-	missile = spawn ();
+	missile = WarpZone_RefSys_SpawnSameRefSys(self);
 	missile.owner = self;
 	self.hook = missile;
 	missile.classname = "grapplinghook";
@@ -448,8 +307,7 @@ void FireGrapplingHook (void)
 
 	missile.state = 0; // not latched onto anything
 
-	missile.velocity = v_forward * cvar("g_balance_grapplehook_speed_fly");
-	W_SetupProjectileVelocity(missile);
+	W_SetupProjectileVelocityEx(missile, v_forward, v_up, cvar("g_balance_grapplehook_speed_fly"), 0, 0, 0);
 
 	missile.angles = vectoangles (missile.velocity);
 	//missile.glow_color = 250; // 244, 250
