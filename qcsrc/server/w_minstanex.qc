@@ -74,6 +74,23 @@ void W_Rage_Attack (void)
 }
 //</akari>
 
+float RM_TeamLaserEffect(entity pl)
+{
+	switch(pl.team)
+    {
+		case COLOR_TEAM1:   // Red
+			return PROJECTILE_RM_LASER_RED;
+		case COLOR_TEAM2:   // Blue
+			return PROJECTILE_RM_LASER_BLUE;
+		case COLOR_TEAM3:   // Yellow
+			return PROJECTILE_RM_LASER_YELLOW;
+		case COLOR_TEAM4:   // Pink
+			return PROJECTILE_RM_LASER_PINK;
+		default:
+			return PROJECTILE_ELECTRO_BEAM;
+    }
+}
+
 void W_MinstaNex_Attack (void)
 {
 	float flying;
@@ -364,7 +381,7 @@ void W_RM_Alt_Attack()
 		proj.flags = FL_PROJECTILE;
 
 
-		CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO_BEAM, TRUE);
+		CSQCProjectile(proj, TRUE, RM_TeamLaserEffect(self), TRUE);
 		counter++;
 	}
 }
@@ -406,7 +423,7 @@ void W_RM_Alt_Attack_Single()
 	proj.flags = FL_PROJECTILE;
 
 
-	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO_BEAM, TRUE);
+	CSQCProjectile(proj, TRUE, RM_TeamLaserEffect(self), TRUE);
 }
 
 .float jump_interval2;

@@ -56,32 +56,26 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_ELECTRO:
 			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
 			break;
-		case PROJECTILE_ELECTRO_BEAM:
-			//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-			switch(GetPlayerColorForce(self.sv_entnum))
-			{
-				case COLOR_TEAM1:		//Red
-					trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"), from, to);
-					break;
-				
-				case COLOR_TEAM2:		//Blue
-					trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"), from, to);
-					break;
-				
-				case COLOR_TEAM3:		//Yellow
-					trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"), from, to);
-					break;
-				
-				case COLOR_TEAM4:		//Pink
-					trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
-					break;
-				
-				default:				//No team
-					trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-					break;
-			}
 			
+		case PROJECTILE_ELECTRO_BEAM:
+			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+
+		case PROJECTILE_RM_LASER_RED:
+			trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"), from, to);
+				break;
+				
+		case PROJECTILE_RM_LASER_BLUE:
+			trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"), from, to);
+				break;
+				
+		case PROJECTILE_RM_LASER_YELLOW:
+			trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"), from, to);
+				break;
+				
+		case PROJECTILE_RM_LASER_PINK:
+			trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
 			break;
+			
 		case PROJECTILE_GRENADE:
 			//trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			//trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
@@ -318,6 +312,10 @@ void Ent_Projectile()
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_CRYLINK: setmodel(self, "models/plasmatrail.mdl"); break;
 			case PROJECTILE_CRYLINK_BOUNCING: setmodel(self, "models/plasmatrail.mdl"); break;
+			case PROJECTILE_RM_LASER_RED:
+			case PROJECTILE_RM_LASER_BLUE:
+			case PROJECTILE_RM_LASER_YELLOW:
+			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: setmodel(self, "models/grenademodel.md3"); break;
