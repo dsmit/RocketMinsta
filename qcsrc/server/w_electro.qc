@@ -286,12 +286,17 @@ float w_electro(float req)
 		}
 		else
 		{
-			if(w_deathtype & HITTYPE_BOUNCE) // combo
-				w_deathtypestring = "felt the electrifying air of #'s combo";
-			else if(w_deathtype & HITTYPE_SPLASH)
-				w_deathtypestring = "got too close to #'s blue beam";
+			if(!cvar("g_balance_minstanex_explosive"))
+			{
+				if(w_deathtype & HITTYPE_BOUNCE) // combo
+					w_deathtypestring = "felt the electrifying air of #'s combo";
+				else if(w_deathtype & HITTYPE_SPLASH)
+					w_deathtypestring = "got too close to #'s blue beam";
+				else
+					w_deathtypestring = "was blasted by #'s blue beam";
+			}
 			else
-				w_deathtypestring = "was blasted by #'s blue beam";
+				w_deathtypestring = "was blasted by #'s laser";
 		}
 	}
 	else if (req == WR_RESETPLAYER)

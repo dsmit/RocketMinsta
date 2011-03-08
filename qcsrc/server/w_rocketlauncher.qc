@@ -559,7 +559,7 @@ float w_rlauncher(float req)
 			w_deathtypestring = "ate #'s rocket";
 		*/
 		
-		w_deathtypestring = "got too close to #'s beam";
+		w_deathtypestring = "has been blown up by #";
 		
 		//</akari>
 	}
