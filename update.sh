@@ -44,3 +44,6 @@ while true; do
     [ x"$cmd" = x ] && exit 0
     rconsend "$cmd"
 done
+
+finish
+
