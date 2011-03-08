@@ -18,7 +18,7 @@ BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 
 echo " -- Updating $BRANCH"
 git fetch || error "git fetch failed"
-if [ "$(git merge origin/$BRANCH || error "git merge failed")" = "Already up-to-date." ]; then
+if [ "$(git merge origin/$BRANCH || error "git merge failed")" = "Already up-to-date." ] && [ "$1" != "force" ]; then
     echo "Already up to date, exiting."
     exit 0
 fi
