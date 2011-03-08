@@ -49,29 +49,30 @@ void Draw_GrapplingHook()
 	if(t == COLOR_TEAM1)
 	{
 		tex = "particles/hook_red";
-		rgb = '1 .3 .3';
+		rgb = '1 .8 .8';
 	}
 	else if(t == COLOR_TEAM2)
 	{
 		tex = "particles/hook_blue";
-		rgb = '.3 .3 1';
+		rgb = '1 .8 .8';
 	}
 	else if(t == COLOR_TEAM3)
 	{
 		tex = "particles/hook_yellow";
-		rgb = '1 1 .3';
+		rgb = '1 1 .4';
 	}
 	else if(t == COLOR_TEAM4)
 	{
 		tex = "particles/hook_pink";
-		rgb = '1 .3 1';
+		rgb = '1 .4 1';
 	}
 	else
 	{
 		tex = "particles/hook_green";
-		rgb = '.3 1 .3';
+		rgb = '.4 1 .4';
 	}
-	Draw_CylindricLine(b, a, 8, tex, 0.25, random(), '1 1 1', 1, DRAWFLAG_NORMAL);
+	//Draw_CylindricLine(b, a, 5, tex, 0.25, random(), rgb, 1, DRAWFLAG_NORMAL);
+	Draw_CylindricLine(b, a, 5, tex, 0.1, 0, rgb, 1, DRAWFLAG_ADDITIVE);
 }
 
 void Net_GrapplingHook()
