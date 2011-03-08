@@ -387,6 +387,10 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 				return;
 			}
 			
+			//Don't allow hookbreak if the hook is attached to a player
+			if(self.owner.hooked_to != nobody)
+				return;
+			
 			//Die if any amount of damage is recieved
 			if(damage)
 				self.health = 0;
