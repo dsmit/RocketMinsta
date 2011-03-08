@@ -12,6 +12,12 @@ function rconsend
     printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" | netcat -uc $RCON_ADDRESS $RCON_PORT
 }
 
+function finish
+{
+    echo "Finished updating ／人◕ ‿‿ ◕人＼"
+    exit 0
+}
+
 [ -e "updconfig.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_updconfig.sh updconfig.sh', edit updconfig.sh and try again."
 . "updconfig.sh" || error "Failed to read configuration"
 
@@ -27,7 +33,7 @@ fi
 echo " -- Rebuilding the mod"
 ./build.sh || error "Build failed"
 
-[ -z "$RCON_ADDRESS" ] && exit 0
+[ -z "$RCON_ADDRESS" ] && finish
 
 echo " -- Sending RCON commands"
 which netcat &>/dev/null || error "Cannot use RCON: netcat is not installed"
