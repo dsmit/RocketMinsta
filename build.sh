@@ -65,7 +65,7 @@ function listcustom()
 cat <<EOF
 **************************************************
 
-    RocketMinsta has been built successfuly
+    RocketMinsta has been built successfully
     
     Server QC progs:
         $SVPROGS
