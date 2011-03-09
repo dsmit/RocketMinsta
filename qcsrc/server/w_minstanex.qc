@@ -374,6 +374,7 @@ void W_RM_Alt_Attack()
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
 		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_explosive_laser_speed");
+		proj.velocity_z = proj.velocity_z + cvar("g_explosive_laser_zspread") * (random() - 0.5);
 		W_SetupProjectileVelocity(proj);
 		proj.angles = vectoangles(proj.velocity);
 		proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
