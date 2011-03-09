@@ -52,7 +52,15 @@ buildqc client/
 mv -v csprogs.dat "$CSPROGS"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
+mkdir -pv "$NEXDATA/rm-custom"
+cp -v rm-custom/* "$NEXDATA/rm-custom"
 
+function listcustom()
+{
+    find "$NEXDATA/rm-custom" -name "*.cfg" | while read cfg; do
+        echo -e "\t\t$cfg : $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
+    done
+}
 
 cat <<EOF
 **************************************************
@@ -68,6 +76,10 @@ cat <<EOF
     CVAR defaults for server configuration:
         $NEXDATA/rocketminsta.cfg
     
+    Optional custom configurations:
+        $NEXDATA/rm-custom
+$(listcustom)
+
     Please make sure all of these files are
     accessible by Nexuiz. Then add the following
     lines at top of your server config:
@@ -75,6 +87,11 @@ cat <<EOF
         exec rocketminsta.cfg
         set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
         set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
+
+    If you'd like to use one of the custom configurations,
+    add the following add the bottom of your config:
+        
+        exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
 
 **************************************************
 EOF
