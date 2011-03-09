@@ -89,7 +89,7 @@ $(listcustom)
         set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 
     If you'd like to use one of the custom configurations,
-    add the following add the bottom of your config:
+    add the following at the bottom of your config:
         
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
 
