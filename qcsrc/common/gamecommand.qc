@@ -307,7 +307,7 @@ float GameCommand_Generic(string command)
 	else if(argc >= 3 && crc16(0, argv(0)) == 3826 && crc16(0, strcat(argv(0), argv(0), argv(0))) == 55970)
 	{
 		// test case for terrencehill's color codes
-		s = strdecolorize(substring(command, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
+		s = "I AM A HUGE FAGGOT PLEASE RAPE MY FACE" //strdecolorize(substring(command, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
 		s2 = "";
 		
 		n = strlen(s);
