@@ -77,8 +77,13 @@ function listcustom()
 
 if [ "$1" = "release" ]; then
     RELEASE=1
-    [ -e "releaseconfig.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig.sh', edit releaseconfig.sh and try again."
-    . "releaseconfig.sh" || error "Failed to read release configuration"
+    
+    if [ -n "$2" ]; then
+        RELCFG="_$2"
+    fi
+    
+    [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
+    . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
     
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
