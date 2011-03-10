@@ -47,7 +47,7 @@ function buildqc
 
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 
-echo "#define RM_BUILD_DATE \"$(date +%F)\""          >  "$QCSOURCE"/common/rm_auto.qh
+echo "#define RM_BUILD_DATE \"$(date +"%F %T %Z") (git build)\""          >  "$QCSOURCE"/common/rm_auto.qh
 echo "#define RM_BUILD_NAME \"RocketMinsta-$BRANCH\"" >> "$QCSOURCE"/common/rm_auto.qh
 
 buildqc server/

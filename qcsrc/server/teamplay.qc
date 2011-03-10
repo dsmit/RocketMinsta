@@ -420,6 +420,25 @@ string GetClientVersionMessage() {
 	return versionmsg;
 }
 
+void RM_WelcomeMessage(entity pl)
+{
+	string s, motd;
+	
+	motd = cvar_string("sv_motd");
+	
+	if (motd != "")
+		motd = strreplace("\\n", "\n", motd);
+	else
+		motd = "^8(message of the day missing)";
+	
+	s = strcat("^7This is ^xFB0", RM_BUILD_NAME, "^7, running on Nexuiz ", cvar_string("g_nexuizversion"), "\n", GetClientVersionMessage());
+	s = strcat(s, "\n^8mod build date: ^9", RM_BUILD_DATE, "\n\n\n\n\n");
+	
+	s = strcat(s, "\n^0^x111^x222^x333^x333^x222^x111^0\n", motd,
+				  "\n^0^x111^x222^x333^x333^x222^x111^0");
+	
+	centerprint(pl, s);
+}
 
 void PrintWelcomeMessage(entity pl)
 {
@@ -470,6 +489,12 @@ void PrintWelcomeMessage(entity pl)
 	}
 
 :normal
+	if(cvar("g_balance_minstanex_explosive"))
+	{
+		RM_WelcomeMessage(pl);
+		return;
+	}
+
 	modifications = "";
 	if(g_minstagib)
 		modifications = strcat(modifications, ", MinstaGib");
@@ -528,7 +553,8 @@ void PrintWelcomeMessage(entity pl)
 	//</akari>
 		
 	modifications = substring(modifications, 2, strlen(modifications) - 2);
-
+	
+	
 	local string versionmessage;
 	versionmessage = GetClientVersionMessage();
 
