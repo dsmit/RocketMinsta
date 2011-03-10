@@ -1,6 +1,5 @@
 *.dat
 *.lno
-akaribuild.sh
 config.sh
 updconfig.sh
 releaseconfig.sh
