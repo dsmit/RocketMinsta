@@ -153,6 +153,10 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
+	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_DATE));
+	rm_wm_width = stringwidth(rm_watermark, TRUE);
+	
+	print("^1", rm_watermark, "\n");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

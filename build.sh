@@ -179,7 +179,7 @@ EOF
     exit
 fi
 
-buildall $BRANCH "git build"
+buildall -$BRANCH "git build"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
 mkdir -pv "$NEXDATA/rm-custom"
