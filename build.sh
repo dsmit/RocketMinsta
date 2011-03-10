@@ -45,11 +45,18 @@ function buildqc
     popd &>/dev/null
 }
 
+BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
+
+echo "#define RM_BUILD_DATE \"$(date +%F)\""          >  "$QCSOURCE"/common/rm_auto.qh
+echo "#define RM_BUILD_NAME \"RocketMinsta-$BRANCH\"" >> "$QCSOURCE"/common/rm_auto.qh
+
 buildqc server/
 mv -v progs.dat "$SVPROGS"
 
 buildqc client/
 mv -v csprogs.dat "$CSPROGS"
+
+rm -v "$QCSOURCE"/common/rm_auto.qh
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
 mkdir -pv "$NEXDATA/rm-custom"

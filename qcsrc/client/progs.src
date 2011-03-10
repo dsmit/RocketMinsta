@@ -1,6 +1,7 @@
 ../../csprogs.dat
 pre.qh
 
+../common/rm_auto.qh
 ../common/util-pre.qh
 Defs.qc
 csqc_constants.qc

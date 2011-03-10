@@ -5,4 +5,4 @@ config.sh
 updconfig.sh
 qcsrc/server/fteqcc.log
 qcsrc/client/fteqcc.log
-
+qcsrc/common/rm_auto.qh

@@ -1,6 +1,7 @@
 Source file: progs.src
 outputfile: ../../csprogs.dat
 compiling pre.qh
+compiling ../common/rm_auto.qh
 compiling ../common/util-pre.qh
 compiling Defs.qc
 compiling csqc_constants.qc
