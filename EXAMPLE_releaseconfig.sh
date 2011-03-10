@@ -28,7 +28,7 @@ RELEASE_CLEANUP=1
 
 function prepackage
 {
-    
+    echo    
 }
 
 # This function will be called after the release has been packaged. May be left as-is.
@@ -37,5 +37,5 @@ function prepackage
 
 function postpackage
 {
-    
+    echo
 }
