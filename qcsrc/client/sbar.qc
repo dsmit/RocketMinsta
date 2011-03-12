@@ -1885,6 +1885,20 @@ vector Sbar_DrawNoteLine(vector offset, string s)
 	return offset + sbar_fontsize_y * '0 1 0';
 }
 
+vector Sbar_DrawCenterNoteLine(vector offset, string s)
+{
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+	drawcolorcodedstring(
+		offset - sbar_fontsize_x * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
+		s,
+		sbar_fontsize,
+		sbar_alpha_fg,
+		0
+	);
+	return offset + sbar_fontsize_y * '0 1 0';
+}
+
+
 void Sbar_DrawPressedKeys(void)
 {
 	vector pos, bgsize;
@@ -2275,6 +2289,8 @@ void Sbar_Draw (void)
  	weapon_fired[weapon_number] = rint(weapon_stats / 64);
 
 	vector o; o = '1 0 0' * vid_conwidth;
+	vector o2; o2 = '0.5 0 0' * vid_conwidth;
+	o2_y = vid_conheight / 4;
 	o_y = 28; // move spectator text slightly down to prevent overlapping the timer
 
 	string s;
@@ -2343,7 +2359,7 @@ void Sbar_Draw (void)
 	if(warmup_stage && !intermission)
 	{
 		s = "^2Currently in ^1warmup^2 stage!";
-		o = Sbar_DrawNoteLine(o, s);
+		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 
 	// move more important stuff more to the middle so its more visible
@@ -2371,12 +2387,12 @@ void Sbar_Draw (void)
 			else
 				s = strcat("^2Waiting for others to ready up...");
 		}
-		o = Sbar_DrawNoteLine(o, s);
+		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 	else if(warmup_stage && !intermission && !spectatee_status)
 	{
 		s = strcat("^2Press ^3", getcommandkey("ready", "ready"), "^2 to end warmup");
-		o = Sbar_DrawNoteLine(o, s);
+		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 	if(vote_waiting)
 	{
@@ -2422,13 +2438,16 @@ void Sbar_Draw (void)
 			if ((ts_max - ts_min) > 1)
 			{
 				s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
+				o2 = Sbar_DrawCenterNoteLine(o2, s);
+				
 				tm = GetTeam(myteam, false);
 				if (tm)
 				if (tm.team != COLOR_SPECTATOR)
 				if (tm.team_size == ts_max)
-					s = strcat(s, " Press ^3", getcommandkey("team menu", "menu_showteamselect"), blinkcolor, " to adjust");
-
-				o = Sbar_DrawNoteLine(o, s);
+				{
+					s = strcat(blinkcolor, "Press ^3", getcommandkey("team menu", "menu_showteamselect"), blinkcolor, " to adjust");
+					o2 = Sbar_DrawCenterNoteLine(o2, s);
+				}
 			}
 		}
 	}
