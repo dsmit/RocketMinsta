@@ -349,6 +349,7 @@ void W_RM_Alt_Attack()
 	float counter;
 	float total = cvar("g_explosive_laser_count");
 	float spread = cvar("g_explosive_laser_spread");
+	float rndspread = cvar("g_explosive_laser_spread_randomize");
 	counter = 0;
 
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
@@ -376,7 +377,7 @@ void W_RM_Alt_Attack()
 		setorigin(proj, w_shotorg);
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
-		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * spread) * cvar("g_explosive_laser_speed");
+		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * (spread * (rndspread? random() : 1))) * cvar("g_explosive_laser_speed");
 		proj.velocity_z = proj.velocity_z + cvar("g_explosive_laser_zspread") * (random() - 0.5);
 		W_SetupProjectileVelocity(proj);
 		proj.angles = vectoangles(proj.velocity);
