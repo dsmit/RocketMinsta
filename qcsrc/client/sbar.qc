@@ -2396,28 +2396,39 @@ void Sbar_Draw (void)
 	}
 	if(vote_waiting)
 	{
-		s = strcat("^2A vote has been called for ^1", vote_called_vote);
-		o = Sbar_DrawNoteLine(o, s);
+		//s = strcat("^2A vote has been called for ^1", vote_called_vote);
+		//o = Sbar_DrawNoteLine(o, s);
 
 		if(vote_waiting_for_me)
 		{
-			s = strcat(blinkcolor, "Press ^3", getcommandkey("vote yes", "vyes"), blinkcolor, " to accept");
+			o2 = Sbar_DrawCenterNoteLine(o2, "");
+			
+			s = strcat("^2Vote now! ^1", vote_called_vote);
+			o2 = Sbar_DrawCenterNoteLine(o2, s);
+			
+			/*s = strcat(blinkcolor, "Press ^3", getcommandkey("vote yes", "vyes"), blinkcolor, " to accept");
 			o = Sbar_DrawNoteLine(o, s);
 
 			s = strcat(blinkcolor, "Press ^3", getcommandkey("vote no", "vno"), blinkcolor, " to reject");
 			o = Sbar_DrawNoteLine(o, s);
 
 			s = strcat(blinkcolor, "Press ^3", getcommandkey("vote abstain", "vabstain"), blinkcolor, " to abstain");
-			o = Sbar_DrawNoteLine(o, s);
+			o = Sbar_DrawNoteLine(o, s);*/
+			
+			s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to accept, ^3", getcommandkey("vote no", "vno"), "^2 to reject");
+			o2 = Sbar_DrawCenterNoteLine(o2, s);
+			
+			s = vote_statstring;
+			o2 = Sbar_DrawCenterNoteLine(o2, s);
 		}
 		else
 		{
-			s = strcat("^2Waiting for others to vote...");
+			s = strcat("^2Vote: ^1", vote_called_vote);
+			o = Sbar_DrawNoteLine(o, s);
+			
+			s = vote_statstring;
 			o = Sbar_DrawNoteLine(o, s);
 		}
-		
-		s = vote_statstring;
-		o = Sbar_DrawNoteLine(o, s);
 	}
 	if(teamplay && !intermission && !spectatee_status)
 	{
