@@ -2382,10 +2382,12 @@ void Sbar_Draw (void)
 		}
 		else
 		{
-			if(warmup_stage)
-				s = strcat("^2Waiting for others to ready up to end warmup...");
-			else
-				s = strcat("^2Waiting for others to ready up...");
+			//if(warmup_stage)
+			//	s = strcat("^2Waiting for others to ready up to end warmup...");
+			//else
+			//	s = strcat("^2Waiting for others to ready up...");
+			
+			s = "Waiting for others";
 		}
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
