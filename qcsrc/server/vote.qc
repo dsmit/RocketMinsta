@@ -258,7 +258,7 @@ float GameCommand_Vote(string s, entity e) {
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
 				print_to(e, "^1You accepted the vote.");
-				bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^2YES\n"));
+				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^2YES\n"));
 				e.vote_vote = 1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
@@ -275,7 +275,7 @@ float GameCommand_Vote(string s, entity e) {
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
 				print_to(e, "^1You rejected the vote.");
-				bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^1NO\n"));
+				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^1NO\n"));
 				e.vote_vote = -1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
@@ -292,6 +292,7 @@ float GameCommand_Vote(string s, entity e) {
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
 				print_to(e, "^1You abstained from your vote.");
+				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 abstained his vote\n"));
 				e.vote_vote = -2;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
