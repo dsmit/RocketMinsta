@@ -447,15 +447,7 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		{
-			if (weapon_prepareattack(0, cvar("g_balance_minstanex_refire")))
-			{
-				W_MinstaNex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
-			}
-		}
-		else if (self.BUTTON_ATCK2)
+		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells))
 		{
 			if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
 			{
@@ -477,6 +469,14 @@ float w_minstanex(float req)
 			{
 				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
 				W_Laser_Attack(FALSE);
+			}
+		}
+		if (self.BUTTON_ATCK)
+		{
+			if (weapon_prepareattack(0, cvar("g_balance_minstanex_refire")))
+			{
+				W_MinstaNex_Attack();
+				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
 			}
 		}
 		else
