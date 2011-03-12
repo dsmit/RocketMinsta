@@ -2609,15 +2609,15 @@ void Sbar_Draw (void)
 		for (i = 0; i < 4; ++i) {
 			a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
 
-			if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
+			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 				if (stat_items & GetAmmoItemCode(i)) {
-					if (vid_conwidth >= 800) {
+					/*if (vid_conwidth >= 800) {
 						pos_x = 230;
 						pos_y = 40;
-					} else {
+					} else {*/
 						pos_x = 206;
 						pos_y = 33;
-					}
+					//}
 
 					pos = bottom - pos;
 					if(vid_conwidth >= 800)
@@ -2627,8 +2627,11 @@ void Sbar_Draw (void)
 						Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 					else
 						Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+						
+					if(!a)
+						o2 = Sbar_DrawCenterNoteLine(o2, "out of ammo");
 				}
-			} else {
+			/*} else {
 				if (a > 0) {
 					switch (i) {
 						case 0: pos_x = 286; pos_y = 48; break; // shells
@@ -2653,7 +2656,7 @@ void Sbar_Draw (void)
 							Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
 					}
 				}
-			}
+			}*/
 		}
 
 		// fuel ammo
