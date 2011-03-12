@@ -76,6 +76,9 @@ void W_Rage_Attack (void)
 
 float RM_TeamLaserEffect(entity pl)
 {
+	if(!cvar("g_explosive_laser_teamcolor"))
+		return PROJECTILE_ELECTRO_BEAM;
+	
 	switch(pl.team)
     {
 		case COLOR_TEAM1:   // Red

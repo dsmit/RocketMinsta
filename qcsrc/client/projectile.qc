@@ -53,24 +53,26 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_CRYLINK_BOUNCING:
 			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
 			break;
+			
 		case PROJECTILE_ELECTRO:
 			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
 			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			break;
 
 		case PROJECTILE_RM_LASER_RED:
 			trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"), from, to);
-				break;
+			break;
 				
 		case PROJECTILE_RM_LASER_BLUE:
 			trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"), from, to);
-				break;
+			break;
 				
 		case PROJECTILE_RM_LASER_YELLOW:
 			trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"), from, to);
-				break;
+			break;
 				
 		case PROJECTILE_RM_LASER_PINK:
 			trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
