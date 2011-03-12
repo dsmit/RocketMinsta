@@ -2448,16 +2448,23 @@ void Sbar_Draw (void)
 			}
 			if ((ts_max - ts_min) > 1)
 			{
-				s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
-				o2 = Sbar_DrawCenterNoteLine(o2, s);
-				
 				tm = GetTeam(myteam, false);
 				if (tm)
 				if (tm.team != COLOR_SPECTATOR)
-				if (tm.team_size == ts_max)
 				{
-					s = strcat(blinkcolor, "Press ^3", getcommandkey("team menu", "menu_showteamselect"), blinkcolor, " to adjust");
-					o2 = Sbar_DrawCenterNoteLine(o2, s);
+					if (tm.team_size == ts_max)
+					{
+						s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
+						o2 = Sbar_DrawCenterNoteLine(o2, s);
+						
+						s = strcat(blinkcolor, "Press ^3", getcommandkey("team menu", "menu_showteamselect"), blinkcolor, " to adjust");
+						o2 = Sbar_DrawCenterNoteLine(o2, s);
+					}
+					else
+					{
+						s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
+						o = Sbar_DrawNoteLine(o, s);
+					}
 				}
 			}
 		}
