@@ -2495,7 +2495,7 @@ void Sbar_Draw (void)
 	{
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else
+  		else if(!spectatee_status || sb_showscores)
 			Sbar_DrawScoreboard();
 		Sbar_Score();
 		Sbar_Timer();
