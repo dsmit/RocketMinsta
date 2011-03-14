@@ -1868,9 +1868,14 @@ void Sbar_DrawCenterPrint (void)
 //		return;
 
 	pos = centerprint_start;
-	for (i=0; i<centerprint_num; i = i + 1)
+
+	for (i = 0; i<centerprint_num; i = i + 1)
 	{
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
+
+        if(a <= 0)
+            continue;
+
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * a) * 0.5;
 		ts = centerprint_messages[i];
 		if (ts != "")
