@@ -267,7 +267,7 @@ float Item_GiveTo(entity item, entity player)
 			{
 				pickedup = TRUE;
 				// play some cool sounds ;)
-				centerprint(player, "\n");
+				//centerprint(player, "\n");
 				if (clienttype(player) == CLIENTTYPE_REAL && cvar("g_balance_minstanex_explosive"))
 				{
 					//<akari>
