@@ -1771,7 +1771,10 @@ void centerprint(string strMessage)
 				hcount += 1;
 
 			if(i >= CENTERPRINT_MAX_LINES)
+            {
 				break;
+                dprint("Centerprint: limit exceeded\n");
+            }
 		}
 	}
 
