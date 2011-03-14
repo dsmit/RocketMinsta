@@ -1117,7 +1117,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(attacker.classname == "player")
 		{
 			if(targ.netname)
-				centerprint(attacker, strcat(targ.netname, " ^3^x550 ^7", ftos(rint(damage)), " ^x550^3^7 ", wpnstring));
+				centerprint(attacker, strcat(targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
 		}
 		
 		if(targ.classname == "player")
@@ -1125,12 +1125,12 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(attacker.netname)
 			{
 				if(attacker == targ)
-					centerprint(targ, strcat("^xFB0self ", "^x500^1 ^7", ftos(rint(damage)), " ^1^x500 ", wpnstring));
+					centerprint(targ, strcat("^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
 				else
-					centerprint(targ, strcat(attacker.netname, " ^x500^1 ^7", ftos(rint(damage)), " ^1^x500^7 ", wpnstring));
+					centerprint(targ, strcat(attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
 			}
 			else
-				centerprint(targ, strcat("^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n"));
+				centerprint(targ, strcat("^x500^1 ^7", dmgstring, " ^1^x500\n"));
 		}
 	}
 	
