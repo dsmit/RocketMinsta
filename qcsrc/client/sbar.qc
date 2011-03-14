@@ -1694,22 +1694,26 @@ void CSQC_Strength_Timer() {
 #define CENTERPRINT_MAX_LINES 30
 string centerprint_messages[CENTERPRINT_MAX_LINES];
 float centerprint_width[CENTERPRINT_MAX_LINES];
+float centerprint_expires[CENTERPRINT_MAX_LINES];
 vector centerprint_start;
 float centerprint_expire;
 float centerprint_num;
 float centerprint_offset_hint;
 vector centerprint_fontsize;
 
+
+
 void centerprint(string strMessage)
 {
 	float i, j, n, hcount;
 	string s;
+	float scrtime = cvar("scr_centertime");
 
 	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
 
 	centerprint_expire = min(centerprint_expire, time); // if any of the returns happens, this message will fade out
 
-	if(cvar("scr_centertime") <= 0)
+	if(scrtime <= 0)
 		return;
 
 	if(strMessage == "")
@@ -1741,13 +1745,23 @@ void centerprint(string strMessage)
 	i = hcount = 0;
 	for(j = 0; j < n; ++j)
 	{
+:forloop
 		getWrappedLine_remaining = argv(j);
 		while(getWrappedLine_remaining)
 		{
 			s = getWrappedLine(vid_conwidth * 0.75 / centerprint_fontsize_x, stringwidth_colors);
 			if(centerprint_messages[i])
-				strunzone(centerprint_messages[i]);
+			{
+				if(time >= centerprint_expires[i])
+					strunzone(centerprint_messages[i]);
+				else
+				{
+					++i;
+					goto forloop;
+				}
+			}
 			centerprint_messages[i] = strzone(s);
+			centerprint_expires[i] = time + scrtime;
 			centerprint_width[i] = stringwidth(s, TRUE);
 			++i;
 
@@ -1859,6 +1873,7 @@ void Sbar_DrawCenterPrint (void)
 	{
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i]) * 0.5;
 		ts = centerprint_messages[i];
+		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
 		if (ts != "")
 		{
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
