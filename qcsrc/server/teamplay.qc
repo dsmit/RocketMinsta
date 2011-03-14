@@ -437,6 +437,7 @@ void RM_WelcomeMessage(entity pl)
 	s = strcat(s, "\n^0^x111^x222^x333^x333^x222^x111^0\n", motd,
 				  "\n^0^x111^x222^x333^x333^x222^x111^0");
 	
+	s = strcat("\x01", s);
 	centerprint(pl, s);
 }
 
@@ -588,7 +589,7 @@ void PrintWelcomeMessage(entity pl)
 	if (motd != "") {
 		s = strcat(s, "\n\n^8MOTD: ^7", strreplace("\\n", "\n", motd));
 	}
-	s = strcat(s, "\n");
+	s = strcat("\x01", s, "\n");
 
 	centerprint(pl, s);
 }

@@ -9,7 +9,7 @@ void restartAnnouncer_Think() {
 	countdown_rounded = floor(0.5 + countdown);
 	if(countdown <= 0) {
 		if (!spectatee_status) //do cprint only for players
-			centerprint("^1Begin!");
+			centerprint("\x01^1Begin!");
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
@@ -20,7 +20,7 @@ void restartAnnouncer_Think() {
 	}
 	else {
 		if (!spectatee_status) //do cprint only for players
-			centerprint(strcat("^1Game starts in ", ftos(countdown_rounded), " seconds"));
+			centerprint(strcat("\x01^1Game starts in ", ftos(countdown_rounded), " seconds"));
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);

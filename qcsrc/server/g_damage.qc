@@ -273,7 +273,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			ragemeter = strcat(ragemeter, "^0");
 	}
 	//</akari>
-
+	
+	float _hfrag;
+	
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
 		if (targ.classname == "corpse")
@@ -452,6 +454,21 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
 						PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
+					//That's how I detect hookfrags. No, seriously!
+					else if(targ.pushltime == 1337)
+					{
+						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
+						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+						//centerprint(attacker, "^7Hookfrag!");
+						
+						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
+						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+						
+						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+						
+						play2(attacker, "announcer/male/awesome.wav");
+						_hfrag = 1;
+					}
 					else
 					{
 						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, ragemeter));
@@ -492,22 +509,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint ("^1",s, "^1 was conserved by ", a, "\n");
 					else if (deathtype == DEATH_HURTTRIGGER && inflictor.message2 != "")
 					{
-						//<akari>
-						//That's how I detect hookfrags. No, seriously!
-						if(targ.pushltime == 1337)
-						{
-							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
-							//centerprint(attacker, "^7Hookfrag!");
-							
-							centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
-							centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-							
-							PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-							
-							play2(attacker, "announcer/male/awesome.wav");
-						}
-						else
+						if(!_hfrag)
 						{
 							p = strstrofs(inflictor.message2, "#", 0);
 							if(p < 0)
@@ -515,7 +517,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 							else
 								bprint("^1", s, "^1 ", substring(inflictor.message2, 0, p), a, "^1", substring(inflictor.message2, p+1, strlen(inflictor.message2) - (p+1)), "\n");
 						}
-						//</akari>
 					}
 					else if(deathtype == DEATH_TURRET)
 						bprint ("^1",s, "^1 was pushed into the line of fire by ^1", a, "\n");

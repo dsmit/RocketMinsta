@@ -1701,10 +1701,16 @@ float centerprint_num;
 float centerprint_offset_hint;
 vector centerprint_fontsize;
 
-void centerprint(string strMessage)
+#define CENTERPRINT_MAX_MSGS 4
+string centerprint_msgs[CENTERPRINT_MAX_MSGS];
+float centerprint_msgexpires[CENTERPRINT_MAX_MSGS];
+float centerprint_msgnum;
+float centerprint_lastlines;
+
+void centerprint(string strRealMessage)
 {
-	float i, j, n, hcount;
-	string s;
+	float i, j, n, hcount, k, k2, k3, exptime, tmp2;
+	string s, strMessage, tmp;
 	float scrtime = cvar("scr_centertime");
 
 	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
@@ -1714,67 +1720,105 @@ void centerprint(string strMessage)
 	if(scrtime <= 0)
 		return;
 
-	if(strMessage == "")
+	if(strRealMessage == "")
 		return;
 
-	// strip trailing newlines
-	j = strlen(strMessage) - 1;
-	while(substring(strMessage, j, 1) == "\n" && j >= 0)
-		j = j - 1;
-	strMessage = substring(strMessage, 0, j + 1);
-
-	if(strMessage == "")
-		return;
-
-	// strip leading newlines and remember them, they are a hint that the message should be lower on the screen
-	j = 0;
-	while(substring(strMessage, j, 1) == "\n" && j < strlen(strMessage))
-		j = j + 1;
-	strMessage = substring(strMessage, j, strlen(strMessage) - j);
-	centerprint_offset_hint = j;
-
-	if(strMessage == "")
-		return;
-
-	// if we get here, we have a message. Initialize its height.
-	centerprint_num = 0;
-
-	n = tokenizebyseparator(strMessage, "\n");
-	i = hcount = 0;
-	
-	for(j = 0; j < n; ++j)
+	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
-:forloop
-		getWrappedLine_remaining = argv(j);
-		while(getWrappedLine_remaining)
+
+		for(k2 = 0; k2 < CENTERPRINT_MAX_MSGS-1; ++k2)
 		{
-			s = getWrappedLine(vid_conwidth * 0.75 / centerprint_fontsize_x, stringwidth_colors);
-			if(centerprint_messages[i])
+			if(centerprint_msgs[k2]) strunzone(centerprint_msgs[k2]);
+			centerprint_msgs[k2] = strzone(centerprint_msgs[k2+1]);
+			centerprint_msgexpires[k2] = centerprint_msgexpires[k2+1];
+		}
+		
+		strunzone(centerprint_msgs[k2]);
+		centerprint_msgnum--;
+	}
+
+	if(substring(strRealMessage, 0, 1) == "\x01")
+	{
+		centerprint_msgs[0] = strzone(strRealMessage);
+		centerprint_msgexpires[0] = time + scrtime;
+		centerprint_msgnum = 1;
+	}
+	else
+	{
+		centerprint_msgs[centerprint_msgnum] = strzone(strRealMessage);
+		centerprint_msgexpires[centerprint_msgnum] = time + scrtime;
+		centerprint_msgnum++;
+	}
+
+	i = hcount = 0;
+
+	for(k = centerprint_msgnum - 1; k != -1; --k)
+	{
+		strMessage = centerprint_msgs[k];
+		exptime = centerprint_msgexpires[k];
+		
+		if(exptime <= time)
+			continue;
+
+		// strip trailing newlines
+		j = strlen(strMessage) - 1;
+		while(substring(strMessage, j, 1) == "\n" && j >= 0)
+			j = j - 1;
+		strMessage = substring(strMessage, 0, j + 1);
+
+		// strip leading newlines and remember them, they are a hint that the message should be lower on the screen
+		j = 0;
+		while(substring(strMessage, j, 1) == "\n" && j < strlen(strMessage))
+			j = j + 1;
+		strMessage = substring(strMessage, j, strlen(strMessage) - j);
+		centerprint_offset_hint = j;
+
+		if(strMessage == "")
+			break;
+
+		// if we get here, we have a message. Initialize its height.
+		//centerprint_num = 0;
+		
+		n = tokenizebyseparator(strMessage, "\n");
+		
+		for(j = 0; j < n; ++j)
+		{
+:forloop
+			getWrappedLine_remaining = argv(j);
+			while(getWrappedLine_remaining)
 			{
-				if(time >= centerprint_expires[i])
-					strunzone(centerprint_messages[i]);
-				else
+				s = getWrappedLine(vid_conwidth * 0.75 / centerprint_fontsize_x, stringwidth_colors);
+				if(centerprint_messages[i])
 				{
-					++i;
-					goto forloop;
+					//if(time >= centerprint_expires[i])
+						strunzone(centerprint_messages[i]);
+					//else
+					//{
+					//	++i;
+					//	goto forloop;
+					//}
 				}
+				
+				//if(i >= CENTERPRINT_MAX_LINES)
+				//	break;
+				
+				centerprint_messages[i] = strzone(s);
+				centerprint_expires[i] = exptime;
+				centerprint_width[i] = stringwidth(s, TRUE);
+				++i;
+
+				// half height for empty lines looks better
+				if(s == "")
+					hcount += 0.5;
+				else
+					hcount += 1;
+
+				//if(i >= CENTERPRINT_MAX_LINES)
+				//{
+				//	break;
+				//    dprint("Centerprint: limit exceeded\n");
+				//}
 			}
-			centerprint_messages[i] = strzone(s);
-			centerprint_expires[i] = time + scrtime;
-			centerprint_width[i] = stringwidth(s, TRUE);
-			++i;
-
-			// half height for empty lines looks better
-			if(s == "")
-				hcount += 0.5;
-			else
-				hcount += 1;
-
-			if(i >= CENTERPRINT_MAX_LINES)
-            {
-				break;
-                dprint("Centerprint: limit exceeded\n");
-            }
 		}
 	}
 
@@ -1845,12 +1889,15 @@ void centerprint(string strMessage)
 				max(scoreboard_bottom, vid_conheight * 0.5 + 16),
 				(havail - h)/2
 			),
-			havail - h
+			havail - h + vid_conheight
 		);
+	
+	centerprint_start_y += 2 * cvar("scr_centersize");
 #endif
 
-	centerprint_num = i;
-	centerprint_expire = time + cvar("scr_centertime");
+	if(i < CENTERPRINT_MAX_LINES)
+		centerprint_num = i;
+	//centerprint_expire = time + cvar("scr_centertime");
 }
 
 void Sbar_DrawCenterPrint (void)
@@ -1877,10 +1924,14 @@ void Sbar_DrawCenterPrint (void)
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
 
         if(a <= 0)
+        {
             continue;
+            strunzone(centerprint_messages[i]);
+		}
 
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * a) * 0.5;
 		ts = centerprint_messages[i];
+
 		if (ts != "")
 		{
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
