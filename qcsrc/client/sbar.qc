@@ -1701,8 +1701,6 @@ float centerprint_num;
 float centerprint_offset_hint;
 vector centerprint_fontsize;
 
-
-
 void centerprint(string strMessage)
 {
 	float i, j, n, hcount;
@@ -1743,6 +1741,7 @@ void centerprint(string strMessage)
 
 	n = tokenizebyseparator(strMessage, "\n");
 	i = hcount = 0;
+	
 	for(j = 0; j < n; ++j)
 	{
 :forloop
@@ -1871,13 +1870,13 @@ void Sbar_DrawCenterPrint (void)
 	pos = centerprint_start;
 	for (i=0; i<centerprint_num; i = i + 1)
 	{
-		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i]) * 0.5;
-		ts = centerprint_messages[i];
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
+		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * a) * 0.5;
+		ts = centerprint_messages[i];
 		if (ts != "")
 		{
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-			drawcolorcodedstring(pos, ts, centerprint_fontsize, a, DRAWFLAG_NORMAL);
+			drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
 			pos_y = pos_y + centerprint_fontsize_y;
 		}
