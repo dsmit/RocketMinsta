@@ -806,6 +806,8 @@ void UpdateSelectedPlayer()
 	selected = world;
 	selected_score = 0.95; // 18 degrees
 
+    return;
+
 	if(!cvar("sv_allow_shownames"))
 		return;
 
