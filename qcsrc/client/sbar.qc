@@ -1883,7 +1883,7 @@ void Sbar_DrawCenterPrint (void)
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 			drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
-			pos_y = pos_y + centerprint_fontsize_y;
+			pos_y = pos_y + centerprint_fontsize_y * a;
 		}
 		else
 			// half height for empty lines looks better
