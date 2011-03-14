@@ -1043,8 +1043,10 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	//<akari>
 	//Print damage to players
-	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0)
+	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if(damage || armordamage)
 	{
+		//screw this all
+		/*
 		if(damage > 0) 
 		{
 			if(attacker.classname == "player")
@@ -1091,6 +1093,44 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				else
 					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500\n"));
 			}
+		}
+		*/
+		
+		local string dmgstring, wpnstring;
+		
+		if(damage)
+			dmgstring = ftos(rint(damage));
+		else //armor damage
+			dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
+		
+		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+			wpnstring = "^1splash";
+		else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+			wpnstring = "^xFB0laser";
+		else if(deathtype == DEATH_NOAMMO)
+			wpnstring = "^7hook";
+		else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
+			wpnstring = "^5insta";
+		else 
+			wpnstring = "^0unknown"; //??????????
+		
+		if(attacker.classname == "player")
+		{
+			if(targ.netname)
+				centerprint(attacker, strcat(targ.netname, " ^3^x550 ^7", ftos(rint(damage)), " ^x550^3^7 ", wpnstring));
+		}
+		
+		if(targ.classname == "player")
+		{
+			if(attacker.netname)
+			{
+				if(attacker == targ)
+					centerprint(targ, strcat("^xFB0self ", "^x500^1 ^7", ftos(rint(damage)), " ^1^x500 ", wpnstring));
+				else
+					centerprint(targ, strcat(attacker.netname, " ^x500^1 ^7", ftos(rint(damage)), " ^1^x500^7 ", wpnstring));
+			}
+			else
+				centerprint(targ, strcat("^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n"));
 		}
 	}
 	

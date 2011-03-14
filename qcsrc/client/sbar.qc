@@ -1862,11 +1862,11 @@ void Sbar_DrawCenterPrint (void)
 	//	return;
 
 	//a = bound(0, 1 - 2 * (time - centerprint_expire), 1);
-	a = bound(0, 1 - 4 * (time - centerprint_expire), 1);
+	//a = bound(0, 1 - 4 * (time - centerprint_expire), 1);
 	//sz = 1.2 / (a + 0.2);
 
-	if(a <= 0)
-		return;
+	//if(a <= 0)
+//		return;
 
 	pos = centerprint_start;
 	for (i=0; i<centerprint_num; i = i + 1)
