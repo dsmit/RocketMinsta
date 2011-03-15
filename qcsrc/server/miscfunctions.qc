@@ -2683,6 +2683,9 @@ float ExponentialFalloff(float mindist, float maxdist, float halflifedist, float
 
 void bigprint(entity e, string bigstring, string comment, float staytime)
 {
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_BIGPRINT);

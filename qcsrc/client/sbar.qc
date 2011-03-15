@@ -1867,7 +1867,9 @@ void centerprint(string strRealMessage)
 		centerprint_start_y = bound(forbiddenmax, preferred, allowedmax);
 	}
 #else
-	centerprint_start_y =
+
+	//Yeah whatever!
+	/*centerprint_start_y =
 		min(
 			max(
 				max(scoreboard_bottom, vid_conheight * 0.5 + 16),
@@ -1876,7 +1878,9 @@ void centerprint(string strRealMessage)
 			havail - h + vid_conheight
 		);
 	
-	centerprint_start_y += 2 * cvar("scr_centersize");
+	centerprint_start_y += 2 * cvar("scr_centersize");*/
+	
+	centerprint_start_y = vid_conheight * 0.5 + vid_conheight/4;
 #endif
 
 	if(i < CENTERPRINT_MAX_LINES)
@@ -2243,7 +2247,7 @@ void drawstringcenter(vector position, string text, vector scale, vector rgb, fl
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - 0.5 * strlennocol(text) * scale_x);
+	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
@@ -2423,7 +2427,7 @@ void Sbar_Draw (void)
 		
 		if(bp_alpha > 0)
 		{
-			bp_pos = '0 1 0' * (vid_conheight/3);
+			bp_pos = '0 1 0' * (vid_conheight/5);
 			drawfont = sbar_bigfont;
 			drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			
