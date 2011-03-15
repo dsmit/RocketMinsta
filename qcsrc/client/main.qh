@@ -160,3 +160,6 @@ float calledhooks;
 
 string rm_watermark;
 float rm_wm_width;
+
+float gamestart_status;
+float gamestart_fadetime;

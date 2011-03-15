@@ -157,6 +157,9 @@ void CSQC_Init(void)
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	print("^1", rm_watermark, "\n");
+	
+	gamestart_status = -2;
+	gamestart_fadetime = time;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

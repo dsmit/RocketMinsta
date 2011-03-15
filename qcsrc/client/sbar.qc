@@ -2407,6 +2407,37 @@ void Sbar_Draw (void)
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 
+	local float gs_alpha;
+
+	if(gamestart_status > -1)
+	{
+		gs_alpha = bound(0, 1 - 4 * (time - gamestart_fadetime), 1);
+		
+		if(gs_alpha > 0)
+		{
+			drawfont = sbar_bigfont;
+			drawstringcenter('0 1 0' * (vid_conheight/3), ftos(gamestart_status), '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
+			
+			drawfont = sbar_font;
+		}
+		else
+			gamestart_status = -2;
+	}
+	else if(gamestart_status == -1)
+	{
+		gs_alpha = bound(0, 1 - 4 * (time - gamestart_fadetime), 1);
+		
+		if(gs_alpha > 0)
+		{
+			drawfont = sbar_bigfont;
+			drawstringcenter('0 1 0' * (vid_conheight/3), "Begin!", '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
+			
+			drawfont = sbar_font;
+		}
+		else
+			gamestart_status = -2;
+	}
+
 	// move more important stuff more to the middle so its more visible
 	o_y = vid_conheight * 0.66;
 
