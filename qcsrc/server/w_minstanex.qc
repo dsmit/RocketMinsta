@@ -113,13 +113,13 @@ void W_MinstaNex_Attack (void)
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
-	if(cvar("g_explosive_rage")) if(self.rage >= cvar("g_explosive_rage"))
+	/*if(cvar("g_explosive_rage")) if(self.rage >= cvar("g_explosive_rage"))
 	{
 		W_Rage_Attack();
 		self.rage -= 1;
 		if(self.rage < 0)
 			self.rage = 0;
-	}
+	}*/
 	
 	if(cvar("g_balance_minstanex_explosive") == 2)
 		nex_damage = 0;
