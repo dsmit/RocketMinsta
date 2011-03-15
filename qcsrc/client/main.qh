@@ -161,5 +161,8 @@ float calledhooks;
 string rm_watermark;
 float rm_wm_width;
 
-float gamestart_status;
-float gamestart_fadetime;
+string bigprint_string;
+string bigprint_comment;
+float bigprint_fadetime;
+
+void bigprint(string, string, float);

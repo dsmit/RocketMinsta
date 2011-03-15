@@ -11,8 +11,10 @@ void restartAnnouncer_Think() {
 		//if (!spectatee_status) //do cprint only for players
 		//	centerprint("\x01^1Begin!");
 		
-		gamestart_status = -1;
-		gamestart_fadetime = time + 1;
+		//gamestart_status = -1;
+		//gamestart_fadetime = time + 1;
+		
+		bigprint("^xFB0Begin!", "It's time to kick some asses", 1);
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
@@ -28,8 +30,9 @@ void restartAnnouncer_Think() {
 		//	gamestart_status = countdown_rounded;
 		//}
 
-		gamestart_status = countdown_rounded;
-		gamestart_fadetime = time + 0.5;
+		//gamestart_status = countdown_rounded;
+		//gamestart_fadetime = time + 0.5;
+		bigprint(ftos(countdown_rounded), "", 0.5);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);

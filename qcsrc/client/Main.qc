@@ -157,9 +157,6 @@ void CSQC_Init(void)
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	print("^1", rm_watermark, "\n");
-	
-	gamestart_status = -2;
-	gamestart_fadetime = time;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -1138,4 +1135,25 @@ string getcommandkey(string text, string command)
 		return strcat(text, " (", keys, ")");
 	else
 		return keys;
+}
+
+//////////////////////////////
+
+void bigprint(string bigstr, string comment, float staytime)
+{
+	if(bigstr == "")
+		error("Why the fuck would you want to bigprint WITHOUT the 'big' part?");
+	
+	if(bigprint_string)
+		strunzone(bigprint_string);
+	
+	bigprint_string = strzone(bigstr);
+	
+	if(bigprint_comment)
+		strunzone(bigprint_comment);
+	
+	if(comment != "")
+		bigprint_comment = strzone(comment);
+		
+	bigprint_fadetime = time + staytime;
 }

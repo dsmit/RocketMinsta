@@ -1,5 +1,6 @@
 void drawstringright(vector, string, vector, vector, float, float);
 void drawstringcenter(vector, string, vector, vector, float, float);
+void drawcolorcodedstringcenter(vector, string, vector, float, float);
 
 float weapon_hits[WEP_COUNT];
 float weapon_fired[WEP_COUNT];
@@ -2240,6 +2241,12 @@ void drawstringcenter(vector position, string text, vector scale, vector rgb, fl
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
+void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
+{
+	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
+	drawcolorcodedstring(position, text, scale, alpha, flag);
+}
+
 float GetAmmoStat(float i)
 {
 	switch(i)
@@ -2407,20 +2414,26 @@ void Sbar_Draw (void)
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 
-	local float gs_alpha;
+	local float bp_alpha;
+	local vector bp_pos;
 
-	if(gamestart_status > -2)
+	if(bigprint_string)
 	{
-		gs_alpha = bound(0, 1 - 4 * (time - gamestart_fadetime), 1);
+		bp_alpha = bound(0, 1 - 4 * (time - bigprint_fadetime), 1);
 		
-		if(gs_alpha > 0)
+		if(bp_alpha > 0)
 		{
+			bp_pos = '0 1 0' * (vid_conheight/3);
 			drawfont = sbar_bigfont;
-			drawstringcenter('0 1 0' * (vid_conheight/3), ((gamestart_status == -1)? "Begin!" : ftos(gamestart_status)), '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
+			drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			drawfont = sbar_font;
+			
+			if(bigprint_comment)
+			{
+				bp_pos_y += 24;
+				drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+			}
 		}
-		else
-			gamestart_status = -2;
 	}
 
 	// move more important stuff more to the middle so its more visible
