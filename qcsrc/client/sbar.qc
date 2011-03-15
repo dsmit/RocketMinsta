@@ -2243,7 +2243,7 @@ void drawstringcenter(vector position, string text, vector scale, vector rgb, fl
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
+	position_x = 0.5 * (vid_conwidth - 0.5 * strlennocol(text) * scale_x);
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
@@ -2426,13 +2426,14 @@ void Sbar_Draw (void)
 			bp_pos = '0 1 0' * (vid_conheight/3);
 			drawfont = sbar_bigfont;
 			drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
-			drawfont = sbar_font;
 			
+			drawfont = sbar_font;
 			if(bigprint_comment)
 			{
 				bp_pos_y += 24;
 				drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			}
+			
 		}
 	}
 

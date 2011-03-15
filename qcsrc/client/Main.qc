@@ -320,6 +320,8 @@ void PostInit(void)
 	Porto_Init();
 	TrueAim_Init();
 
+	//bigprint("holy^1shit", "Awesome frag", 1337);
+
 	postinit = true;
 }
 
@@ -1153,6 +1155,7 @@ string getcommandkey(string text, string command)
 
 void bigprint(string bigstr, string comment, float staytime)
 {
+	//staytime = 1337;
 	if(bigstr == "")
 		error("Why the fuck would you want to bigprint WITHOUT the 'big' part?");
 	
