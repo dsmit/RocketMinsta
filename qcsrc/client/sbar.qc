@@ -1775,10 +1775,7 @@ void centerprint(string strRealMessage)
 
 		if(strMessage == "")
 			break;
-
-		// if we get here, we have a message. Initialize its height.
-		//centerprint_num = 0;
-		
+			
 		n = tokenizebyseparator(strMessage, "\n");
 		
 		for(j = 0; j < n; ++j)
@@ -1789,18 +1786,7 @@ void centerprint(string strRealMessage)
 			{
 				s = getWrappedLine(vid_conwidth * 0.75 / centerprint_fontsize_x, stringwidth_colors);
 				if(centerprint_messages[i])
-				{
-					//if(time >= centerprint_expires[i])
 						strunzone(centerprint_messages[i]);
-					//else
-					//{
-					//	++i;
-					//	goto forloop;
-					//}
-				}
-				
-				//if(i >= CENTERPRINT_MAX_LINES)
-				//	break;
 				
 				centerprint_messages[i] = strzone(s);
 				centerprint_expires[i] = ((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
@@ -1813,11 +1799,8 @@ void centerprint(string strRealMessage)
 				else
 					hcount += 1;
 
-				//if(i >= CENTERPRINT_MAX_LINES)
-				//{
-				//	break;
-				//    dprint("Centerprint: limit exceeded\n");
-				//}
+				if(i >= CENTERPRINT_MAX_LINES)
+					break;
 			}
 		}
 	}
@@ -1897,7 +1880,6 @@ void centerprint(string strRealMessage)
 
 	if(i < CENTERPRINT_MAX_LINES)
 		centerprint_num = i;
-	//centerprint_expire = time + cvar("scr_centertime");
 }
 
 void Sbar_DrawCenterPrint (void)
@@ -1907,26 +1889,16 @@ void Sbar_DrawCenterPrint (void)
 	string ts;
 	float a;
 
-	//if(time > centerprint_expire)
-	//	return;
-
-	//a = bound(0, 1 - 2 * (time - centerprint_expire), 1);
-	//a = bound(0, 1 - 4 * (time - centerprint_expire), 1);
-	//sz = 1.2 / (a + 0.2);
-
-	//if(a <= 0)
-//		return;
-
 	pos = centerprint_start;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
 	{
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
 
-        if(a <= 0)
-        {
-            continue;
-            strunzone(centerprint_messages[i]);
+		if(a <= 0)
+		{
+			continue;
+			strunzone(centerprint_messages[i]);
 		}
 
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * a) * 0.5;
