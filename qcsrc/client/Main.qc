@@ -321,6 +321,7 @@ void PostInit(void)
 	TrueAim_Init();
 
 	//bigprint("holy^1shit", "Awesome frag", 1337);
+	bigprint(strcat("^2", shortmapname), "", 0.5);
 
 	postinit = true;
 }
