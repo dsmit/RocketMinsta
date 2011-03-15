@@ -2680,3 +2680,13 @@ float ExponentialFalloff(float mindist, float maxdist, float halflifedist, float
 	else
 		return 1;
 }
+
+void bigprint(entity e, string bigstring, string comment, float staytime)
+{
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_BIGPRINT);
+    WriteString(MSG_ONE, bigstring);
+    WriteString(MSG_ONE, comment);
+    WriteShort(MSG_ONE, staytime);
+}

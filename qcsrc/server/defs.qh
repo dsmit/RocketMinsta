@@ -623,3 +623,5 @@ float client_cefc_accumulatortime;
 
 .entity clientdata;
 .entity personal;
+
+void bigprint(entity e, string bigstring, string comment, float staytime);

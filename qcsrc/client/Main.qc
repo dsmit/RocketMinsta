@@ -156,6 +156,9 @@ void CSQC_Init(void)
 	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_DATE));
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
+	bigprint_string = strzone("");
+	bigprint_comment = strzone("");
+	
 	print("^1", rm_watermark, "\n");
 }
 
@@ -1044,6 +1047,11 @@ void Net_ReadSpawn()
 	current_viewzoom = 0.6;
 }
 
+void Net_ReadBigPrint()
+{
+	bigprint(ReadString(), ReadString(), ReadShort());
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1086,6 +1094,10 @@ float CSQC_Parse_TempEntity()
             Net_ReadLightningarc();
             bHandled = true;
             break;
+        case TE_CSQC_BIGPRINT:
+			Net_ReadBigPrint();
+			bHandled = true;
+			break;
 		default:
 			// No special logic for this temporary entity; return 0 so the engine can handle it
 			bHandled = false;
@@ -1145,15 +1157,12 @@ void bigprint(string bigstr, string comment, float staytime)
 		error("Why the fuck would you want to bigprint WITHOUT the 'big' part?");
 	
 	if(bigprint_string)
-		strunzone(bigprint_string);
+		fstrunzone(bigprint_string);
+	if(bigprint_comment);
+		fstrunzone(bigprint_comment);
 	
 	bigprint_string = strzone(bigstr);
+	bigprint_comment = strzone(comment);
 	
-	if(bigprint_comment)
-		strunzone(bigprint_comment);
-	
-	if(comment != "")
-		bigprint_comment = strzone(comment);
-		
 	bigprint_fadetime = time + staytime;
 }

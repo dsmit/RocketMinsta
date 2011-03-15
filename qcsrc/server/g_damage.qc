@@ -445,6 +445,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
 						
 						play2(attacker, "announcer/male/awesome.wav");
+						bigprint(attacker, "Holy shit!", "That was awesome!", 1);
 						
 						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
 					}
