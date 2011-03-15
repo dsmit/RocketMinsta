@@ -159,6 +159,8 @@ void CSQC_Init(void)
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
 	
+	centerprint_init = 0;
+	
 	print("^1", rm_watermark, "\n");
 }
 
@@ -320,7 +322,8 @@ void PostInit(void)
 	Porto_Init();
 	TrueAim_Init();
 
-	bigprint(strcat("^2", shortmapname), "", 0.5);
+	MapInfo_Get_ByName(shortmapname);
+	bigprint(strcat("^2", shortmapname), MapInfo_Map_title, 0.5);
 
 	postinit = true;
 }

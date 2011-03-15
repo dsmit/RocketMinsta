@@ -1710,6 +1710,12 @@ float centerprint_lastlines;
 
 void centerprint(string strRealMessage)
 {
+	if(!centerprint_init)
+	{
+		centerprint_init = 1;
+		return;
+	}
+	
 	float i, j, n, hcount, k, k2, k3, exptime, tmp2;
 	string s, strMessage, tmp;
 	float scrtime = cvar("scr_centertime");

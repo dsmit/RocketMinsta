@@ -166,3 +166,5 @@ string bigprint_comment;
 float bigprint_fadetime;
 
 void bigprint(string, string, float);
+
+float centerprint_init;
