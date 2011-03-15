@@ -130,6 +130,12 @@ void W_MinstaNex_Attack (void)
 	{
 		if(yoda)
 			announce(self, "announcer/male/yoda.wav");
+		
+		if(headshot)
+		{
+			announce(self, "announcer/male/headshot.wav");
+			bigprint(self, "^1head^7shot!", "", 1);
+		}
 	}
 	else
 	{
