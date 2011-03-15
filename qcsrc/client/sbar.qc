@@ -2409,29 +2409,14 @@ void Sbar_Draw (void)
 
 	local float gs_alpha;
 
-	if(gamestart_status > -1)
+	if(gamestart_status > -2)
 	{
 		gs_alpha = bound(0, 1 - 4 * (time - gamestart_fadetime), 1);
 		
 		if(gs_alpha > 0)
 		{
 			drawfont = sbar_bigfont;
-			drawstringcenter('0 1 0' * (vid_conheight/3), ftos(gamestart_status), '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
-			
-			drawfont = sbar_font;
-		}
-		else
-			gamestart_status = -2;
-	}
-	else if(gamestart_status == -1)
-	{
-		gs_alpha = bound(0, 1 - 4 * (time - gamestart_fadetime), 1);
-		
-		if(gs_alpha > 0)
-		{
-			drawfont = sbar_bigfont;
-			drawstringcenter('0 1 0' * (vid_conheight/3), "Begin!", '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
-			
+			drawstringcenter('0 1 0' * (vid_conheight/3), ((gamestart_status == -1)? "Begin!" : ftos(gamestart_status)), '24 24 0' * (1.0 + (1.0 - gs_alpha)), '1 1 1' * gs_alpha, gs_alpha, DRAWFLAG_NORMAL);
 			drawfont = sbar_font;
 		}
 		else
