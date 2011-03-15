@@ -1803,7 +1803,7 @@ void centerprint(string strRealMessage)
 				//	break;
 				
 				centerprint_messages[i] = strzone(s);
-				centerprint_expires[i] = exptime;
+				centerprint_expires[i] = ((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
 				centerprint_width[i] = stringwidth(s, TRUE);
 				++i;
 
