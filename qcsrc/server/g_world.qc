@@ -1421,14 +1421,22 @@ void InitiateOvertime()
 		else
 			minutesPlural = " ^3minutes";
 
-		bcenterprint(
+		/*bcenterprint(
 			strcat(
 				"^3Now playing ^1OVERTIME^3!\n\n^3Added ^1",
 				ftos(cvar("timelimit_overtime")),
 				minutesPlural,
 				" to the game!"
 			)
-		);
+		);*/
+		
+		local entity _pl; FOR_EACH_REALCLIENT(_pl)
+			bigprint(_pl, "^3Now playing ^1OVERTIME^3!", strcat(
+				"^3Added ^1",
+				ftos(cvar("timelimit_overtime")),
+				minutesPlural,
+				" to the game!"
+			), 2);
 	}
 	else
 	{
@@ -1911,7 +1919,12 @@ void CheckRules_World()
 			if(g_race && !g_race_qualifying)
 				bcenterprint("^3Everyone, finish your lap! The race is over!");
 			else
-				bcenterprint("^3Now playing ^1OVERTIME^3!\n\n^3Keep fragging until we have a ^1winner^3!");
+			{
+				//bcenterprint("^3Now playing ^1OVERTIME^3!\n\n^3Keep fragging until we have a ^1winner^3!");
+				local entity _pl; FOR_EACH_REALCLIENT(_pl)
+					bigprint(_pl, "^3Now playing ^1OVERTIME^3!",
+						"^3Keep fragging until we have a ^1winner^3!", 2);
+			}
 		}
 	}
 	else
