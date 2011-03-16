@@ -2055,6 +2055,9 @@ void WriteSpectatorInfo(entity player)
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
+	if(!cvar("g_explosive_showspecs"))
+		return;
+	
 	local entity spec;
 	local float count;
 	
