@@ -2464,25 +2464,44 @@ void Sbar_Draw (void)
 	local float bp_alpha;
 	local vector bp_pos;
 
-	if(bigprint_string)
+	if(bigprint_oldstring)
 	{
-		bp_alpha = bound(0, 1 - 4 * (time - bigprint_fadetime), 1);
+		bp_alpha = bound(0, 1 - 4 * (time - bigprint_oldfadetime), 1);
 		
 		if(bp_alpha > 0)
 		{
 			bp_pos = '0 1 0' * (vid_conheight/5);
+			bp_pos_y -= 24;
 			drawfont = sbar_bigfont;
-			drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+			drawcolorcodedstringcenter(bp_pos, bigprint_oldstring, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			
 			drawfont = sbar_font;
-			if(bigprint_comment)
-			{
-				bp_pos_y += 24;
-				drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
-			}
-			
+			//comment for oldbigprint is not displayed
 		}
 	}
+
+	if(bigprint_string)
+	{
+		for(i = 0; i < 2; ++i)
+		{
+			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_appeartime : bigprint_fadetime)), 1);
+			
+			if(bp_alpha > 0)
+			{
+				bp_pos = '0 1 0' * (vid_conheight/5);
+				drawfont = sbar_bigfont;
+				drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+				
+				drawfont = sbar_font;
+				if(bigprint_comment)
+				{
+					bp_pos_y += 24;
+					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+				}
+			}
+		}
+	}
+
 
 	if(rm_showspec)
 	if(!spectatee_status)

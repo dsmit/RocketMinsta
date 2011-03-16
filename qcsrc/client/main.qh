@@ -164,6 +164,10 @@ float rm_wm_width;
 string bigprint_string;
 string bigprint_comment;
 float bigprint_fadetime;
+float bigprint_appeartime;
+string bigprint_oldstring;
+string bigprint_oldcomment;
+float bigprint_oldfadetime;
 
 void bigprint(string, string, float);
 

@@ -1242,6 +1242,19 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
+void bigprint_old(string bigstr, string comment, float fadetime)
+{
+	if(bigprint_oldstring)
+		fstrunzone(bigprint_oldstring);
+	if(bigprint_oldcomment)
+		fstrunzone(bigprint_oldcomment);
+	
+	bigprint_oldstring = strzone(bigstr);
+	bigprint_oldcomment = strzone(comment);
+	
+	bigprint_oldfadetime = fadetime;
+}
+
 void bigprint(string bigstr, string comment, float staytime)
 {
 	//staytime = 1337;
@@ -1260,6 +1273,8 @@ void bigprint(string bigstr, string comment, float staytime)
 		return;
 	}
 	
+	bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
+	
 	if(bigprint_string)
 		fstrunzone(bigprint_string);
 	if(bigprint_comment);
@@ -1269,4 +1284,5 @@ void bigprint(string bigstr, string comment, float staytime)
 	bigprint_comment = strzone(comment);
 	
 	bigprint_fadetime = time + staytime;
+	bigprint_appeartime = time;
 }

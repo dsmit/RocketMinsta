@@ -237,15 +237,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	float p, w;
 
 	//<akari>
-	local float maxrage = cvar("g_explosive_rage");
-	local float rage_timeout = 5;
-	
-	if(cvar("g_explosive_rage_timeout"))
-		rage_timeout = cvar("g_explosive_rage_timeout");
+	local float maxrage = 5;
+	local float rage_timeout = 3;
 	
 	local string ragemeter;
 
-	if(maxrage)
 	if(targ.classname == "player" && targ != attacker)
 	{
 		if(time - attacker.lastkill > rage_timeout)
@@ -255,22 +251,22 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
 		
-		ragemeter = "\n^1";
+		ragemeter = "^1";
 		
 		local float i = 2;
 		while(i < maxrage)
 		{
-			if(attacker.rage+1 == i)
-				ragemeter = strcat(ragemeter, "^0");
+			if(attacker.rage == i)
+				ragemeter = strcat(ragemeter, "^0");
 			else
-				ragemeter = strcat(ragemeter, "");
+				ragemeter = strcat(ragemeter, "");
 			
 			i++;
 		}
-		if(attacker.rage >= maxrage)
-			ragemeter = strcat(ragemeter, "");
+		if(attacker.rage-1 >= maxrage)
+			ragemeter = strcat(ragemeter, "");
 		else
-			ragemeter = strcat(ragemeter, "^0");
+			ragemeter = strcat(ragemeter, "^0");
 	}
 	//</akari>
 	
@@ -436,7 +432,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					{
 						play2(attacker, "announcer/male/awesome.wav");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s, ragemeter));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
 					}
 					else if(deathtype == DEATH_NOAMMO)
@@ -444,7 +440,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
 						
 						play2(attacker, "announcer/male/awesome.wav");
@@ -454,7 +450,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 					else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s, ragemeter));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
 						PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
@@ -465,7 +461,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 						//centerprint(attacker, "^7Hookfrag!");
 						
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
 						
 						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
@@ -475,7 +471,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 					else
 					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, ragemeter));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
 					}
 					//</akari>
@@ -565,13 +561,15 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 				if (attacker.killcount == 3)
 				{
-					if(sv_gentle) {
+					//We already have a triple kill in another context
+					
+					/*if(sv_gentle) {
 						bprint (a,"^7 made a ^1TRIPLE SCORE\n");
 					} else {
 						bprint (a,"^7 made a ^1TRIPLE FRAG\n");
 						announce(attacker, "announcer/male/03kills.wav");
-						bigprint_spec(attacker, "^3triple^7frag", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
+						bigprint_spec(attacker, "^xFB0triple^7frag", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+					}*/
 				}
 				else if (attacker.killcount == 5)
 				{
@@ -580,7 +578,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 unleashes ^1RAGE\n");
 						announce(attacker, "announcer/male/05kills.wav");
-						bigprint_spec(attacker, "^xFB0rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xFA0rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 10)
@@ -590,7 +588,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 starts the ^1MASSACRE!\n");
 						announce(attacker, "announcer/male/10kills.wav");
-						bigprint_spec(attacker, "^1massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF80massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 15)
@@ -600,7 +598,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 executes ^1MAYHEM!\n");
 						announce(attacker, "announcer/male/15kills.wav");
-						bigprint_spec(attacker, "^1MAYHEM!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF60mayhem!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 20)
@@ -610,7 +608,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 is a ^1BERSERKER!\n");
 						announce(attacker, "announcer/male/20kills.wav");
-						bigprint_spec(attacker, "^1BERSERKER!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF40berserker!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 25)
@@ -620,7 +618,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 inflicts ^1CARNAGE!\n");
 						announce(attacker, "announcer/male/25kills.wav");
-						bigprint_spec(attacker, "^1CARNAGE!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF20carnage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 30)
@@ -630,9 +628,34 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 unleashes ^1ARMAGEDDON!\n");
 						announce(attacker, "announcer/male/30kills.wav");
-						bigprint_spec(attacker, "^1ARMAGEDDON!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^1armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
+				
+				#define RAGESOUND play2(attacker, "porto/fire.wav");
+				switch(attacker.rage)
+				{
+					case 0:
+					case 1:
+						break;
+					
+					case 2: RAGESOUND
+						bigprint_spec(attacker, "^2double^7kill!", ragemeter, 1);
+						break;
+					case 3: RAGESOUND
+						bigprint_spec(attacker, "^3triple^7kill!", ragemeter, 1);
+						break;
+					case 4: RAGESOUND
+						bigprint_spec(attacker, "^6quad^7kill!", ragemeter, 1);
+						break;
+					case 5: RAGESOUND
+						bigprint_spec(attacker, "^5ultra^7kill!", ragemeter, 1);
+						break;
+					default: case 6: RAGESOUND
+						bigprint_spec(attacker, "^1monster^7kill!", ragemeter, 1);
+						break;
+				}
+				#undef RAGESOUND
 			}
 		}
 		else
