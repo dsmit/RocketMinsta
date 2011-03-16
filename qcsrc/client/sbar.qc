@@ -1941,6 +1941,19 @@ vector Sbar_DrawNoteLine(vector offset, string s)
 	return offset + sbar_fontsize_y * '0 1 0';
 }
 
+vector Sbar_DrawNoteLineA(vector offset, string s, float alpha)
+{
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+	drawcolorcodedstring(
+		offset - sbar_fontsize_x * '1 0 0' * stringwidth(s, TRUE),
+		s,
+		sbar_fontsize,
+		alpha,
+		0
+	);
+	return offset + sbar_fontsize_y * '0 1 0';
+}
+
 vector Sbar_DrawCenterNoteLine(vector offset, string s)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
@@ -2449,6 +2462,23 @@ void Sbar_Draw (void)
 		}
 	}
 
+	if(showspec)
+	if(!spectatee_status)
+	if(num_spectators)
+	{
+		local float i;
+		local string s;
+		local float limit;
+		o = Sbar_DrawNoteLineA(o, "^2Spectating you:", 0.5);
+		
+		limit = min(num_spectators, MAX_SPECTATORS);
+		for(i = 0; i < limit; ++i)
+			o = Sbar_DrawNoteLineA(o, spectatornames[i], 0.5);
+		
+		if(i != num_spectators)
+			o = Sbar_DrawNoteLineA(o, strcat("^9(", ftos(num_spectators - MAX_SPECTATORS), " more)"), 0.5);
+	}
+	
 	// move more important stuff more to the middle so its more visible
 	o_y = vid_conheight * 0.66;
 

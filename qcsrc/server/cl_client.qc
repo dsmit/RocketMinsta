@@ -762,8 +762,13 @@ Called when a client spawns in the server
 =============
 */
 //void() ctf_playerchanged;
+
+void WriteSpectatorInfo(entity);
 void PutClientInServer (void)
 {
+	WriteSpectatorInfo(self);
+	WriteSpectatorInfo(self.enemy);
+	
 	if(clienttype(self) == CLIENTTYPE_BOT)
 	{
 		self.classname = "player";
@@ -2041,6 +2046,27 @@ void SpectateCopy(entity spectatee) {
 	SetZoomState(spectatee.zoomstate);
 }
 
+#define FOR_EACH_SPECOF(p,e) FOR_EACH_REALCLIENT(e) if(spec.classname == "spectator") if(e.enemy == p)
+
+void WriteSpectatorInfo(entity player)
+{
+	if(clienttype(player) != CLIENTTYPE_REAL)
+		return;
+	
+	local entity spec;
+	local float count;
+	
+	FOR_EACH_SPECOF(player, spec) count++;
+	
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+	WriteShort(MSG_ONE, count);
+	
+	FOR_EACH_SPECOF(player, spec)
+		WriteString(MSG_ONE, spec.netname);
+}
+
 float SpectateUpdate() {
 	if(!self.enemy)
 		return 0;
@@ -2052,11 +2078,12 @@ float SpectateUpdate() {
 		return 0;
 
 	SpectateCopy(self.enemy);
-
 	return 1;
 }
 
 float SpectateNext() {
+	local entity oldenemy = self.enemy;
+	
 	other = find(self.enemy, classname, "player");
 	if (!other) {
 		other = find(other, classname, "player");
@@ -2068,10 +2095,14 @@ float SpectateNext() {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self.enemy);
+		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
 		if(!SpectateUpdate())
 			PutObserverInServer();
+		
+		WriteSpectatorInfo(oldenemy);
+		WriteSpectatorInfo(self.enemy);
 		return 1;
 	} else {
 		return 0;

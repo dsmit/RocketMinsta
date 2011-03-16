@@ -2698,7 +2698,7 @@ void centerprint_spec(entity pl, string msg)
 {
     local entity e; FOR_EACH_REALCLIENT(e)
     {
-        if(e == pl || (e.enemy == pl && e.enemy.classname == "spectator"))
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             centerprint(e, msg);
     }
 }
@@ -2707,7 +2707,7 @@ void bigprint_spec(entity pl, string msg, string comment, float staytime)
 {
     local entity e; FOR_EACH_REALCLIENT(e)
     {
-        if(e == pl || (e.enemy == pl && e.enemy.classname == "spectator"))
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             bigprint(e, msg, comment, staytime);
     }
 }

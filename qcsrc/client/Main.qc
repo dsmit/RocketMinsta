@@ -325,6 +325,15 @@ void PostInit(void)
 	MapInfo_Get_ByName(shortmapname);
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 
+	if(!cvar("cl_rm_initialized"))
+	{
+		print("^xFB0First run, initializing RocketMinsta client cvars...\n");
+		localcmd("seta cl_rm_initialized 1\n");
+		localcmd("seta showspec 1\n");
+	}
+
+	showspec = cvar("showspec");
+
 	postinit = true;
 }
 
@@ -1057,6 +1066,24 @@ void Net_ReadBigPrint()
 	bigprint(ReadString(), ReadString(), ReadShort());
 }
 
+void Net_ReadSpecInfo()
+{
+	local float i, limit;
+	limit = min(num_spectators, MAX_SPECTATORS);
+	for(i = 0; i < limit; ++i)
+		strunzone(spectatornames[i]);
+		
+	num_spectators = ReadShort();
+	
+	for(i = 0; i < num_spectators; ++i)
+	{
+		local string s = ReadString();
+		
+		if(i < MAX_SPECTATORS)
+			spectatornames[i] = strzone(s);
+	}
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1101,6 +1128,10 @@ float CSQC_Parse_TempEntity()
             break;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
+			bHandled = true;
+			break;
+		case TE_CSQC_SPECINFO:
+			Net_ReadSpecInfo();
 			bHandled = true;
 			break;
 		default:
