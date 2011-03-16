@@ -287,35 +287,35 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		if (targ == attacker)
 		{
 			if (deathtype == DEATH_TEAMCHANGE) {
-				centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You are now on: ", ColoredTeamName(targ.team)));
+				centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You are now on: ", ColoredTeamName(targ.team)));
 			} else if (deathtype == DEATH_AUTOTEAMCHANGE) {
-				centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You have been moved into a different team to improve team balance\nYou are now on: ", ColoredTeamName(targ.team)));
+				centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You have been moved into a different team to improve team balance\nYou are now on: ", ColoredTeamName(targ.team)));
 				return;
 			} else if (deathtype == DEATH_CAMP) {
 				if(sv_gentle)
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Reconsider your tactics, camper!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Reconsider your tactics, camper!"));
 				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Die camper!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Die camper!"));
 			} else if (deathtype == DEATH_NOAMMO) {
 				if(sv_gentle)
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You are reinserted into the game for running out of ammo..."));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You are reinserted into the game for running out of ammo..."));
 				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were killed for running out of ammo..."));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were killed for running out of ammo..."));
 			} else if (deathtype == DEATH_ROT) {
 				if(sv_gentle)
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to preserve your health"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to preserve your health"));
 				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You grew too old without taking your medicine"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You grew too old without taking your medicine"));
 			} else if (deathtype == DEATH_MIRRORDAMAGE) {
 				if(sv_gentle)
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't go against team mates!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't go against team mates!"));
 				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't shoot your team mates!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't shoot your team mates!"));
 			} else {
 				if(sv_gentle)
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to be more careful!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to be more careful!"));
 				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You killed your own dumb self!"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You killed your own dumb self!"));
 			}
 
 			if(sv_gentle) {
@@ -373,16 +373,16 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			if(teams_matter && attacker.team == targ.team)
 			{
 				if(sv_gentle) {
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
+					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
 					bprint ("^1", a, "^1 took action against a team mate\n");
 				} else {
 					//<akari>
 					
 					//Fixed this a little
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, "^1, a team mate!"));
+					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, "^1, a team mate!"));
 					
 					//Why isn't there a teamfrag message for victims?
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were fragged by ^7", a, "^1, the teamkilling moron"));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were fragged by ^7", a, "^1, the teamkilling moron"));
 					//</akari>
 					bprint ("^1", a, "^1 mows down a team mate\n");
 				}
@@ -424,8 +424,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				}
 
 				if(sv_gentle > 0) {
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
+					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
 				} else {
 					//<akari>
 					//Let's detect laserfrags
@@ -433,16 +433,16 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					{
 						play2(attacker, "announcer/male/awesome.wav");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
-						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s, ragemeter));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
 					}
 					else if(deathtype == DEATH_NOAMMO)
 					{
 						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 
-						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
 						
 						play2(attacker, "announcer/male/awesome.wav");
 						bigprint(attacker, "holy^1shit", "Awesome frag", 1);
@@ -451,8 +451,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 					else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 					{
-						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s, ragemeter));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
 						PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
 					//That's how I detect hookfrags. No, seriously!
@@ -462,8 +462,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 						//centerprint(attacker, "^7Hookfrag!");
 						
-						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s, ragemeter));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
 						
 						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
 						
@@ -472,8 +472,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 					else
 					{
-						centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, ragemeter));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, ragemeter));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
 					}
 					//</akari>
 					attacker.taunt_soundtime = time + 1;
@@ -634,7 +634,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 		else
 		{
-			centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Watch your step!"));
+			centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Watch your step!"));
 			if (deathtype == DEATH_HURTTRIGGER && inflictor.message != "")
 				bprint ("^1",s, "^1 ", inflictor.message, "\n");
 			else if (deathtype == DEATH_DROWN)
@@ -849,7 +849,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if(!ex || !ex_armor)
 				{
 					targ.armorvalue -= 1;
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
+					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
 					damage = 0;
 					targ.hitsound += 1;
 					attacker.hitsound += 1; // TODO change this to a future specific hitsound for armor hit
@@ -1126,7 +1126,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(attacker.classname == "player")
 		{
 			if(targ.netname)
-				centerprint(attacker, strcat(targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+				centerprint_spec(attacker, strcat(targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
 		}
 		
 		if(targ.classname == "player")
@@ -1134,12 +1134,12 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(attacker.netname)
 			{
 				if(attacker == targ)
-					centerprint(targ, strcat("^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					centerprint_spec(targ, strcat("^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
 				else
-					centerprint(targ, strcat(attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+					centerprint_spec(targ, strcat(attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
 			}
 			else
-				centerprint(targ, strcat("^x500^1 ^7", dmgstring, " ^1^x500\n"));
+				centerprint_spec(targ, strcat("^x500^1 ^7", dmgstring, " ^1^x500\n"));
 		}
 	}
 	
@@ -1199,7 +1199,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if(attacker.armorvalue > 0)
 				{
 					attacker.armorvalue = attacker.armorvalue - 1;
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(attacker.armorvalue)));
+					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(attacker.armorvalue)));
 					attacker.hitsound += 1;
 				}
 				mirrordamage = 0;
