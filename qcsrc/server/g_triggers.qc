@@ -62,7 +62,7 @@ void SUB_UseTargets()
 	{
 		if(clienttype(activator) == CLIENTTYPE_REAL)
 		{
-			centerprint (activator, self.message);
+			centerprint_spec (activator, self.message);
 			if (!self.noise)
 				play2(activator, "misc/talk.wav");
 		}
@@ -362,20 +362,20 @@ void counter_use()
 		&& (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0)
 		{
 			if (self.count >= 4)
-				centerprint (activator, "There are more to go...");
+				centerprint_spec (activator, "There are more to go...");
 			else if (self.count == 3)
-				centerprint (activator, "Only 3 more to go...");
+				centerprint_spec (activator, "Only 3 more to go...");
 			else if (self.count == 2)
-				centerprint (activator, "Only 2 more to go...");
+				centerprint_spec (activator, "Only 2 more to go...");
 			else
-				centerprint (activator, "Only 1 more to go...");
+				centerprint_spec (activator, "Only 1 more to go...");
 		}
 		return;
 	}
 
 	if (activator.classname == "player"
 	&& (self.spawnflags & SPAWNFLAG_NOMESSAGE) == 0)
-		centerprint(activator, "Sequence completed!");
+		centerprint_spec(activator, "Sequence completed!");
 	self.enemy = activator;
 	multi_trigger ();
 };

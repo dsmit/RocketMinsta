@@ -1263,7 +1263,7 @@ void ShufflePlayerOutOfTeam (float source_team)
 
 	if(selected.deadflag == DEAD_NO)
 		Damage(selected, selected, selected, 100000, DEATH_AUTOTEAMCHANGE, selected.origin, '0 0 0');
-	centerprint(selected, strcat("You have been moved into a different team to improve team balance\nYou are now on: ", ColoredTeamName(selected.team)));
+	centerprint_spec(selected, strcat("You have been moved into a different team to improve team balance\nYou are now on: ", ColoredTeamName(selected.team)));
 }
 
 void CauseRebalance(float source_team, float howmany_toomany)

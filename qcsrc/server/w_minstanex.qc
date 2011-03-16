@@ -136,7 +136,7 @@ void W_MinstaNex_Attack (void)
 		if(headshot)
 		{
 			announce(self, "announcer/male/headshot.wav");
-			bigprint(self, "^1head^7shot!", "", 1);
+			bigprint_spec(self, "^1head^7shot!", "", 1);
 		}
 	}
 	else
@@ -213,11 +213,11 @@ void W_MinstaNex_Attack (void)
 	switch(self.goodhits)
 	{
 		case 3:
-			bigprint(self, "^5impressive!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
+			bigprint_spec(self, "^5impressive!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
 			announce(self, "announcer/male/impressive.wav");
 			break;
 		case 7:
-			bigprint(self, "^5amazing!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
+			bigprint_spec(self, "^5amazing!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
 			announce(self, "announcer/male/amazing.wav");
 			break;
 	}

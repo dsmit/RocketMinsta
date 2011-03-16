@@ -804,7 +804,7 @@ void PutClientInServer (void)
 		spot = SelectSpawnPoint (FALSE);
 		if(!spot)
 		{
-			centerprint(self, "Sorry, no spawnpoints available!\nHope your team can fix it...");
+			centerprint_spec(self, "Sorry, no spawnpoints available!\nHope your team can fix it...");
 			return; // spawn failed
 		}
 
@@ -976,9 +976,9 @@ void PutClientInServer (void)
 
 		if(g_assault) {
 			if(self.team == assault_attacker_team)
-				centerprint(self, "You are attacking!");
+				centerprint_spec(self, "You are attacking!");
 			else
-				centerprint(self, "You are defending!");
+				centerprint_spec(self, "You are defending!");
 		}
 
 		target_voicescript_clear(self);
@@ -1123,12 +1123,12 @@ void KillIndicator_Think()
 			if(self.owner.killindicator_teamchange)
 			{
 				if(self.owner.killindicator_teamchange == -1)
-					centerprint(self.owner, strcat("Changing team in ", ftos(self.cnt), " seconds"));
+					centerprint_spec(self.owner, strcat("Changing team in ", ftos(self.cnt), " seconds"));
 				else
-					centerprint(self.owner, strcat("Changing to ", ColoredTeamName(self.owner.killindicator_teamchange), " in ", ftos(self.cnt), " seconds"));
+					centerprint_spec(self.owner, strcat("Changing to ", ColoredTeamName(self.owner.killindicator_teamchange), " in ", ftos(self.cnt), " seconds"));
 			}
 			else
-				centerprint(self.owner, strcat("^1Suicide in ", ftos(self.cnt), " seconds"));
+				centerprint_spec(self.owner, strcat("^1Suicide in ", ftos(self.cnt), " seconds"));
 		}
 		self.nextthink = time + 1;
 		self.cnt -= 1;
