@@ -1977,6 +1977,18 @@ vector Sbar_DrawCenterNoteLine(vector offset, string s)
 	return offset + sbar_fontsize_y * '0 1 0';
 }
 
+vector Sbar_DrawCenterNoteLineA(vector offset, string s, float alpha)
+{
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+	drawcolorcodedstring(
+		offset - sbar_fontsize_x * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
+		s,
+		sbar_fontsize,
+		alpha,
+		0
+	);
+	return offset + sbar_fontsize_y * '0 1 0';
+}
 
 void Sbar_DrawPressedKeys(void)
 {
@@ -2489,6 +2501,15 @@ void Sbar_Draw (void)
 		
 		if(i != num_spectators)
 			o = Sbar_DrawNoteLineA(o, strcat("^9(", ftos(num_spectators - MAX_SPECTATORS), " more)"), 0.5);
+	}
+	
+	if(time < rm_helptime)
+	{
+		local float halpha = bound(0, 1 - 4 * (time - rm_helptime), 1);
+		o2 = Sbar_DrawCenterNoteLineA(o2, "", halpha);
+		o2 = Sbar_DrawCenterNoteLineA(o2, "It looks like you are playing this mod for the first time", halpha);
+		o2 = Sbar_DrawCenterNoteLineA(o2, "Type ^2rmhelp^7 in console to see possible configuration options", halpha);
+		o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
 	}
 	
 	// move more important stuff more to the middle so its more visible

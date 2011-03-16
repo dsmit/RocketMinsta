@@ -309,7 +309,7 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
-#define RM_OUTDATED print("^xFB0Detected an outdated RMconfig, initializing requred cvars...\n");
+#define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing requred cvars...\n"); rm_helptime = time + 20; }
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -337,11 +337,14 @@ void PostInit(void)
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
+		case 1:
 			localcmd("seta rm_showspec 1\n");
 			localcmd("seta rm_showdamage 1\n");
 			localcmd("seta rm_teamlasers 1\n");
-			localcmd("seta rm_initialized 1\n");
+		case 2:
+			
 		//More to come here with each update
+		localcmd("seta rm_initialized 3\n");
 		RM_OUTDATED
 		break;
 	}
@@ -350,6 +353,7 @@ void PostInit(void)
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
 	
+	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
 	registercmd("teamlasers");
@@ -411,6 +415,13 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "-showaccuracy") {
 		sb_showaccuracy = false;
 		return true;
+	}
+	else if(strCmd == "rmhelp")
+	{
+		print("^xFB0RocketMinsta configuration options. ^7To enable an option, type ^2optionname 1^7. To disable, ^2optionname 0^7.\n\n");
+		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
+		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
+		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
 	}
 	else if(strCmd == "showspec")
 	{

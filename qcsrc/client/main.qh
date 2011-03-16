@@ -176,3 +176,4 @@ float num_spectators;
 float rm_showspec;
 float rm_showdamage;
 float rm_teamlasers;
+float rm_helptime;
