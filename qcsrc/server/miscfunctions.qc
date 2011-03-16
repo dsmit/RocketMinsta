@@ -2693,3 +2693,21 @@ void bigprint(entity e, string bigstring, string comment, float staytime)
     WriteString(MSG_ONE, comment);
     WriteShort(MSG_ONE, staytime);
 }
+
+void centerprint_spec(entity pl, string msg)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || e.enemy == pl)
+            centerprint(e, msg);
+    }
+}
+
+void bigprint_spec(entity pl, string msg, string comment, float staytime)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || e.enemy == pl)
+            bigprint(e, msg, comment, staytime);
+    }
+}

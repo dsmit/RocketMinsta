@@ -168,3 +168,6 @@ float bigprint_fadetime;
 void bigprint(string, string, float);
 
 float centerprint_init;
+
+void centerprint_spec(entity, string);
+void bigprint_spec(entity, string, string, float);
