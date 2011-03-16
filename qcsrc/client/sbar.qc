@@ -2511,7 +2511,7 @@ void Sbar_Draw (void)
 		local string s;
 		local float limit;
 		o = Sbar_DrawNoteLineA(o, "^2Spectating you: ", 0.5);
-		o = Sbar_DrawNoteLineA(o, "^7showspec 0 ^9and reconnect to hide", 0.5);
+		o = Sbar_DrawNoteLineA(o, "^9type ^7showspec 0 ^9 to hide", 0.5);
 		o = Sbar_DrawNoteLineA(o, "", 0.5);
 		
 		limit = min(num_spectators, MAX_SPECTATORS);

@@ -632,7 +632,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 				}
 				
-				#define RAGESOUND play2(attacker, "porto/fire.wav");
+				#define RAGESOUND announce(attacker, "porto/fire.wav");
 				switch(attacker.rage)
 				{
 					case 0:

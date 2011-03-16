@@ -337,15 +337,17 @@ void PostInit(void)
 	{
 		case 0:
 		case 1:
-			localcmd("seta rm_showspec 1\n");
-			localcmd("seta rm_showdamage 1\n");
-			localcmd("seta rm_teamlasers 1\n");
+			localcmd("seta rm_showspec 1; showspec 1\n");
+			localcmd("seta rm_showdamage 1; showdamage 1\n");
+			localcmd("seta rm_teamlasers 1; teamlasers 1\n");
 		case 2:
 		case 3:
-			localcmd("seta rm_nobigtext 0\n");
+		case 4:
+		case 5:
+			localcmd("seta rm_nobigtext 0; nobigtext 0\n");
 			
 		//More to come here with each update
-		localcmd("seta rm_initialized 4\n");
+		localcmd("seta rm_initialized 6\n");
 		RM_OUTDATED
 		break;
 	}
