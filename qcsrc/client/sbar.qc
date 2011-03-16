@@ -2362,6 +2362,8 @@ void Sbar_Draw (void)
 	sbar_fontsize = Sbar_GetFontsize("sbar_fontsize");
 	sbar_fontsize_spec = Sbar_GetFontsize("sbar_fontsize_spec");
 
+	o2_y += sbar_fontsize_y * 1.5;
+
 	if(spectatee_status && !intermission)
 	{
 		drawfont = sbar_bigfont;
