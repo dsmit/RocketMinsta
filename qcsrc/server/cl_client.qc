@@ -1475,6 +1475,8 @@ Called when a client disconnects from the server
 void ReadyCount();
 void ClientDisconnect (void)
 {
+	WriteSpectatorInfo(self.enemy);
+	
 	if not(self.flags & FL_CLIENT)
 	{
 		print("Warning: ClientDisconnect without ClientConnect\n");

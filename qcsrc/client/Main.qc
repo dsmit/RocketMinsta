@@ -106,7 +106,6 @@ void CSQC_Init(void)
 #endif
 	registercvar("sbar_usecsqc", "1");
 	registercvar("sbar_columns", "default", CVAR_SAVE);
-
 	gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -333,7 +332,6 @@ void PostInit(void)
 	}
 
 	showspec = cvar("showspec");
-
 	postinit = true;
 }
 
