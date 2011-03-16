@@ -324,7 +324,6 @@ void PostInit(void)
 	TrueAim_Init();
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
-	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 
 	/*if(!cvar("cl_rm_initialized"))
 	{
@@ -342,9 +341,11 @@ void PostInit(void)
 			localcmd("seta rm_showdamage 1\n");
 			localcmd("seta rm_teamlasers 1\n");
 		case 2:
+		case 3:
+			localcmd("seta rm_nobigtext 0\n");
 			
 		//More to come here with each update
-		localcmd("seta rm_initialized 3\n");
+		localcmd("seta rm_initialized 4\n");
 		RM_OUTDATED
 		break;
 	}
@@ -352,11 +353,15 @@ void PostInit(void)
 	rm_showspec   = cvar("rm_showspec"  );
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
+	rm_nobigtext  = cvar("rm_nobigtext");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
 	registercmd("teamlasers");
+	registercmd("nobigtext");
+	
+	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	postinit = true;
 }
@@ -422,26 +427,20 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
 		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
+		print("^2nobigtext^7: if enabled, the top-center big messages will be redirected into the bottom centerprint area (disabled by default)\n");
 	}
-	else if(strCmd == "showspec")
+	else if(
+		strCmd == "showspec" 	||
+		strCmd == "showdamage" 	||
+		strCmd == "teamlasers"	||
+		strCmd == "nobigtext"	 )
 	{
 		VALUEREQUIRED
-		cvar_set("rm_showspec", argv(1));
+		cvar_set(strcat("rm_", strCmd), argv(1));
 		rm_showspec = cvar("rm_showspec");
-		return true;
-	}
-	else if(strCmd == "showdamage")
-	{
-		VALUEREQUIRED
-		cvar_set("rm_showdamage", argv(1));
 		rm_showdamage = cvar("rm_showdamage");
-		return true;
-	}
-	else if(strCmd == "teamlasers")
-	{
-		VALUEREQUIRED
-		cvar_set("rm_teamlasers", argv(1));
 		rm_teamlasers = cvar("rm_teamlasers");
+		rm_nobigtext = cvar("rm_nobigtext");
 		return true;
 	}
 
@@ -1247,6 +1246,18 @@ void bigprint(string bigstr, string comment, float staytime)
 	//staytime = 1337;
 	if(bigstr == "")
 		error("Why the fuck would you want to bigprint WITHOUT the 'big' part?");
+	
+	if(rm_nobigtext)
+	{
+		local string s;
+		s = bigstr;
+		
+		if(comment != "")
+			s = strcat(s, "\n", comment);
+		
+		centerprint(s);
+		return;
+	}
 	
 	if(bigprint_string)
 		fstrunzone(bigprint_string);
