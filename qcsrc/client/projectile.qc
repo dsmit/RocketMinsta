@@ -63,19 +63,19 @@ void Projectile_DrawTrail(vector to)
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
-			trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"), from, to);
+			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3RED_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_BLUE:
-			trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"), from, to);
+			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3BLUE_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_YELLOW:
-			trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"), from, to);
+			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3YELLOW_HIT" 	: "TR_NEXUIZPLASMA")), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_PINK:
-			trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
+			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3PINK_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
 			break;
 			
 		case PROJECTILE_GRENADE:

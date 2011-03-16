@@ -308,6 +308,8 @@ void Playerchecker_Think()
 
 void Porto_Init();
 void TrueAim_Init();
+
+#define RM_OUTDATED print("^xFB0Detected an outdated RMconfig, initializing requred cvars...\n");
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -321,17 +323,37 @@ void PostInit(void)
 	Porto_Init();
 	TrueAim_Init();
 
-	MapInfo_Get_ByName(shortmapname);
+	MapInfo_Get_ByName(shortmapname, 0, 0);
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 
-	if(!cvar("cl_rm_initialized"))
+	/*if(!cvar("cl_rm_initialized"))
 	{
 		print("^xFB0First run, initializing RocketMinsta client cvars...\n");
 		localcmd("seta cl_rm_initialized 1\n");
 		localcmd("seta showspec 1\n");
+	}*/
+	
+	local float _printmsg;
+	switch(cvar("rm_initialized"))
+	{
+		case 0:
+			localcmd("seta rm_showspec 1\n");
+			localcmd("seta rm_showdamage 1\n");
+			localcmd("seta rm_teamlasers 1\n");
+			localcmd("seta rm_initialized 1\n");
+		//More to come here with each update
+		RM_OUTDATED
+		break;
 	}
 
-	showspec = cvar("showspec");
+	rm_showspec   = cvar("rm_showspec"  );
+	rm_showdamage = cvar("rm_showdamage");
+	rm_teamlasers = cvar("rm_teamlasers");
+	
+	registercmd("showspec");
+	registercmd("showdamage");
+	registercmd("teamlasers");
+	
 	postinit = true;
 }
 
@@ -340,6 +362,8 @@ void PostInit(void)
 float button_zoom;
 void Cmd_Sbar_SetFields(float);
 void Cmd_Sbar_Help(float);
+
+#define VALUEREQUIRED if(argc < 2) { print("Usage: ", strCmd, " VALUE\n"); return true; }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -350,6 +374,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	// Acquire Command
 	local string strCmd;
 	strCmd = argv(0);
+	local float value;
 
 	if(strCmd == "+button4") { // zoom
 		// return false, because the message shall be sent to the server anyway (for demos/speccing)
@@ -385,6 +410,27 @@ float CSQC_ConsoleCommand(string strMessage)
 		return true;
 	} else if(strCmd == "-showaccuracy") {
 		sb_showaccuracy = false;
+		return true;
+	}
+	else if(strCmd == "showspec")
+	{
+		VALUEREQUIRED
+		cvar_set("rm_showspec", argv(1));
+		rm_showspec = cvar("rm_showspec");
+		return true;
+	}
+	else if(strCmd == "showdamage")
+	{
+		VALUEREQUIRED
+		cvar_set("rm_showdamage", argv(1));
+		rm_showdamage = cvar("rm_showdamage");
+		return true;
+	}
+	else if(strCmd == "teamlasers")
+	{
+		VALUEREQUIRED
+		cvar_set("rm_teamlasers", argv(1));
+		rm_teamlasers = cvar("rm_teamlasers");
 		return true;
 	}
 

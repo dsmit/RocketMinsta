@@ -1111,6 +1111,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		
 		local string dmgstring, wpnstring;
 		
+		// To-do: generate prints client-side, send all the crap through a tempentity
+		
 		if(damage)
 			dmgstring = ftos(rint(damage));
 		else //armor damage
@@ -1130,7 +1132,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(attacker.classname == "player")
 		{
 			if(targ.netname)
-				centerprint_spec(attacker, strcat(targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+				centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
 		}
 		
 		if(targ.classname == "player")
@@ -1138,12 +1140,12 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(attacker.netname)
 			{
 				if(attacker == targ)
-					centerprint_spec(targ, strcat("^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					centerprint_spec(targ, strcat("\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
 				else
-					centerprint_spec(targ, strcat(attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+					centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
 			}
 			else
-				centerprint_spec(targ, strcat("^x500^1 ^7", dmgstring, " ^1^x500\n"));
+				centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
 		}
 	}
 	

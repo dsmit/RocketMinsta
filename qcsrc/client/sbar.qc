@@ -1730,6 +1730,14 @@ void centerprint(string strRealMessage)
 	if(strRealMessage == "")
 		return;
 
+	if(substring(strRealMessage, 0, 2) == "\x01\x02") //Damage indicator
+	{
+		if(!rm_showdamage)
+			return;
+		
+		strRealMessage = substring(strRealMessage, 2, strlen(strRealMessage) - 2);
+	}
+
 	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
 
@@ -1744,6 +1752,8 @@ void centerprint(string strRealMessage)
 		centerprint_msgnum--;
 	}
 
+	
+	
 	if(substring(strRealMessage, 0, 1) == "\x01")
 	{
 		centerprint_msgs[0] = strzone(strRealMessage);
@@ -2462,7 +2472,7 @@ void Sbar_Draw (void)
 		}
 	}
 
-	if(showspec)
+	if(rm_showspec)
 	if(!spectatee_status)
 	if(num_spectators)
 	{
