@@ -415,10 +415,11 @@ float CSQC_ConsoleCommand(string strMessage)
 		sb_showscores = false;
 		return true;
 	} else if(strCmd == "+showaccuracy") {
-		sb_showaccuracy = true;
+		//sb_showaccuracy = true;
+		bigprint("Accuracy statistics are disabled", "", 2);
 		return true;
 	} else if(strCmd == "-showaccuracy") {
-		sb_showaccuracy = false;
+		//sb_showaccuracy = false;
 		return true;
 	}
 	else if(strCmd == "rmhelp")
