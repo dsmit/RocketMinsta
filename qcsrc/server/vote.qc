@@ -128,7 +128,20 @@ float RemapVote(string vote, string cmd, entity e)
 			if(tmpname == cfgname)
 			{
 				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
-				RemapVote_display = strzone(strcat("^1", vote));
+				
+				local float fhandle = fopen(strcat("rm-custom/", cfgname, ".cfg"), FILE_READ);
+				
+				if(fhandle != -1)
+				{
+					local string fullname;
+					fullname = fgets(fhandle);
+					fullname = substring(fullname, strlen("//cfgname:"), strlen(fullname));
+					
+					RemapVote_display = strzone(strcat("^1config ", cfgname, " ^1(^7", fullname, "^1)"));
+				}
+				else
+					RemapVote_display = strzone(strcat("^1config ", cfgname));
+				
 				search_end(rmglob);
 				return TRUE;
 			}
