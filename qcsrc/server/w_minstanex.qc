@@ -94,6 +94,8 @@ float RM_TeamLaserEffect(entity pl)
     }
 }
 
+.float goodhits;
+
 void W_MinstaNex_Attack (void)
 {
 	float flying;
@@ -201,6 +203,23 @@ void W_MinstaNex_Attack (void)
 			self.ammo_cells = self.ammo_cells - 1;
 		else
 			self.ammo_cells = self.ammo_cells - cvar("g_balance_minstanex_ammo");
+	}
+	
+	if(damage_goodhits)
+		self.goodhits++;
+	else
+		self.goodhits = 0;
+	
+	switch(self.goodhits)
+	{
+		case 3:
+			bigprint(self, "^5impressive!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
+			announce(self, "announcer/male/impressive.wav");
+			break;
+		case 7:
+			bigprint(self, "^5amazing!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
+			announce(self, "announcer/male/amazing.wav");
+			break;
 	}
 }
 
@@ -463,17 +482,20 @@ float w_minstanex(float req)
 						self.held_down = TRUE;
 					self.jump_interval = time + cvar("g_explosive_laser_refire");
 					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_delay");
+					self.goodhits = 0;
 					W_RM_Alt_Attack();
 				}
 				else if(rapid && self.jump_interval2 <= time && self.held_down)
 				{
 					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_refire");
+					self.goodhits = 0;
 					W_RM_Alt_Attack_Single();
 				}
 			}
 			else if (self.jump_interval <= time)
 			{
 				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
+				self.goodhits = 0;
 				W_Laser_Attack(FALSE);
 			}
 		}

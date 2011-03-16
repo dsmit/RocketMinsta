@@ -323,7 +323,7 @@ void PostInit(void)
 	TrueAim_Init();
 
 	MapInfo_Get_ByName(shortmapname);
-	bigprint(strcat("^2", shortmapname), MapInfo_Map_title, 2);
+	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 
 	postinit = true;
 }

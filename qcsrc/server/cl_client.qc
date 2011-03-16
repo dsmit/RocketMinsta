@@ -783,6 +783,8 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
 
+	self.goodhits = 0;
+
 	if(g_arena)
 	if(!self.spawned)
 		self.classname = "observer";
