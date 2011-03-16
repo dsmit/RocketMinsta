@@ -418,8 +418,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					else
 					{
 						bprint("^1",a, "^1 drew first blood", "\n");
-						blood_message = "^1First blood\n";
-						victim_message = "^1First victim\n";  // or First casualty
+						//blood_message = "^1First blood\n";
+						//victim_message = "^1First victim\n";  // or First casualty
+						
+						bigprint_spec(attacker, "^7first^1blood", "", 1);
+						bigprint_spec(targ, "^7first^0victim", "", 1);
 					}
 				}
 
@@ -680,6 +683,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			GiveFrags(targ, targ, -1);
 			if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
 				announce(targ, "announcer/male/botlike.wav");
+				bigprint_spec(targ, "^0bot^7like!", "", 1);
 			}
 
 			if (targ.killcount > 2)
