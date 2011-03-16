@@ -107,6 +107,39 @@ float RemapVote(string vote, string cmd, entity e)
 		RemapVote_vote = GetKickVoteVictim_newcommand;
 		RemapVote_display = strcat("^1", vote, " (^7", victim.netname, "^1): ", GetKickVoteVictim_reason);
 	}
+	else if(argv(0) == "config" || argv(0) == "rmcustom")
+	{
+		local string cfgname = argv(1), strcfgs, tmpname;
+		local float i, size, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
+		size = search_getsize(rmglob);
+		
+		if(!size)
+		{
+			sprint(e, "This server doesn't have any custom configurations\n");
+			search_end(rmglob);
+			return FALSE;
+		}
+		
+		for(i = 0; i < size; ++i)
+		{
+			tmpname = search_getfilename(rmglob, i);
+			tmpname = substring(tmpname, strlen("rm-custom/"), strlen(tmpname));
+			tmpname = substring(tmpname, 0, strlen(tmpname) - 4);
+			if(tmpname == cfgname)
+			{
+				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
+				RemapVote_display = strzone(strcat("^1", vote));
+				search_end(rmglob);
+				return TRUE;
+			}
+			
+			strcfgs = strcat(strcfgs, tmpname, " ");
+		}
+		
+		search_end(rmglob);
+		sprint(e, strcat("No such config available. Available configurations: ^2", strcfgs, "\n"));
+		return FALSE;
+	}
 	else
 	{
 		RemapVote_vote = vote;
