@@ -5,6 +5,29 @@
 //    This function implements the explosive attack of minstanex
 //    It is a dirty copypaste from the grenadelauncher with some modifications
 //
+
+void W_RM_Explode (void)
+{
+	if(other.takedamage == DAMAGE_AIM)
+		if(other.classname == "player")
+			if(IsDifferentTeam(self.owner, other))
+				if(other.deadflag == DEAD_NO)
+					if(IsFlying(other))
+						announce(self.owner, "announcer/male/airshot.wav");
+
+	self.event_damage = SUB_Null;
+	self.takedamage = DAMAGE_NO;
+	RadiusDamage (self, self.owner, cvar("g_explosive_splash_damage"), cvar("g_explosive_splash_edgedamage"), cvar("g_explosive_splash_radius"), world, cvar("g_explosive_splash_force"), self.projectiledeathtype, other);
+
+	remove (self);
+}
+
+void W_RM_Touch (void)
+{
+	PROJECTILE_TOUCH;
+	W_RM_Explode ();
+}
+
 void W_Explosive_Attack (float attacktype)
 {
 	float SPEED;
@@ -12,7 +35,7 @@ void W_Explosive_Attack (float attacktype)
 	
 	local entity gren;
 
-	local float expl_damage = cvar("g_balance_grenadelauncher_primary_damage") / 2;
+	local float expl_damage = cvar("g_explosive_splash_damage") / 2; //I'm not even sure why is this here?
 	local float expl_recoil = 4;
 	
 	if(cvar("g_explosive_norecoil"))
@@ -30,7 +53,7 @@ void W_Explosive_Attack (float attacktype)
 	gren.owner = self;
 	gren.classname = "plasma_prim";
 	gren.bot_dodge = TRUE;
-	gren.bot_dodgerating = cvar("g_balance_grenadelauncher_primary_damage");
+	gren.bot_dodgerating = cvar("g_explosive_splash_damage");
 	gren.movetype = MOVETYPE_FLY;
 	PROJECTILE_MAKETRIGGER(gren);
 	
@@ -52,10 +75,9 @@ void W_Explosive_Attack (float attacktype)
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
 
-	gren.nextthink = time + cvar("g_balance_grenadelauncher_primary_lifetime");
 	gren.think = adaptor_think2use;
-	gren.use = W_Grenade_Explode;
-	gren.touch = W_Grenade_Touch1;
+	gren.use = W_RM_Explode;
+	gren.touch = W_RM_Touch;
 	gren.velocity = w_shotdir * SPEED;
 	W_SetupProjectileVelocity(gren);
 
@@ -355,7 +377,7 @@ void W_RM_Alt_Explode (void)
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
 
-	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_balance_electro_primary_radius"), world, self.rm_force, self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_explosive_laser_radius"), world, self.rm_force, self.projectiledeathtype, other);
 	remove (self);
 }
 
@@ -364,7 +386,7 @@ void W_RM_Alt_Touch(void);
 void W_RM_Alt_Touch(void)
 {
 	PROJECTILE_TOUCH;
-	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_balance_electro_primary_radius"), world, self.rm_force, self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_explosive_laser_radius"), world, self.rm_force, self.projectiledeathtype, other);
 	remove(self);
 }
 
@@ -377,7 +399,7 @@ void W_RM_Alt_Attack()
 	float rndspread = cvar("g_explosive_laser_spread_randomize");
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), "weapons/crylink_fire2.wav", cvar("g_balance_electro_primary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), "weapons/crylink_fire2.wav", cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -395,7 +417,7 @@ void W_RM_Alt_Attack()
 		proj.bot_dodgerating = self.rm_damage;
 		proj.use = W_RM_Alt_Explode;
 		proj.think = adaptor_think2use;
-		proj.nextthink = time + cvar("g_balance_laser_primary_lifetime");
+		proj.nextthink = time + cvar("g_explosive_laser_lifetime");
 		proj.cnt = 3;
 		PROJECTILE_MAKETRIGGER(proj);
 		proj.projectiledeathtype = WEP_ELECTRO;
@@ -422,7 +444,7 @@ void W_RM_Alt_Attack_Single()
 	float total = cvar("g_explosive_laser_count");
 	float spread = cvar("g_explosive_laser_spread");
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, "weapons/crylink_fire.wav", cvar("g_balance_electro_primary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, "weapons/crylink_fire.wav", cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -438,7 +460,7 @@ void W_RM_Alt_Attack_Single()
 	proj.bot_dodgerating = self.rm_damage;
 	proj.use = W_RM_Alt_Explode;
 	proj.think = adaptor_think2use;
-	proj.nextthink = time + cvar("g_balance_laser_primary_lifetime");
+	proj.nextthink = time + cvar("g_explosive_laser_lifetime");
 	proj.cnt = 3;
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = WEP_ELECTRO;
