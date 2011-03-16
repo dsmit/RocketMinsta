@@ -482,20 +482,20 @@ float w_minstanex(float req)
 						self.held_down = TRUE;
 					self.jump_interval = time + cvar("g_explosive_laser_refire");
 					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_delay");
-					self.goodhits = 0;
+					//self.goodhits = 0;
 					W_RM_Alt_Attack();
 				}
 				else if(rapid && self.jump_interval2 <= time && self.held_down)
 				{
 					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_refire");
-					self.goodhits = 0;
+					//self.goodhits = 0;
 					W_RM_Alt_Attack_Single();
 				}
 			}
 			else if (self.jump_interval <= time)
 			{
 				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
-				self.goodhits = 0;
+				//self.goodhits = 0;
 				W_Laser_Attack(FALSE);
 			}
 		}
