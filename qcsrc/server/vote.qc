@@ -113,7 +113,7 @@ float RemapVote(string vote, string cmd, entity e)
 		local float i, size, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
 		size = search_getsize(rmglob);
 		
-		if(!size)
+		if(size <= 0)
 		{
 			sprint(e, "This server doesn't have any custom configurations\n");
 			search_end(rmglob);
