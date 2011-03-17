@@ -107,7 +107,7 @@ if [ "$1" = "release" ]; then
     SVPROGS="$NEXDATA/sv_mod.dat"
     CSPROGS="$NEXDATA/cl_mod.dat"
     
-    buildall $RELEASE_REALSUFFIX "$RELEASE_DESCRIPTION"
+    buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     
     cp -v "rocketminsta.cfg" "$NEXDATA"
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
