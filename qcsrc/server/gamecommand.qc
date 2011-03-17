@@ -651,7 +651,8 @@ void GameCommand(string command)
 		tsave = MapInfo_CurrentGametype();
 		if(t)
 		{
-			MapInfo_SwitchGameType(t);
+			//MapInfo_SwitchGameType(t);
+			MapInfo_SwitchGameType_String(s);
 			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			if(MapInfo_count > 0)
 			{

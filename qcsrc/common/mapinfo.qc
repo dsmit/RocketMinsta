@@ -477,7 +477,7 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 		s = cdr(s);
 	}
 
-	if(pWantedType == MAPINFO_TYPE_CTF)
+	if(pWantedType == MAPINFO_TYPE_CTF) if(!_is_key_hunt)
 	{
 		sa = car(s); if(sa == "") sa = "10";
 		if(cvar("g_ctf_win_mode") < 2)
@@ -1005,6 +1005,22 @@ void MapInfo_SwitchGameType(float t)
 	cvar_set("g_race",       (t == MAPINFO_TYPE_RACE)            ? "1" : "0");
 	cvar_set("g_nexball",    (t == MAPINFO_TYPE_NEXBALL)         ? "1" : "0");
 	cvar_set("g_cts",        (t == MAPINFO_TYPE_CTS)             ? "1" : "0");
+}
+
+void MapInfo_SwitchGameType_String(string gtname)
+{
+	MapInfo_SwitchGameType(MapInfo_Type_FromString(gtname));
+	
+	if(gtname == "kh")
+	{
+		cvar_set("g_ctf", "0");
+		_is_key_hunt = 1;
+	}
+	else
+	{
+		_is_key_hunt = 0;
+	}
+	
 }
 
 void MapInfo_LoadMap(string s)
