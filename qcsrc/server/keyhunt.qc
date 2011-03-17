@@ -645,6 +645,9 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 		kh_Scores_Event(key.owner, key, "capture", f, 0);
 		//PlayerTeamScore_Add(key.owner, SP_KH_CAPS, ST_KH_CAPS, 1);
 		PlayerScore_Add(key.owner, SP_KH_CAPS, 1);
+		
+		if(key.owner.health < 100)
+			key.owner.health = 100;
 	}
 	TeamScore_AddToTeam(teem, ST_KH_CAPS, 1);
 
