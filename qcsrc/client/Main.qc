@@ -345,9 +345,10 @@ void PostInit(void)
 		case 4:
 		case 5:
 			localcmd("seta rm_nobigtext 0; nobigtext 0\n");
-			
+		case 6:
+		
 		//More to come here with each update
-		localcmd("seta rm_initialized 6\n");
+		localcmd("seta rm_initialized 7\n");
 		RM_OUTDATED
 		break;
 	}

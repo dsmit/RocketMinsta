@@ -2524,11 +2524,15 @@ void Sbar_Draw (void)
 	
 	if(time < rm_helptime)
 	{
-		local float halpha = bound(0, 1 - 4 * (time - rm_helptime), 1);
-		o2 = Sbar_DrawCenterNoteLineA(o2, "", halpha);
-		o2 = Sbar_DrawCenterNoteLineA(o2, "It looks like you are playing this mod for the first time", halpha);
-		o2 = Sbar_DrawCenterNoteLineA(o2, "Type ^2rmhelp^7 in console to see possible configuration options", halpha);
-		o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
+		local float halpha = bound(0, 1 - 4 * (time - (rm_helptime - 1)), 1);
+		
+		if(halpha > 0)
+		{
+			o2 = Sbar_DrawCenterNoteLineA(o2, "", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, "It looks like you are playing RocketMinsta for the first time", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, "Type ^2rmhelp^7 in the console to see possible configuration options", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
+		}
 	}
 	
 	// move more important stuff more to the middle so its more visible
