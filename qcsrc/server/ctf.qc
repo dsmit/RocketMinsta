@@ -780,7 +780,16 @@ void spawnfunc_item_flag_team1()
 {
 	if (!g_ctf)
 	{
-		remove(self);
+		print("^1HERP\n");
+		
+		if(g_keyhunt && g_minstagib)
+		{
+			minstagib_items(IT_STRENGTH);
+			print("^1DERP\n");
+		}
+		else
+			remove(self);
+			
 		return;
 	}
 
@@ -888,6 +897,9 @@ void spawnfunc_item_flag_team2()
 {
 	if (!g_ctf)
 	{
+		if(g_keyhunt) if(g_minstagib)
+			minstagib_items(IT_STRENGTH);
+		
 		remove(self);
 		return;
 	}

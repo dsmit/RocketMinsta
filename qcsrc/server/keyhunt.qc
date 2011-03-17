@@ -97,11 +97,25 @@ void kh_Controller_Think()  // called a lot
 			else
 				s = kh_Controller_Waitmsg;
 
+			float _bigprint;
+			_bigprint = 1;
+			if(substring(s, 0, 1) == "\x05")
+			{
+				s = substring(s, 1, strlen(s));
+				_bigprint = 0;
+			}
+
+			tokenizebyseparator(s, "\n");
+
 			//dprint(s, "\n");
 
 			FOR_EACH_PLAYER(e)
 				if(clienttype(e) == CLIENTTYPE_REAL)
-					centerprint_atprio(e, CENTERPRIO_SPAM, s);
+					//centerprint_atprio(e, CENTERPRIO_SPAM, s);
+					if(_bigprint)
+						bigprint_spec(e, argv(0), argv(1), 1);
+					else
+						centerprint_atprio(e, CENTERPRIO_SPAM, s);
 		}
 		self.cnt -= 1;
 	}
@@ -602,11 +616,11 @@ void kh_Key_Think()  // runs all the time
 		{
 			if(head.team == kh_interferemsg_team)
 				if(head.kh_next)
-					centerprint(head, "All keys are in your team's hands!\n\nMeet the other key carriers ^1NOW^7!");
+					bigprint_spec(head, "^2all keys are in your team's hands!", "Meet the other key carriers ^1NOW^7!", 2);
 				else
-					centerprint(head, "All keys are in your team's hands!\n\nHelp the key carriers to meet!");
+					bigprint_spec(head, "^2all keys are in your team's hands!", "Help the key carriers to meet!", 2);
 			else
-				centerprint(head, strcat("All keys are in the ", ColoredTeamName(kh_interferemsg_team), "^7's hands!\n\nInterfere ^1NOW^7!"));
+				bigprint_spec(head, strcat("^xFB0all keys are in the ", ColoredTeamName(kh_interferemsg_team), "^xFB0's hands!"), "Interfere ^1NOW^7!", 2);
 		}
 	}
 
@@ -629,19 +643,51 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 		float f;
 		f = DistributeEvenly_Get(1);
 		kh_Scores_Event(key.owner, key, "capture", f, 0);
-		PlayerTeamScore_Add(key.owner, SP_KH_CAPS, ST_KH_CAPS, 1);
+		//PlayerTeamScore_Add(key.owner, SP_KH_CAPS, ST_KH_CAPS, 1);
+		PlayerScore_Add(key.owner, SP_KH_CAPS, 1);
 	}
+	TeamScore_AddToTeam(teem, ST_KH_CAPS, 1);
 
 	first = TRUE;
+	
+	local string names;
+	
 	FOR_EACH_KH_KEY(key)
 		if(key.owner.kh_next == key)
 		{
 			if(!first)
 				bprint("^7, ");
 			bprint(key.owner.netname);
+			
+			if(first)
+				names = key.owner.netname;
+			else
+				names = strcat(names, "^7, ", key.owner.netname);
+			
 			first = FALSE;
 		}
 	bprint("^7 captured the keys for the ", ColoredTeamName(teem), "\n");
+
+	local entity e;
+	local string bigstring;
+	switch(teem)
+	{
+		case COLOR_TEAM1:
+			bigstring = "^1red^7scores!";
+			break;
+		case COLOR_TEAM2:
+			bigstring = "^4blue^7scores!";
+			break;
+		case COLOR_TEAM3:
+			bigstring = "^3yellow^7scores!";
+			break;
+		case COLOR_TEAM4:
+			bigstring = "^6pink^7scores!";
+			break;
+	}
+	FOR_EACH_REALCLIENT(e) bigprint(e, bigstring, 
+		strcat("all keys captured by ", names), 5
+	);
 
 	first = TRUE;
 	midpoint = '0 0 0';
@@ -693,8 +739,9 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 			// don't actually GIVE him the -nn points, just log
 		kh_Scores_Event(attacker, world, "push", cvar("g_balance_keyhunt_score_push"), 0);
 		PlayerScore_Add(attacker, SP_KH_PUSHES, 1);
-		centerprint(attacker, "Your push is the best!");
+		//centerprint_spec(attacker, "Your push is the best!");
 		bprint("The ", ColoredTeamName(teem), "^7 could not take care of the ", lostkey.netname, "^7 when ", attacker.netname, "^7 came\n");
+		kh_Key_Collect(lostkey, attacker);
 	}
 	else
 	{
@@ -755,11 +802,30 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		}
 
 		bprint("The ", ColoredTeamName(teem), "^7 could not take care of the ", lostkey.netname, "\n");
+		//Give this key to a random player, since we do not want to end the round each time this happens
+		
+		players = 0;
+		entity my_player;
+		FOR_EACH_PLAYER(player)
+			if(player.deadflag == DEAD_NO)
+				if(player.team == lostkey.team)
+				{
+					++players;
+					if(random() * players <= 1)
+						my_player = player;
+				}
+		if(players)
+			kh_Key_Collect(lostkey, my_player);
+		else //shit happens
+		{
+			bprint("^2No players capable of carrying the ", lostkey.netname, "^2 left on the ", ColoredTeamName(lostkey.team), "^2! Restarting the round.\n");
+			kh_FinishRound();
+		}
 	}
 	play2all(kh_sound_destroy);
 	te_tarexplosion(lostkey.origin);
 
-	kh_FinishRound();
+	//kh_FinishRound();
 }
 
 void kh_FinishRound()  // runs when a team captures the keys
@@ -773,7 +839,8 @@ void kh_FinishRound()  // runs when a team captures the keys
 		kh_Key_Remove(key);
 	kh_no_radar_circles = FALSE;
 
-	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Round starts in ", kh_StartRound);
+	kh_controller.nextthink = time + 5;
+	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "spawning keys in ", kh_StartRound);
 }
 
 string kh_CheckEnoughPlayers()  // checks enough player are present, runs after every completed round
@@ -790,7 +857,7 @@ string kh_CheckEnoughPlayers()  // checks enough player are present, runs after 
 		players = 0;
 		FOR_EACH_PLAYER(player)
 			if(player.deadflag == DEAD_NO)
-				if(!player.BUTTON_CHAT)
+				//if(!player.BUTTON_CHAT) //This is stupid
 					if(player.team == teem)
 						++players;
 		if(players == 0)
@@ -815,9 +882,9 @@ void kh_WaitForPlayers()  // delay start of the round until enough players are p
 
 	teams_missing = kh_CheckEnoughPlayers();
 	if(teams_missing == "")
-		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Round starts in ", kh_StartRound);
+		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "spawning keys in ", kh_StartRound);
 	else
-		kh_Controller_SetThink(1, strcat("Waiting for players to join...\n\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
+		kh_Controller_SetThink(1, strcat("Not enough players\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
 }
 
 void kh_StartRound()  // runs at the start of each round
@@ -835,13 +902,23 @@ void kh_StartRound()  // runs at the start of each round
 	teams_missing = kh_CheckEnoughPlayers();
 	if(teams_missing != "")
 	{
-		kh_Controller_SetThink(1, strcat("Waiting for players to join...\n\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
+		kh_Controller_SetThink(1, strcat("Not enough players\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
 		return;
 	}
 
 	FOR_EACH_PLAYER(player)
+	{
 		if(clienttype(player) == CLIENTTYPE_REAL)
 			centerprint_expire(player, CENTERPRIO_SPAM);
+			
+		/*local entity oldself;
+		oldself = self;
+		self = player;
+		PutClientInServer();
+		self = oldself;*/
+		
+		bigprint(player, "^2keys spawned!", "", 1);
+	}
 
 	for(i = 0; i < kh_teams; ++i)
 	{
@@ -850,7 +927,7 @@ void kh_StartRound()  // runs at the start of each round
 		entity my_player;
 		FOR_EACH_PLAYER(player)
 			if(player.deadflag == DEAD_NO)
-				if(!player.BUTTON_CHAT)
+				//if(!player.BUTTON_CHAT)
 					if(player.team == teem)
 					{
 						++players;
@@ -861,7 +938,8 @@ void kh_StartRound()  // runs at the start of each round
 	}
 
 	kh_tracking_enabled = FALSE;
-	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_tracking"), "Scanning frequency range...", kh_EnableTrackingDevice);
+	//kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_tracking"), "\x05Scanning frequency range...", kh_EnableTrackingDevice);
+	kh_EnableTrackingDevice();
 }
 
 void kh_EnableTrackingDevice()  // runs after each round
