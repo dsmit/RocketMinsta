@@ -14,7 +14,7 @@ void restartAnnouncer_Think() {
 		//gamestart_status = -1;
 		//gamestart_fadetime = time + 1;
 		
-		bigprint("^xFB0Begin!", "It's time to kick some asses", 1);
+		bigprint("^xFB0Begin!", "It's time to kick some ass", 1);
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
