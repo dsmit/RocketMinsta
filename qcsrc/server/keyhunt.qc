@@ -493,6 +493,7 @@ void kh_Key_Collect(entity key, entity player)  //a player picks up a dropped ke
 	}
 	key.kh_dropperteam = 0;
 	bprint(player.netname, "^7 picked up the ", key.netname, "\n");
+	centerprint_spec(player, "You got the ", key.netname, "^7!");
 
 	kh_Key_AssignTo(key, player); // this also updates .kh_state
 }
