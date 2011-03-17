@@ -921,7 +921,7 @@ void kh_StartRound()  // runs at the start of each round
 		PutClientInServer();
 		self = oldself;*/
 		
-		bigprint(player, "^2keys spawned!", "", 1);
+		bigprint_spec(player, "^2keys spawned!", "", 1);
 	}
 
 	for(i = 0; i < kh_teams; ++i)
