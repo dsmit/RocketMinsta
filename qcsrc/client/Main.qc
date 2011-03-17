@@ -309,7 +309,7 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
-#define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing requred cvars...\n"); rm_helptime = time + 20; }
+#define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
