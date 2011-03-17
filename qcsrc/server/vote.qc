@@ -109,6 +109,12 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else if(argv(0) == "config" || argv(0) == "rmcustom")
 	{
+		if(!cvar("g_explosive_rmcustom_votable"))
+		{
+			sprint(e, "This server has disabled rmcustom voting\n");
+			return FALSE;
+		}
+		
 		local string cfgname = argv(1), strcfgs, tmpname;
 		local float i, size, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
 		size = search_getsize(rmglob);
