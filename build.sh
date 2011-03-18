@@ -5,6 +5,7 @@ BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 
+
 function error
 {
     echo -e "\n$*" >&2
