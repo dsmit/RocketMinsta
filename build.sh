@@ -9,6 +9,7 @@ BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 VERSION="$(rm-version)"
 BUILT_PACKAGES=""
+BUILT_PKGINFOS=""
 
 function buildall
 {
@@ -62,6 +63,7 @@ function makedata
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
     echo "   -- Done"
     BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
+    BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt"
 }
 
 function makedata-all
@@ -144,7 +146,7 @@ if [ "$1" = "release" ]; then
         cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
         cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs
-$(for i in $BUILT_PACKAGES; do
+$(for i in $BUILT_PKGINFOS; do
     echo "rm_putpackage $i"
 done)
 EOF
@@ -241,7 +243,7 @@ if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
     cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
     cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs
-$(for i in $BUILT_PACKAGES; do
+$(for i in $BUILT_PKGINFOS; do
     echo "rm_putpackage $i"
 done)
 EOF
