@@ -1,48 +1,12 @@
 #!/bin/bash
 
+INCLUDE=1
+. rmlib.sh || exit 1
+
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
-
-function error
-{
-    echo -e "\n$*" >&2
-    exit 1
-}
-
-function getqcc
-{
-    local i=0
-    local qcc=""
-
-    echo "Looking for a QuakeC compiller" >&2
-
-    while true; do
-        qcc="${QCC[$i]}"
-
-        [ x"$qcc" = x ] && error "Failed to find a QuakeC compiller"
-
-        echo -n " -- Trying $qcc... " >&2
-        which "$qcc" &>/dev/null && break
-
-        echo -e "\e[31;1mmissing\e[0m" >&2
-        let i++
-    done
-
-    echo -e "\e[32;1mfound\e[0m" >&2
-    echo "$qcc"
-}
-
-function buildqc
-{
-    qcdir="$QCSOURCE/$1"
-
-    echo " -- Building $qcdir" >&2
-    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
-    popd &>/dev/null
-}
 
 function buildall
 {
@@ -52,7 +16,7 @@ function buildall
     USEQCC="$(getqcc)"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\""          >  "$QCSOURCE"/common/rm_auto.qh
-    echo "#define RM_BUILD_NAME \"RocketMinsta$1\"" >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_NAME \"RocketMinsta$1\""            >> "$QCSOURCE"/common/rm_auto.qh
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
