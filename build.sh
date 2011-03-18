@@ -68,6 +68,7 @@ function makedata-all
 {
     if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
         echo "Not building client packages: restricted by configuration"
+        return 0
     fi
     
     local suffix="$1"
