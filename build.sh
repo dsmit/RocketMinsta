@@ -225,6 +225,17 @@ buildall -$BRANCH "git build"
 makedata-all -$BRANCH "git build"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
+
+if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+    cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
+    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+rm_clearpkgs
+$(for i in $BUILT_PACKAGES; do
+    echo "rm_putpackage $i"
+done)
+EOF
+fi
+
 mkdir -pv "$NEXDATA/rm-custom"
 cp -v rm-custom/* "$NEXDATA/rm-custom"
 
@@ -269,6 +280,7 @@ EOF
     All of them have been also installed into:
         $NEXDATA
     
+    They will be added to sv_curl_serverpackages automatically.
     If you can't host these packages, please rebuild with SUPPORT_CLIENTPKGS=0
 EOF
     fi
