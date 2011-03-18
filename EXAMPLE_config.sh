@@ -16,3 +16,7 @@ QCCFLAGS="-O3"
 
 # Where QuakeC source is located
 QCSOURCE="qcsrc"
+
+# Whether to build client-side packages and enable support for them in the mod
+# Disable ONLY if you, for any reason, have no way of letting clients download those packages automatically.
+SUPPORT_CLIENTPKGS=0

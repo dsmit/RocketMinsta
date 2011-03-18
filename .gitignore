@@ -9,3 +9,4 @@ qcsrc/client/fteqcc.log
 qcsrc/common/rm_auto.qh
 release/*
 !release/.*
+*.pk3dir/_*

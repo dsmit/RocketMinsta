@@ -8,6 +8,7 @@ BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 VERSION="$(rm-version)"
+BUILT_PACKAGES=""
 
 function buildall
 {
@@ -19,6 +20,10 @@ function buildall
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
+    
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        echo "#define RM_SUPPORT_CLIENTPKGS"          >> "$QCSOURCE"/common/rm_auto.qh
+    fi
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -27,6 +32,51 @@ function buildall
     mv -v csprogs.dat "$CSPROGS"
 
     rm -v "$QCSOURCE"/common/rm_auto.qh
+}
+
+function makedata
+{
+    local rmdata="$1"
+    local suffix="$2"
+    local desc="$3"
+    
+    echo " -- Building client-side package $1"
+    
+    pushd "$rmdata.pk3dir"
+    rmdata="zzz-rm-$rmdata"
+    
+    echo "   -- Calculating md5 sums"
+    find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+    local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    echo "   -- Writing version info"
+    echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo
+    echo "Built at $BUILD_DATE"                             >> _pkginfo
+    
+    echo "   -- Compressing package"
+    7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
+    echo "   -- Removing temporary files"
+    rm -vf _*
+    popd
+    
+    echo "   -- Installing to $NEXDATA"
+    mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
+    echo "   -- Done"
+    BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
+}
+
+function makedata-all
+{
+    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        echo "Not building client packages: restricted by configuration"
+    fi
+    
+    local suffix="$1"
+    local desc="$2"
+    
+    #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
+    for line in $(ls | grep -P "\.pk3dir/?$"); do
+        makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
+    done
 }
 
 function listcustom()
@@ -40,6 +90,11 @@ function listcustom()
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
 . "config.sh" || error "Failed to read configuration"
+
+if [ -z "$SUPPORT_CLIENTPKGS" ]; then
+    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "0"
+    SUPPORT_CLIENTPKGS=0
+fi
 
 if [ "$1" = "release" ]; then
     RELEASE=1
@@ -80,6 +135,7 @@ if [ "$1" = "release" ]; then
     CSPROGS="$NEXDATA/cl_mod.dat"
     
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
+    makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     
     cp -v "rocketminsta.cfg" "$NEXDATA"
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
@@ -116,8 +172,21 @@ EOF
 EOF
     fi
 
-    cat <<EOF >> "$NEXDATA/README.rmrelease"
+    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat <<EOF >> "$NEXDATA/README.rmrelease"
     3) Start the server and enjoy.
+EOF
+    else
+        cat <<EOF >> "$NEXDATA/README.rmrelease"
+    3) MAKE SURE that the following packages can be autodownloaded by clients:
+        $BUILT_PACKAGES
+        
+        This package contains all of them
+    4) Start the server and enjoy.
+EOF
+    fi
+
+    cat <<EOF >> "$NEXDATA/README.rmrelease"
 
 RocketMinsta project: https://github.com/nexAkari/RocketMinsta
 
@@ -152,6 +221,7 @@ EOF
 fi
 
 buildall -$BRANCH "git build"
+makedata-all -$BRANCH "git build"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
 mkdir -pv "$NEXDATA/rm-custom"
@@ -187,6 +257,22 @@ $(listcustom)
     add the following at the bottom of your config:
         
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
+EOF
+
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat <<EOF
+        
+    In addition, these packages MUST be available on your download server:
+        $BUILT_PACKAGES
+    
+    All of them have been also installed into:
+        $NEXDATA
+    
+    If you can't host these packages, please rebuild with SUPPORT_CLIENTPKGS=0
+EOF
+    fi
+
+cat <<EOF
 
 **************************************************
 EOF
