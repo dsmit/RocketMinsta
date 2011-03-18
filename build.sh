@@ -139,6 +139,17 @@ if [ "$1" = "release" ]; then
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     
     cp -v "rocketminsta.cfg" "$NEXDATA"
+
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
+        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+rm_clearpkgs
+$(for i in $BUILT_PACKAGES; do
+    echo "rm_putpackage $i"
+done)
+EOF
+    fi
+
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
         mkdir -pv "$NEXDATA/rm-custom"
         cp -v rm-custom/* "$NEXDATA/rm-custom"
