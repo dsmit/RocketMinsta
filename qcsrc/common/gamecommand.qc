@@ -802,8 +802,26 @@ float GameCommand_Generic(string command)
 			}
 		}
 		return TRUE;
-	}
-	else if(argv(0) == "records") {
+	} else if (argv(0) == "delfromlist") {
+        if(argc >= 2)
+        {
+            s = argv(1);
+            s2 = argv(2);
+
+            if(cvar_string(s) == "")
+                return TRUE;
+
+            local string s3;
+            n = tokenizebyseparator(cvar_string(s), " ");
+
+            for(i = 0; i < n; ++i)
+                if(argv(i) != s2)
+                    s3 = strcat(s3, " ", argv(i));
+
+            cvar_set(s, substring(s3, 1, strlen(s3) - 1));
+        }
+        return TRUE;
+    } else if(argv(0) == "records") {
 		print(records_reply);
 		return TRUE;
 #ifdef MENUQC
