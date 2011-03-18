@@ -7,6 +7,7 @@ RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
+VERSION="$(rm-version)"
 
 function buildall
 {
@@ -15,8 +16,9 @@ function buildall
     
     USEQCC="$(getqcc)"
 
-    echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\""          >  "$QCSOURCE"/common/rm_auto.qh
-    echo "#define RM_BUILD_NAME \"RocketMinsta$1\""            >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -63,7 +65,13 @@ if [ "$1" = "release" ]; then
     fi
     
     PKGNAME="RocketMinsta${RELEASE_REALSUFFIX}"
-    RELEASE_PKGNAME="${PKGNAME}_$BUILD_DATE_PLAIN"
+    
+    if rm-hasversion; then
+        RELEASE_PKGNAME="${PKGNAME}_$VERSION"
+    else
+        RELEASE_PKGNAME="${PKGNAME}_$BUILD_DATE_PLAIN"
+    fi
+    
     RELEASE_PKGPATH="$(readlink -f "$RELEASE_PKGPATH")"
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
@@ -86,7 +94,7 @@ if [ "$1" = "release" ]; then
     
     cat <<EOF > "$NEXDATA/README.rmrelease"
 
-This is an auto generated $PKGNAME release package, built at $BUILD_DATE. Installation:
+This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
     
     1) Extract the contents of this package into your Nexuiz data directory (typically ~/.nexuiz/data/)
     2) Edit your server config and add the following lines at very top:

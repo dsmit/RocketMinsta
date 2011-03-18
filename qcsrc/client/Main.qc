@@ -152,7 +152,7 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_DATE));
+	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " ", RM_BUILD_DATE));
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");

@@ -62,3 +62,27 @@ function rconsendto
     echo " --:> $1"
     printf "\377\377\377\377rcon %s %s" "$3" "$4" > /dev/udp/"$1"/"$2"
 }
+
+function rm-version
+{
+    if ! git describe --tags &> /dev/null; then
+        echo git
+        return 0;
+    fi
+    
+    (git describe --tags | while read line; do
+        echo $line | grep '^v.*' | grep -v '-' && exit # Note: this is a subshell exit
+    done; echo git) | head -1
+}
+
+function rm-version-or
+{
+    local v="$(rm-version)"
+    [ "$v" = "git" ] && v="$1"
+    echo "$v"
+}
+
+function rm-hasversion
+{
+    [ "$(rm-version)" != "git" ]
+}
