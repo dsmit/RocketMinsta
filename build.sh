@@ -49,8 +49,8 @@ function makedata
     find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
     local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     echo "   -- Writing version info"
-    echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo
-    echo "Built at $BUILD_DATE"                             >> _pkginfo
+    echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
+    echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
     
     echo "   -- Compressing package"
     7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
