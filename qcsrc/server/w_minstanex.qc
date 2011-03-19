@@ -399,7 +399,7 @@ void W_RM_Alt_Attack()
 	float rndspread = cvar("g_explosive_laser_spread_randomize");
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), RM_LASERSOUND_PRIMARY, cvar("g_explosive_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), RM_SOUND_LASER_PRIMARY, cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -444,7 +444,7 @@ void W_RM_Alt_Attack_Single()
 	float total = cvar("g_explosive_laser_count");
 	float spread = cvar("g_explosive_laser_spread");
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, RM_LASERSOUND_SECONDARY, cvar("g_explosive_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, RM_SOUND_LASER_SECONDARY, cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -545,8 +545,8 @@ float w_minstanex(float req)
 		w_laser(WR_PRECACHE);
 		
 		//Wtf? Why doesn't this shit work?
-		precache_sound (RM_LASERSOUND_PRIMARY);
-		precache_sound (RM_LASERSOUND_SECONDARY);
+		precache_sound (RM_SOUND_LASER_PRIMARY);
+		precache_sound (RM_SOUND_LASER_SECONDARY);
 	}
 	else if (req == WR_SETUP)
 	{
