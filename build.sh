@@ -210,11 +210,9 @@ if [ "$1" = "release" ]; then
 This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
     
     1) Extract the contents of this package into your Nexuiz data directory (typically ~/.nexuiz/data/)
-    2) Edit your server config and add the following lines at very top:
+    2) Edit your server config and add the following line at very top:
         
         exec rocketminsta.cfg
-        set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
-        set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
