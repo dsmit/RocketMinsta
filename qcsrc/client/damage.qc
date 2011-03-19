@@ -283,4 +283,6 @@ void DamageInfo_Precache()
 	precache_sound("weapons/rocket_impact.wav");
 	precache_sound("weapons/fireball_impact.wav");
 	precache_sound("weapons/fireball_impact2.wav");
+	precache_sound (RM_LASERSOUND_PRIMARY);
+	precache_sound (RM_LASERSOUND_SECONDARY);
 }

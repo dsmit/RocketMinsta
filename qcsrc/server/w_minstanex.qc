@@ -399,7 +399,7 @@ void W_RM_Alt_Attack()
 	float rndspread = cvar("g_explosive_laser_spread_randomize");
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), "weapons/crylink_fire2.wav", cvar("g_explosive_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_explosive_norecoil")? 0 : 2), RM_LASERSOUND_PRIMARY, cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -444,7 +444,7 @@ void W_RM_Alt_Attack_Single()
 	float total = cvar("g_explosive_laser_count");
 	float spread = cvar("g_explosive_laser_spread");
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, "weapons/crylink_fire.wav", cvar("g_explosive_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, RM_LASERSOUND_SECONDARY, cvar("g_explosive_laser_damage"));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -543,8 +543,10 @@ float w_minstanex(float req)
 		precache_sound ("weapons/nexwhoosh2.wav");
 		precache_sound ("weapons/nexwhoosh3.wav");
 		w_laser(WR_PRECACHE);
-		precache_sound ("weapons/crylink_fire.wav");
-		precache_sound ("weapons/crylink_fire2.wav");
+		
+		//Wtf? Why doesn't this shit work?
+		precache_sound (RM_LASERSOUND_PRIMARY);
+		precache_sound (RM_LASERSOUND_SECONDARY);
 	}
 	else if (req == WR_SETUP)
 	{

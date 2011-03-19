@@ -485,3 +485,11 @@ float WATERLEVEL_SWIMMING = 2;
 float WATERLEVEL_SUBMERGED = 3;
 
 float MAX_SHOT_DISTANCE = 32768;
+
+#ifdef RM_SUPPORT_CLIENTPKGS
+	#define RM_LASERSOUND_PRIMARY "weapons/rm_laser1.wav"
+	#define RM_LASERSOUND_SECONDARY "weapons/rm_laser2.wav"
+#else
+	#define RM_LASERSOUND_PRIMARY "weapons/crylink_fire2.wav"
+	#define RM_LASERSOUND_SECONDARY "weapons/crylink_fire.wav"
+#endif
