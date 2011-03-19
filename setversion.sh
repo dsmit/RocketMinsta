@@ -13,7 +13,7 @@ if [ "$1" = "clear" ]; then
     rm-hasversion || error "Not tagged with a version, nothing to clear"
     git tag -d "$(rm-version)" || error "git tag failed"
 else
-    echo "$1" | grep '^v.*' | grep -v '-' || error "Invalid version format"
+    echo "$1" | rm-version-checkformat || error "Invalid version format"
     rm-hasversion && error "Already tagged with version $(rm-version)"
     git tag "$1" || error "git tag failed"
 fi
