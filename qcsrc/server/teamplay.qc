@@ -431,7 +431,7 @@ void RM_WelcomeMessage(entity pl)
 	else
 		motd = "^8(message of the day missing)";
 	
-	s = strcat("^xFB0", RM_BUILD_NAME, " ", gamemode_name, "\n^7running on Nexuiz ", cvar_string("g_nexuizversion"), ": ", GetClientVersionMessage());
+	s = strcat("^xFB0", strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " "), gamemode_name, "\n^7running on Nexuiz ", cvar_string("g_nexuizversion"), ": ", GetClientVersionMessage());
 	s = strcat(s, "\n^8mod build date: ^9", RM_BUILD_DATE, "\n\n\n\n\n");
 	
 	s = strcat(s, "\n^0^x111^x222^x333^x333^x222^x111^0\n", motd,

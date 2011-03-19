@@ -1,16 +1,7 @@
 #!/bin/bash
 
-function error
-{
-    echo -e "\n$*" >&2
-    exit 1
-}
-
-function rconsend
-{
-    echo " --:> $1"
-    printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT #| netcat -uc $RCON_ADDRESS $RCON_PORT
-}
+INCLUDE=1
+. rmlib.sh || exit 1
 
 function finish
 {

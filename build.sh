@@ -1,49 +1,16 @@
 #!/bin/bash
 
+INCLUDE=1
+. rmlib.sh || exit 1
+
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
-
-
-function error
-{
-    echo -e "\n$*" >&2
-    exit 1
-}
-
-function getqcc
-{
-    local i=0
-    local qcc=""
-
-    echo "Looking for a QuakeC compiller" >&2
-
-    while true; do
-        qcc="${QCC[$i]}"
-
-        [ x"$qcc" = x ] && error "Failed to find a QuakeC compiller"
-
-        echo -n " -- Trying $qcc... " >&2
-        which "$qcc" &>/dev/null && break
-
-        echo -e "\e[31;1mmissing\e[0m" >&2
-        let i++
-    done
-
-    echo -e "\e[32;1mfound\e[0m" >&2
-    echo "$qcc"
-}
-
-function buildqc
-{
-    qcdir="$QCSOURCE/$1"
-
-    echo " -- Building $qcdir" >&2
-    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
-    popd &>/dev/null
-}
+VERSION="$(rm-version)"
+BUILT_PACKAGES=""
+BUILT_PKGINFOS=""
+BUILT_PKGNAMES=""
 
 function buildall
 {
@@ -52,8 +19,17 @@ function buildall
     
     USEQCC="$(getqcc)"
 
-    echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\""          >  "$QCSOURCE"/common/rm_auto.qh
-    echo "#define RM_BUILD_NAME \"RocketMinsta$1\"" >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
+    
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        echo "#define RM_SUPPORT_CLIENTPKGS"          >> "$QCSOURCE"/common/rm_auto.qh
+
+        for i in $BUILT_PKGNAMES; do
+            echo "#define RM_SUPPORT_PKG_$i"          >> "$QCSOURCE"/common/rm_auto.qh
+        done
+    fi
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -64,6 +40,70 @@ function buildall
     rm -v "$QCSOURCE"/common/rm_auto.qh
 }
 
+function makedata
+{
+    local rmdata="$1"
+    local suffix="$2"
+    local desc="$3"
+    
+    echo " -- Building client-side package $1"
+    
+    pushd "$rmdata.pk3dir"
+    rmdata="zzz-rm-$rmdata"
+    
+    echo "   -- Calculating md5 sums"
+    find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+    local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    echo "   -- Writing version info"
+    echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
+    echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
+    
+    echo "   -- Compressing package"
+    7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
+    echo "   -- Removing temporary files"
+    rm -vf _*
+    popd
+    
+    echo "   -- Installing to $NEXDATA"
+    mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
+    echo "   -- Done"
+    BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
+    BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt "
+    BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
+}
+
+function is-included
+{
+    [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ] && return 0
+
+    for i in $BUILDPKG_OPTIONAL; do
+        [ $i = ${1##o_} ] && return 0;
+    done
+
+    for i in $BUILDPKG_CUSTOM; do
+        [ $i = ${1##c_} ] && return 0;
+    done
+
+    return 1
+}
+
+function makedata-all
+{
+    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        echo "Not building client packages: restricted by configuration"
+        return 0
+    fi
+    
+    local suffix="$1"
+    local desc="$2"
+    
+    #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
+    for line in $(ls | grep -P "\.pk3dir/?$"); do
+        is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
+        makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
+    done
+}
+
 function listcustom()
 {
     find "$NEXDATA/rm-custom" -name "*.cfg" | while read cfg; do
@@ -71,10 +111,52 @@ function listcustom()
     done
 }
 
+function finalize-install
+{
+    cp -v "rocketminsta.cfg" "$NEXDATA"
+
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
+        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+rm_clearpkgs
+$(for i in $BUILT_PKGINFOS; do
+    echo "rm_putpackage $i"
+done)
+EOF
+    fi
+
+    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+
+// Tells the engine to load the mod
+set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
+set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
+EOF
+
+    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
+        mkdir -pv "$NEXDATA/rm-custom"
+        cp -v rm-custom/* "$NEXDATA/rm-custom"
+    fi
+}
+
 ################################################################################
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
 . "config.sh" || error "Failed to read configuration"
+
+if [ -z "$SUPPORT_CLIENTPKGS" ]; then
+    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "0"
+    SUPPORT_CLIENTPKGS=0
+fi
+
+if [ -z $BUILDPKG_OPTIONAL ]; then
+    warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
+    BUILDPKG_OPTIONAL=()
+fi
+
+if [ -z $BUILDPKG_CUSTOM ]; then
+    warn-oldconfig "config.sh" "BUILDPKG_CUSTOM" "(-)"
+    BUILDPKG_CUSTOM=()
+fi
 
 if [ "$1" = "release" ]; then
     RELEASE=1
@@ -100,21 +182,23 @@ if [ "$1" = "release" ]; then
     fi
     
     PKGNAME="RocketMinsta${RELEASE_REALSUFFIX}"
-    RELEASE_PKGNAME="${PKGNAME}_$BUILD_DATE_PLAIN"
+    
+    if rm-hasversion; then
+        RELEASE_PKGNAME="${PKGNAME}_$VERSION"
+    else
+        RELEASE_PKGNAME="${PKGNAME}_$BUILD_DATE_PLAIN"
+    fi
+    
     RELEASE_PKGPATH="$(readlink -f "$RELEASE_PKGPATH")"
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
     NEXDATA="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
-    SVPROGS="$NEXDATA/sv_mod.dat"
-    CSPROGS="$NEXDATA/cl_mod.dat"
-    
+    SVPROGS="$NEXDATA/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+    CSPROGS="$NEXDATA/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+
+    makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
-    
-    cp -v "rocketminsta.cfg" "$NEXDATA"
-    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        mkdir -pv "$NEXDATA/rm-custom"
-        cp -v rm-custom/* "$NEXDATA/rm-custom"
-    fi
+    finalize-install    
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
         cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "$NEXDATA/rocketminsta.cfg"
@@ -123,14 +207,12 @@ if [ "$1" = "release" ]; then
     
     cat <<EOF > "$NEXDATA/README.rmrelease"
 
-This is an auto generated $PKGNAME release package, built at $BUILD_DATE. Installation:
+This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
     
     1) Extract the contents of this package into your Nexuiz data directory (typically ~/.nexuiz/data/)
-    2) Edit your server config and add the following lines at very top:
+    2) Edit your server config and add the following line at very top:
         
         exec rocketminsta.cfg
-        set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
-        set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
@@ -145,8 +227,21 @@ EOF
 EOF
     fi
 
-    cat <<EOF >> "$NEXDATA/README.rmrelease"
+    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat <<EOF >> "$NEXDATA/README.rmrelease"
     3) Start the server and enjoy.
+EOF
+    else
+        cat <<EOF >> "$NEXDATA/README.rmrelease"
+    3) MAKE SURE that the following packages can be autodownloaded by clients:
+        $BUILT_PACKAGES
+        
+        This package contains all of them
+    4) Start the server and enjoy.
+EOF
+    fi
+
+    cat <<EOF >> "$NEXDATA/README.rmrelease"
 
 RocketMinsta project: https://github.com/nexAkari/RocketMinsta
 
@@ -180,11 +275,10 @@ EOF
     exit
 fi
 
+RELEASE_RMCUSTOM=1
+makedata-all -$BRANCH "git build"
 buildall -$BRANCH "git build"
-
-cp -v "rocketminsta.cfg" "$NEXDATA"
-mkdir -pv "$NEXDATA/rm-custom"
-cp -v rm-custom/* "$NEXDATA/rm-custom"
+finalize-install
 
 cat <<EOF
 **************************************************
@@ -206,16 +300,34 @@ $(listcustom)
 
     Please make sure all of these files are
     accessible by Nexuiz. Then add the following
-    lines at top of your server config:
+    line at top of your server config:
     
         exec rocketminsta.cfg
-        set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
-        set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
         
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
+
+    (note: if you have sv_progs and csqc_progname variables changed
+    because of previous RocketMinsta installation, it's a good idea to remove them)
+EOF
+
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat <<EOF
+        
+    In addition, these packages MUST be available on your download server:
+        $BUILT_PACKAGES
+    
+    All of them have been also installed into:
+        $NEXDATA
+    
+    They will be added to sv_curl_serverpackages automatically.
+    If you can't host these packages, please rebuild with SUPPORT_CLIENTPKGS=0
+EOF
+    fi
+
+cat <<EOF
 
 **************************************************
 EOF

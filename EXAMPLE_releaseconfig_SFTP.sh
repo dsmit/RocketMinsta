@@ -42,12 +42,6 @@ RCON_COMMANDS=(
     "defer 3 restart"
 )
 
-function rconsend
-{
-    echo " --:> $1"
-    printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT
-}
-
 # This function will be called when the release is ready but hasn't been packaged yet,
 # for you to customize the release here. May be left as-is.
 #
