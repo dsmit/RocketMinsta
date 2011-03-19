@@ -193,8 +193,8 @@ if [ "$1" = "release" ]; then
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
     NEXDATA="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
-    SVPROGS="$NEXDATA/sv_mod.dat"
-    CSPROGS="$NEXDATA/cl_mod.dat"
+    SVPROGS="$NEXDATA/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+    CSPROGS="$NEXDATA/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
 
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
