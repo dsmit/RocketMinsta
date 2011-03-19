@@ -10,6 +10,7 @@ BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
 VERSION="$(rm-version)"
 BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
+BUILT_PKGNAMES=""
 
 function buildall
 {
@@ -24,6 +25,10 @@ function buildall
     
     if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
         echo "#define RM_SUPPORT_CLIENTPKGS"          >> "$QCSOURCE"/common/rm_auto.qh
+
+        for i in $BUILT_PKGNAMES; do
+            echo "#define RM_SUPPORT_PKG_$i"          >> "$QCSOURCE"/common/rm_auto.qh
+        done
     fi
 
     buildqc server/
@@ -63,7 +68,8 @@ function makedata
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
     echo "   -- Done"
     BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
-    BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt"
+    BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt "
+    BUILT_PKGNAMES="${BUILT_PKGNAMES}$rmdata "
 }
 
 function makedata-all
