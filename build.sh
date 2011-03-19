@@ -72,6 +72,21 @@ function makedata
     BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
 }
 
+function is-included
+{
+    [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ] && return 0
+
+    for i in $BUILDPKG_OPTIONAL; do
+        [ $i = ${1##o_} ] && return 0;
+    done
+
+    for i in $BUILDPKG_CUSTOM; do
+        [ $i = ${1##c_} ] && return 0;
+    done
+
+    return 1
+}
+
 function makedata-all
 {
     if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
@@ -84,6 +99,7 @@ function makedata-all
     
     #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
     for line in $(ls | grep -P "\.pk3dir/?$"); do
+        is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
         makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
     done
 }
@@ -103,6 +119,16 @@ function listcustom()
 if [ -z "$SUPPORT_CLIENTPKGS" ]; then
     warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "0"
     SUPPORT_CLIENTPKGS=0
+fi
+
+if [ -z $BUILDPKG_OPTIONAL ]; then
+    warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
+    BUILDPKG_OPTIONAL=()
+fi
+
+if [ -z $BUILDPKG_CUSTOM ]; then
+    warn-oldconfig "config.sh" "BUILDPKG_CUSTOM" "(-)"
+    BUILDPKG_CUSTOM=()
 fi
 
 if [ "$1" = "release" ]; then

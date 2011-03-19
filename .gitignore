@@ -10,3 +10,4 @@ qcsrc/common/rm_auto.qh
 release/*
 !release/.*
 *.pk3dir/_*
+c_*.pk3dir/*
