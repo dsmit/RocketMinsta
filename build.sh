@@ -69,7 +69,7 @@ function makedata
     echo "   -- Done"
     BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
     BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt "
-    BUILT_PKGNAMES="${BUILT_PKGNAMES}$rmdata "
+    BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
 }
 
 function makedata-all
@@ -142,9 +142,9 @@ if [ "$1" = "release" ]; then
     NEXDATA="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
     SVPROGS="$NEXDATA/sv_mod.dat"
     CSPROGS="$NEXDATA/cl_mod.dat"
-    
-    buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
+
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
+    buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     
     cp -v "rocketminsta.cfg" "$NEXDATA"
 
@@ -240,8 +240,8 @@ EOF
     exit
 fi
 
-buildall -$BRANCH "git build"
 makedata-all -$BRANCH "git build"
+buildall -$BRANCH "git build"
 
 cp -v "rocketminsta.cfg" "$NEXDATA"
 

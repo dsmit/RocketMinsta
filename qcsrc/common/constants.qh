@@ -486,7 +486,7 @@ float WATERLEVEL_SUBMERGED = 3;
 
 float MAX_SHOT_DISTANCE = 32768;
 
-#ifdef RM_SUPPORT_CLIENTPKGS
+#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_sfx)
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 #else
