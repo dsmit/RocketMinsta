@@ -111,6 +111,33 @@ function listcustom()
     done
 }
 
+function finalize-install
+{
+    cp -v "rocketminsta.cfg" "$NEXDATA"
+
+    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
+        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
+        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+rm_clearpkgs
+$(for i in $BUILT_PKGINFOS; do
+    echo "rm_putpackage $i"
+done)
+EOF
+    fi
+
+    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+
+// Tells the engine to load the mod
+set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
+set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
+EOF
+
+    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
+        mkdir -pv "$NEXDATA/rm-custom"
+        cp -v rm-custom/* "$NEXDATA/rm-custom"
+    fi
+}
+
 ################################################################################
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
@@ -171,23 +198,7 @@ if [ "$1" = "release" ]; then
 
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
-    
-    cp -v "rocketminsta.cfg" "$NEXDATA"
-
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
-        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
-rm_clearpkgs
-$(for i in $BUILT_PKGINFOS; do
-    echo "rm_putpackage $i"
-done)
-EOF
-    fi
-
-    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        mkdir -pv "$NEXDATA/rm-custom"
-        cp -v rm-custom/* "$NEXDATA/rm-custom"
-    fi
+    finalize-install    
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
         cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "$NEXDATA/rocketminsta.cfg"
@@ -266,23 +277,10 @@ EOF
     exit
 fi
 
+RELEASE_RMCUSTOM=1
 makedata-all -$BRANCH "git build"
 buildall -$BRANCH "git build"
-
-cp -v "rocketminsta.cfg" "$NEXDATA"
-
-if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-    cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
-    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
-rm_clearpkgs
-$(for i in $BUILT_PKGINFOS; do
-    echo "rm_putpackage $i"
-done)
-EOF
-fi
-
-mkdir -pv "$NEXDATA/rm-custom"
-cp -v rm-custom/* "$NEXDATA/rm-custom"
+finalize-install
 
 cat <<EOF
 **************************************************
@@ -304,16 +302,17 @@ $(listcustom)
 
     Please make sure all of these files are
     accessible by Nexuiz. Then add the following
-    lines at top of your server config:
+    line at top of your server config:
     
         exec rocketminsta.cfg
-        set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
-        set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
         
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
+
+    (note: if you have sv_progs and csqc_progname variables changed
+    because of previous RocketMinsta installation, it's a good idea to remove them)
 EOF
 
     if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
