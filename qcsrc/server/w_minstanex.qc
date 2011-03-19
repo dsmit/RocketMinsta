@@ -521,6 +521,9 @@ float w_minstanex(float req)
 				W_Laser_Attack(FALSE);
 			}
 		}
+		else
+			self.held_down = FALSE;
+		
 		if (self.BUTTON_ATCK)
 		{
 			if (weapon_prepareattack(0, cvar("g_balance_minstanex_refire")))
@@ -529,8 +532,6 @@ float w_minstanex(float req)
 				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
 			}
 		}
-		else
-			self.held_down = FALSE;
 	}
 	else if (req == WR_PRECACHE)
 	{
