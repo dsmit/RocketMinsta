@@ -285,4 +285,5 @@ void DamageInfo_Precache()
 	precache_sound("weapons/fireball_impact2.wav");
 	precache_sound (RM_SOUND_LASER_PRIMARY);
 	precache_sound (RM_SOUND_LASER_SECONDARY);
+	precache_sound (RM_SOUND_MINSTA);
 }
