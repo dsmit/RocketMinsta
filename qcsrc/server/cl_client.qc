@@ -2257,6 +2257,7 @@ void ObserverThink()
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
+				WriteSpectatorInfo(self.enemy);
 			}
 		}
 	} else {
@@ -2289,6 +2290,7 @@ void SpectatorThink()
 				self.classname = "observer";
 				PutClientInServer();
 			}
+			WriteSpectatorInfo(self.enemy);
 		} else if (self.BUTTON_ATCK2) {
 			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;

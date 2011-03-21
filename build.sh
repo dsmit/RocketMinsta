@@ -144,7 +144,7 @@ EOF
 . "config.sh" || error "Failed to read configuration"
 
 if [ -z "$SUPPORT_CLIENTPKGS" ]; then
-    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "0"
+    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "1"
     SUPPORT_CLIENTPKGS=0
 fi
 

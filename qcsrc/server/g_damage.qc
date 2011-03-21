@@ -871,7 +871,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				targ.ignore_next = 0;
 			}
 			
-			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage)
+			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_explosive_minsta_damage") <= 0))
 			{
 				if(!ex || !ex_armor)
 				{
@@ -896,7 +896,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(ex)
 			if(ex_armor)
 			if(targ.armorvalue)
-			if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+			if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_explosive_minsta_damage") >= 0))
 			if not(DEATH_ISSPECIAL(deathtype))
 			if(targ != attacker)
 			{

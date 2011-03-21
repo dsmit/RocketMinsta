@@ -41,9 +41,6 @@ void W_Explosive_Attack (float attacktype)
 	if(cvar("g_explosive_norecoil"))
 		expl_recoil = 0;
 	
-	if(cvar("g_balance_minstanex_explosive") == 3)
-		expl_damage = 0;
-
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, expl_recoil, "", expl_damage);
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
@@ -123,31 +120,21 @@ void W_MinstaNex_Attack (void)
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	W_SetupShot (self, TRUE, 0, "weapons/minstanexfire.wav", 0);
+	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
 
 	yoda = 0;
 	damage_goodhits = 0;
 	headshot = 0;
 	
 	//<akari>
-	local float nex_damage = 10000000000;
 	//Executes the explosive attack
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
-	/*if(cvar("g_explosive_rage")) if(self.rage >= cvar("g_explosive_rage"))
-	{
-		W_Rage_Attack();
-		self.rage -= 1;
-		if(self.rage < 0)
-			self.rage = 0;
-	}*/
-	
-	if(cvar("g_balance_minstanex_explosive") == 2)
-		nex_damage = 0;
-	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, nex_damage, 800, 0, 0, 0, 0, WEP_MINSTANEX);
+	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((cvar("g_explosive_minsta_damage") >= 0)? cvar("g_explosive_minsta_damage") : 10000000000),
+					   cvar("g_explosive_minsta_force"), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
 	if(g_minstagib)
@@ -481,16 +468,25 @@ void W_RM_Alt_Attack_Single()
 .float jump_interval2;
 .float held_down;
 
+.float nextfiretime;
+
 float w_minstanex(float req)
 {
 	float rapid = cvar("g_explosive_laser_rapid");
 	
 	if (req == WR_AIM)
 	{
-		if(self.ammo_cells>0)
+		if(self.ammo_cells>0 && time >= self.nextfiretime)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(cvar("g_balance_laser_primary_speed"), 0, cvar("g_balance_laser_primary_lifetime"), FALSE);
+			self.BUTTON_ATCK2 = bot_aim(
+				((cvar("g_explosive_laser_new"))?
+					cvar("g_explosive_laser_speed"):
+					cvar("g_balance_laser_primary_speed"))
+				, 0, 
+				((cvar("g_explosive_laser_new"))?
+					cvar("g_explosive_laser_lifetime"):
+					cvar("g_balance_laser_primary_lifetime")), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
@@ -530,16 +526,25 @@ float w_minstanex(float req)
 			{
 				W_MinstaNex_Attack();
 				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
+				self.nextfiretime = time + cvar("g_balance_minstanex_refire");
 			}
 		}
 	}
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/nexflash.md3");
+		
+		/*
 		precache_model ("models/weapons/g_minstanex.md3");
 		precache_model ("models/weapons/v_minstanex.md3");
 		precache_model ("models/weapons/h_minstanex.dpm");
-		precache_sound ("weapons/minstanexfire.wav");
+		*/
+		
+		precache_model ("models/weapons/g_nex.md3");
+		precache_model ("models/weapons/v_nex.md3");
+		precache_model ("models/weapons/h_nex.dpm");
+		
+		precache_sound (RM_SOUND_MINSTA);
 		precache_sound ("weapons/nexwhoosh1.wav");
 		precache_sound ("weapons/nexwhoosh2.wav");
 		precache_sound ("weapons/nexwhoosh3.wav");

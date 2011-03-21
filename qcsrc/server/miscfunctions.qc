@@ -1450,6 +1450,12 @@ void precache()
     
     precache_sound(hook_hitsound);
     precache_sound(hook_teamhitsound);
+    
+    precache_sound (RM_SOUND_MORNINGRESCUE);
+	precache_sound (RM_SOUND_PHOENIX);
+	precache_sound (RM_SOUND_REBIRTH);
+	precache_sound (RM_SOUND_RECOVERY);
+    
     //</akari>
     
     // gamemode related things

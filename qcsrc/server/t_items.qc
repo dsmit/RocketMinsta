@@ -280,32 +280,36 @@ float Item_GiveTo(entity item, entity player)
 					}
 					else
 					{
-						if(player.health <= 30)
-							play2(player, "misc/poweroff.wav");
+						//if(player.health <= 30)
+						//	play2(player, "misc/poweroff.wav");
 						
 						if(player.health < 2)
 						{
 							//centerprint(player, "^1WHAT THE FUCK?!");
 							bigprint_spec(player, "^7morning^xfb0rescue", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_1hp"));
+							play2(player, RM_SOUND_MORNINGRESCUE);
 						}
 						else if(player.health <= 10)
 						{
 							//centerprint(player, "^xF60P^xF40H^xF20O^1E^xF20N^xF40I^xF60X");
 							bigprint_spec(player, "^xf20phoenix", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_10hp"));
+							play2(player, RM_SOUND_PHOENIX);
 						}
 						else if(player.health <= 20)
 						{
 							//centerprint(player, "^x06FR^x04FE^x02FB^4I^x02FR^x04FT^x06FH");
 							bigprint_spec(player, "^x06Frebirth", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_20hp"));
+							play2(player, RM_SOUND_REBIRTH);
 						}
 						else if(player.health <= 30)
 						{
 							//centerprint(player, "^xCCCR^xDDDE^xEEEC^7OV^xEEEE^xDDDR^xCCCY");
 							bigprint_spec(player, "^7recovery", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_30hp"));
+							play2(player, RM_SOUND_RECOVERY);
 						}
 					}
 					//</akari>
