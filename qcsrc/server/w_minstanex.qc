@@ -41,9 +41,6 @@ void W_Explosive_Attack (float attacktype)
 	if(cvar("g_explosive_norecoil"))
 		expl_recoil = 0;
 	
-	if(cvar("g_balance_minstanex_explosive") == 3)
-		expl_damage = 0;
-
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, expl_recoil, "", expl_damage);
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
@@ -130,24 +127,14 @@ void W_MinstaNex_Attack (void)
 	headshot = 0;
 	
 	//<akari>
-	local float nex_damage = 10000000000;
 	//Executes the explosive attack
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
-	/*if(cvar("g_explosive_rage")) if(self.rage >= cvar("g_explosive_rage"))
-	{
-		W_Rage_Attack();
-		self.rage -= 1;
-		if(self.rage < 0)
-			self.rage = 0;
-	}*/
-	
-	if(cvar("g_balance_minstanex_explosive") == 2)
-		nex_damage = 0;
-	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, nex_damage, 800, 0, 0, 0, 0, WEP_MINSTANEX);
+	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((cvar("g_explosive_minsta_damage") >= 0)? cvar("g_explosive_minsta_damage") : 10000000000),
+					   cvar("g_explosive_minsta_force"), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
 	if(g_minstagib)
