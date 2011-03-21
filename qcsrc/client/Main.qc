@@ -1132,11 +1132,10 @@ void Net_ReadSpecInfo()
 		strunzone(spectatornames[i]);
 		
 	num_spectators = ReadShort();
-	
+
 	for(i = 0; i < num_spectators; ++i)
 	{
 		local string s = ReadString();
-		
 		if(i < MAX_SPECTATORS)
 			spectatornames[i] = strzone(s);
 	}
