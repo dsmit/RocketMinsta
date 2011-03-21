@@ -468,13 +468,15 @@ void W_RM_Alt_Attack_Single()
 .float jump_interval2;
 .float held_down;
 
+.float nextfiretime;
+
 float w_minstanex(float req)
 {
 	float rapid = cvar("g_explosive_laser_rapid");
 	
 	if (req == WR_AIM)
 	{
-		if(self.ammo_cells>0 && self.ammo_cells)
+		if(self.ammo_cells>0 && time >= self.nextfiretime)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 		else
 			self.BUTTON_ATCK2 = bot_aim(
@@ -524,6 +526,7 @@ float w_minstanex(float req)
 			{
 				W_MinstaNex_Attack();
 				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
+				self.nextfiretime = time + cvar("g_balance_minstanex_refire");
 			}
 		}
 	}
