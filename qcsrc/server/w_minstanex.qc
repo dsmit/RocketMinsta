@@ -474,10 +474,17 @@ float w_minstanex(float req)
 	
 	if (req == WR_AIM)
 	{
-		if(self.ammo_cells>0)
+		if(self.ammo_cells>0 && self.ammo_cells)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(cvar("g_balance_laser_primary_speed"), 0, cvar("g_balance_laser_primary_lifetime"), FALSE);
+			self.BUTTON_ATCK2 = bot_aim(
+				((cvar("g_explosive_laser_new"))?
+					cvar("g_explosive_laser_speed"):
+					cvar("g_balance_laser_primary_speed"))
+				, 0, 
+				((cvar("g_explosive_laser_new"))?
+					cvar("g_explosive_laser_lifetime"):
+					cvar("g_balance_laser_primary_lifetime")), FALSE);
 	}
 	else if (req == WR_THINK)
 	{

@@ -19,7 +19,7 @@ QCSOURCE="qcsrc"
 
 # Whether to build client-side packages and enable support for them in the mod
 # Disable ONLY if you, for any reason, have no way of letting clients download those packages automatically.
-SUPPORT_CLIENTPKGS=0
+SUPPORT_CLIENTPKGS=1
 
 # A list of optional client packages to build.
 # These packages are a part of RocketMinsta, but aren't built automatically. They have a prefix of "o_".
