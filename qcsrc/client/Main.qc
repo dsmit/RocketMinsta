@@ -346,9 +346,11 @@ void PostInit(void)
 		case 5:
 			localcmd("seta rm_nobigtext 0; nobigtext 0\n");
 		case 6:
+		case 7:
+			localcmd("seta rm_madoka 0; madoka 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 7\n");
+		localcmd("seta rm_initialized 8\n");
 		RM_OUTDATED
 		break;
 	}
@@ -363,6 +365,14 @@ void PostInit(void)
 	registercmd("showdamage");
 	registercmd("teamlasers");
 	registercmd("nobigtext");
+	registercmd("madoka");
+	
+	#ifdef RM_SUPPORT_MADOKA
+	if(cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/madoka-rune\n");
+	else
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	#endif
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -432,6 +442,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
 		print("^2nobigtext^7: if enabled, the top-center big messages will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. Enabling this option automatically contracts you with QB (disabled by default)\n");
+		return true;
 	}
 	else if(
 		strCmd == "showspec" 	||
@@ -446,6 +458,23 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_teamlasers = cvar("rm_teamlasers");
 		rm_nobigtext = cvar("rm_nobigtext");
 		return true;
+	}
+	else if(strCmd == "madoka")
+	{
+		#ifdef RM_SUPPORT_MADOKA
+		VALUEREQUIRED
+		cvar_set(strcat("rm_", strCmd), argv(1));
+		
+		if(cvar("rm_madoka"))
+			localcmd("loadfont user2 gfx/madoka-rune\n");
+		else
+			localcmd("loadfont user2 gfx/vera-sans-big\n");
+		
+		return true;
+		#else
+		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
+		return false;
+		#endif
 	}
 
 	if(camera_active)

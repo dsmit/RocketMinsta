@@ -498,6 +498,10 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_MINSTA "weapons/minstanexfire.wav"
 #endif
 
+#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
+	#define RM_SUPPORT_MADOKA
+#endif
+
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
