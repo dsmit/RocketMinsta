@@ -35,3 +35,8 @@ BUILDPKG_CUSTOM=(-)
 # These are packages WITHOUT o_ or c_ prefixes, do not touch this option unless you really know what are you doing
 IGNOREPKG=(-)
 
+# If this option is enabled, built packages will be stored and referenced later when you rebuild the mod,
+# to save time by not rebuilding the same package over and over again. But if you made changes to the package,
+# it will be, of course, rebuilt. This option is only useful if you're a developer who constantly needs to rebuild the mod
+CACHEPKGS=0
+

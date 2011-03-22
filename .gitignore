@@ -11,3 +11,5 @@ release/*
 !release/.*
 *.pk3dir/_*
 c_*.pk3dir/*
+pkgcache/*
+!pkgcache/.*
