@@ -442,7 +442,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
 		print("^2nobigtext^7: if enabled, the top-center big messages will be redirected into the bottom centerprint area (disabled by default)\n");
-		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. Enabling this option automatically contracts you with QB (disabled by default)\n");
+		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		return true;
 	}
 	else if(
