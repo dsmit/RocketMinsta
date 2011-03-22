@@ -1981,13 +1981,13 @@ vector Sbar_DrawCenterNoteLineA(vector offset, string s, float alpha)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 	drawcolorcodedstring(
-		offset - sbar_fontsize_x * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
+		offset - sbar_fontsize_x * 1.5 * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
 		s,
-		sbar_fontsize,
+		sbar_fontsize * 1.5,
 		alpha,
 		0
 	);
-	return offset + sbar_fontsize_y * '0 1 0';
+	return offset + sbar_fontsize_y * 1.5 * '0 1 0';
 }
 
 void Sbar_DrawPressedKeys(void)
