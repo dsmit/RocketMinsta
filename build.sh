@@ -74,7 +74,14 @@ function makedata
 
 function is-included
 {
-    [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ] && return 0
+    if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
+        # Not a prefixed package, checking if ignored
+        for i in $IGNOREPKG; do
+            [ $i = $1 ] && return 1;
+        done
+
+        return 0;
+    fi
 
     for i in $BUILDPKG_OPTIONAL; do
         [ $i = ${1##o_} ] && return 0;
@@ -150,12 +157,17 @@ fi
 
 if [ -z $BUILDPKG_OPTIONAL ]; then
     warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
-    BUILDPKG_OPTIONAL=()
+    BUILDPKG_OPTIONAL=(-)
 fi
 
 if [ -z $BUILDPKG_CUSTOM ]; then
     warn-oldconfig "config.sh" "BUILDPKG_CUSTOM" "(-)"
-    BUILDPKG_CUSTOM=()
+    BUILDPKG_CUSTOM=(-)
+fi
+
+if [ -z $IGNOREPKG ]; then
+    warn-oldconfig "config.sh" "IGNOREPKG" "(-)"
+    IGNOREPKG=(-)
 fi
 
 if [ "$1" = "release" ]; then

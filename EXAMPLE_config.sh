@@ -31,3 +31,7 @@ BUILDPKG_OPTIONAL=(-)
 # They have a prefix of "c_". 
 BUILDPKG_CUSTOM=(-)
 
+# A list of client packages that will NOT be built
+# These are packages WITHOUT o_ or c_ prefixes, do not touch this option unless you really know what are you doing
+IGNOREPKG=(-)
+
