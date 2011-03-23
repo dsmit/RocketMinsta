@@ -2,6 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
+require md5sum tar 7za
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -11,8 +12,6 @@ VERSION="$(rm-version)"
 BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
-
-require md5sum tar 7za
 
 function buildall
 {
