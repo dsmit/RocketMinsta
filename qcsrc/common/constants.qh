@@ -502,6 +502,7 @@ float MAX_SHOT_DISTANCE = 32768;
 
 #if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
 	#define RM_SUPPORT_MADOKA
+	#define RM_SUPPORT_VOTEGFX
 #endif
 
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"

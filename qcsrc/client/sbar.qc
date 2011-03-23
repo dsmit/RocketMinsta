@@ -2586,8 +2586,10 @@ void Sbar_Draw (void)
 		}
 	}
 	
+	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote)
 	{
+	#endif
 		if(vote_waiting)
 		{
 			//s = strcat("^2A vote has been called for ^1", vote_called_vote);
@@ -2624,6 +2626,7 @@ void Sbar_Draw (void)
 				o = Sbar_DrawNoteLine(o, s);
 			}
 		}
+	#ifdef RM_SUPPORT_VOTEGFX
 	}
 	else
 	{
@@ -2697,6 +2700,7 @@ void Sbar_Draw (void)
 			vote_highlighted = 0;
 		}
 	}
+	#endif
 	
 	if(teamplay && !intermission && !spectatee_status)
 	{
