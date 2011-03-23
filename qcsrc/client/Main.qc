@@ -358,6 +358,7 @@ void PostInit(void)
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
 	rm_nobigtext  = cvar("rm_nobigtext");
+	rm_hidebigcomments = cvar("rm_hidebigcomments");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
