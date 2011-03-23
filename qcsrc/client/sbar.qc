@@ -2532,19 +2532,6 @@ void Sbar_Draw (void)
 			o = Sbar_DrawNoteLineA(o, strcat("^9(", ftos(num_spectators - MAX_SPECTATORS), " more)"), 0.5);
 	}
 	
-	if(time < rm_helptime)
-	{
-		local float halpha = bound(0, 1 - 4 * (time - (rm_helptime - 1)), 1);
-		
-		if(halpha > 0)
-		{
-			o2 = Sbar_DrawCenterNoteLineA(o2, "", halpha);
-			o2 = Sbar_DrawCenterNoteLineA(o2, "It looks like you are playing RocketMinsta for the first time", halpha);
-			o2 = Sbar_DrawCenterNoteLineA(o2, "Type ^2rmhelp^7 in the console to see possible configuration options", halpha);
-			o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
-		}
-	}
-	
 	// move more important stuff more to the middle so its more visible
 	o_y = vid_conheight * 0.66;
 
@@ -2580,6 +2567,18 @@ void Sbar_Draw (void)
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 	
+	if(time < rm_helptime)
+	{
+		local float halpha = bound(0, 1 - 4 * (time - (rm_helptime - 1)), 1);
+		
+		if(halpha > 0)
+		{
+			o2 = Sbar_DrawCenterNoteLineA(o2, "", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, "It looks like you are playing RocketMinsta for the first time", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, "Type ^2rmhelp^7 in the console to see possible configuration options", halpha);
+			o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
+		}
+	}
 	
 	if(rm_legacyvote)
 	{
