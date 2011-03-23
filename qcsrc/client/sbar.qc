@@ -2506,13 +2506,16 @@ void Sbar_Draw (void)
 
 
 	if(rm_showspec)
-	if(!spectatee_status)
+	//if(!spectatee_status)
 	if(num_spectators)
 	{
 		local float i;
 		local string s;
 		local float limit;
-		o = Sbar_DrawNoteLineA(o, "^2Spectating you: ", 0.5);
+		if(spectatee_status)
+			o = Sbar_DrawNoteLineA(o, "^2Spectating this player: ", 0.5);
+		else
+			o = Sbar_DrawNoteLineA(o, "^2Spectating you: ", 0.5);
 		o = Sbar_DrawNoteLineA(o, "^9type ^7showspec 0 ^9 to hide", 0.5);
 		o = Sbar_DrawNoteLineA(o, "", 0.5);
 		

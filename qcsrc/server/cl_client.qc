@@ -764,6 +764,7 @@ Called when a client spawns in the server
 //void() ctf_playerchanged;
 
 void WriteSpectatorInfo(entity);
+void WriteSpectatorInfoOf(entity, entity);
 void PutClientInServer (void)
 {
 	WriteSpectatorInfo(self);
@@ -2050,26 +2051,40 @@ void SpectateCopy(entity spectatee) {
 
 #define FOR_EACH_SPECOF(p,e) FOR_EACH_REALCLIENT(e) if(spec.classname == "spectator") if(e.enemy == p)
 
-void WriteSpectatorInfo(entity player)
+void WriteSpectatorInfoOf(entity player, entity of)
 {
 	if(clienttype(player) != CLIENTTYPE_REAL)
+		return;
+	
+	if(clienttype(of) != CLIENTTYPE_REAL)
 		return;
 	
 	if(!cvar("g_explosive_showspecs"))
 		return;
 	
+	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
+	
 	local entity spec;
 	local float count;
 	
-	FOR_EACH_SPECOF(player, spec) count++;
+	FOR_EACH_SPECOF(of, spec) count++;
 	
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
 	WriteShort(MSG_ONE, count);
 	
-	FOR_EACH_SPECOF(player, spec)
+	FOR_EACH_SPECOF(of, spec)
 		WriteString(MSG_ONE, spec.netname);
+}
+
+void WriteSpectatorInfo(entity player)
+{
+	WriteSpectatorInfoOf(player, player);
+	
+	local entity spec;
+	FOR_EACH_SPECOF(player, spec)
+		WriteSpectatorInfoOf(spec, player);
 }
 
 float SpectateUpdate() {
