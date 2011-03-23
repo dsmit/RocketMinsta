@@ -309,6 +309,7 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
+void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 void PostInit(void)
 {
@@ -376,6 +377,7 @@ void PostInit(void)
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
+	SendRMCFGReport();
 	postinit = true;
 }
 
@@ -384,6 +386,25 @@ void PostInit(void)
 float button_zoom;
 void Cmd_Sbar_SetFields(float);
 void Cmd_Sbar_Help(float);
+
+void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
+void SendRMCFGReport()
+{
+	float h, n, i;
+	string k, res;
+	
+	h = buf_create();
+	buf_cvarlist(h, "rm_", "");
+	n = buf_getsize(h);
+	
+	for(i = 0; i < n; ++i)
+	{
+		k = bufstr_get(h, i);
+		res = strcat(res, k, " ", cvar_string(k), " ");
+	}
+	
+	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
+}
 
 #define VALUEREQUIRED if(argc < 2) { print("Usage: ", strCmd, " VALUE\n"); return true; }
 float CSQC_ConsoleCommand(string strMessage)
@@ -459,6 +480,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showdamage = cvar("rm_showdamage");
 		rm_teamlasers = cvar("rm_teamlasers");
 		rm_nobigtext = cvar("rm_nobigtext");
+		SendRMCFGReport();
 		return true;
 	}
 	else if(strCmd == "madoka")
@@ -472,6 +494,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		else
 			localcmd("loadfont user2 gfx/vera-sans-big\n");
 		
+		SendRMCFGReport();
 		return true;
 		#else
 		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
