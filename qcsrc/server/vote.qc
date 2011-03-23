@@ -159,13 +159,16 @@ float RemapVote(string vote, string cmd, entity e)
 		sprint(e, strcat("No such config available. Available configurations: ^2", strcfgs, "\n"));
 		return FALSE;
 	}
-	#ifdef RM_SUPPORT_MADOKA
 	else if(argv(0) == "walpurgis")
 	{
+		#ifdef RM_SUPPORT_MADOKA
 		RemapVote_vote = vote;
 		RemapVote_display = strzone("^2something terrible");
+		#else
+		sprint(e, "^0It's not the time yet...\n");
+		return FALSE;
+		#endif
 	}
-	#endif
 	else
 	{
 		RemapVote_vote = vote;
