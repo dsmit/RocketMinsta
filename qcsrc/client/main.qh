@@ -182,3 +182,4 @@ float rm_showdamage;
 float rm_teamlasers;
 float rm_helptime;
 float rm_nobigtext;
+float rm_hidebigcomments;

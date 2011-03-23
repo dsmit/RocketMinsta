@@ -345,9 +345,11 @@ void PostInit(void)
 		case 6:
 		case 7:
 			localcmd("seta rm_madoka 0; madoka 0\n");
+		case 8:
+			localcmd("seta rm_hidebigcomments 0; hidebigcomments 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 8\n");
+		localcmd("seta rm_initialized 9\n");
 		RM_OUTDATED
 		break;
 	}
@@ -363,6 +365,7 @@ void PostInit(void)
 	registercmd("teamlasers");
 	registercmd("nobigtext");
 	registercmd("madoka");
+	registercmd("hidebigcomments");
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(cvar("rm_madoka"))
@@ -458,17 +461,19 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
 		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
-		print("^2nobigtext^7: if enabled, the top-center big messages will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		#endif
 		return true;
 	}
 	else if(
-		strCmd == "showspec" 	||
-		strCmd == "showdamage" 	||
-		strCmd == "teamlasers"	||
-		strCmd == "nobigtext"	 )
+		strCmd == "showspec" 		||
+		strCmd == "showdamage" 		||
+		strCmd == "teamlasers"		||
+		strCmd == "nobigtext"		||
+		strCmd == "hidebigcomments"	 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -476,6 +481,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showdamage = cvar("rm_showdamage");
 		rm_teamlasers = cvar("rm_teamlasers");
 		rm_nobigtext = cvar("rm_nobigtext");
+		rm_hidebigcomments = cvar("rm_hidebigcomments");
 		SendRMCFGReport();
 		return true;
 	}

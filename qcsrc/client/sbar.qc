@@ -2493,7 +2493,7 @@ void Sbar_Draw (void)
 				drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 				
 				drawfont = sbar_font;
-				if(bigprint_comment)
+				if(bigprint_comment && !rm_hidebigcomments)
 				{
 					bp_pos_y += 24;
 					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
