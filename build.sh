@@ -12,6 +12,8 @@ BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
 
+require md5sum tar 7za
+
 function buildall
 {
     # $1 = suffix

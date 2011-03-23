@@ -5,6 +5,8 @@ if [ -z $INCLUDE ]; then
     exit 1
 fi
 
+RMLIB_REQUIRED="rm mv cp mkdir cat grep sed git"
+
 function error
 {
     echo -e "\n$*" >&2
@@ -97,3 +99,31 @@ function warn-oldconfig
     echo -e "***\n\e[31;1mWARNING: \e[0myour $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!\n***"
     sleep 1 #little annoyance
 }
+
+function require
+{
+    local req="$RMLIB_REQUIRED $*"
+    local lacking=""
+
+    echo "rmlib is checking for required utilities..."
+
+    for i in $req; do
+        echo -n " - $i... "
+
+        if which $i &> /dev/null; then
+            echo -e '\e[32;1mfound\e[0m'
+        else
+            echo -e '\e[31;1mnot found!\e[0m'
+            lacking="$lacking $i"
+        fi
+    done
+
+    if [ -n "$lacking" ]; then
+        error "The following utilities are required but are not present: $lacking. Please install them to proceed."
+    fi
+
+    echo "All OK, proceeding"
+}
+
+
+

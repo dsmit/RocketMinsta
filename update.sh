@@ -3,6 +3,8 @@
 INCLUDE=1
 . rmlib.sh || exit 1
 
+require ./build.sh
+
 function finish
 {
     echo "Finished updating ／人◕ ‿‿ ◕人＼"
