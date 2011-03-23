@@ -2,6 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
+require md5sum tar 7za
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -45,7 +46,8 @@ function makedata
     local rmdata="$1"
     local suffix="$2"
     local desc="$3"
-    
+    local curpath="$(pwd)"
+
     echo " -- Building client-side package $1"
     
     pushd "$rmdata.pk3dir"
@@ -54,6 +56,21 @@ function makedata
     echo "   -- Calculating md5 sums"
     find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
     local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    
+    if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
+        echo "   -- A cached package with the same sum already exists, using it"
+        
+        popd
+        cp -v "pkgcache/$rmdata-$sum.pk3" "$NEXDATA/$rmdata-$sum.pk3"
+        echo "   -- Done"
+
+        BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
+        BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt "
+        BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
+
+        return
+    fi
+    
     echo "   -- Writing version info"
     echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
     echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
@@ -66,6 +83,12 @@ function makedata
     
     echo "   -- Installing to $NEXDATA"
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
+
+    if [ $CACHEPKGS = 1 ]; then
+        echo "   -- Copying the package to cache"
+        cp -v "$NEXDATA/$rmdata-$sum.pk3" pkgcache
+    fi
+
     echo "   -- Done"
     BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
     BUILT_PKGINFOS="${BUILT_PKGINFOS}_pkginfo_$sum.txt "
@@ -74,7 +97,14 @@ function makedata
 
 function is-included
 {
-    [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ] && return 0
+    if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
+        # Not a prefixed package, checking if ignored
+        for i in $IGNOREPKG; do
+            [ $i = $1 ] && return 1;
+        done
+
+        return 0;
+    fi
 
     for i in $BUILDPKG_OPTIONAL; do
         [ $i = ${1##o_} ] && return 0;
@@ -150,12 +180,28 @@ fi
 
 if [ -z $BUILDPKG_OPTIONAL ]; then
     warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
-    BUILDPKG_OPTIONAL=()
+    BUILDPKG_OPTIONAL=(-)
 fi
 
 if [ -z $BUILDPKG_CUSTOM ]; then
     warn-oldconfig "config.sh" "BUILDPKG_CUSTOM" "(-)"
-    BUILDPKG_CUSTOM=()
+    BUILDPKG_CUSTOM=(-)
+fi
+
+if [ -z $IGNOREPKG ]; then
+    warn-oldconfig "config.sh" "IGNOREPKG" "(-)"
+    IGNOREPKG=(-)
+fi
+
+if [ -z $CACHEPKGS ]; then
+    warn-oldconfig "config.sh" "CACHEPKGS" "0"
+    CACHEPKGS=0
+fi
+
+if [ "$1" = "cleancache" ]; then
+    echo " -- Cleaning package cache"
+    rm -vf pkgcache/*.pk3 || error "rm failed"
+    exit
 fi
 
 if [ "$1" = "release" ]; then

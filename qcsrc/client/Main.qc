@@ -183,6 +183,9 @@ void CSQC_Shutdown(void)
 	if(camera_active)
 		cvar_set("chase_active",ftos(chase_active_backup));
 
+	if(cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	
 	if not(isdemo())
 	{
 		if not(calledhooks & HOOK_START)
@@ -309,7 +312,12 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
+void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
+
+#ifdef RM_SUPPORT_MADOKA
+entity tmpmadoka;
+#endif
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -324,13 +332,6 @@ void PostInit(void)
 	TrueAim_Init();
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
-
-	/*if(!cvar("cl_rm_initialized"))
-	{
-		print("^xFB0First run, initializing RocketMinsta client cvars...\n");
-		localcmd("seta cl_rm_initialized 1\n");
-		localcmd("seta showspec 1\n");
-	}*/
 	
 	local float _printmsg;
 	switch(cvar("rm_initialized"))
@@ -346,9 +347,15 @@ void PostInit(void)
 		case 5:
 			localcmd("seta rm_nobigtext 0; nobigtext 0\n");
 		case 6:
+		case 7:
+			localcmd("seta rm_madoka 0; madoka 0\n");
+		case 8:
+			localcmd("seta rm_hidebigcomments 0; hidebigcomments 0\n");
+		case 9:
+			localcmd("seta rm_legacyvote 0; legacyvote 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 7\n");
+		localcmd("seta rm_initialized 10\n");
 		RM_OUTDATED
 		break;
 	}
@@ -357,15 +364,31 @@ void PostInit(void)
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
 	rm_nobigtext  = cvar("rm_nobigtext");
+	rm_hidebigcomments = cvar("rm_hidebigcomments");
+	rm_legacyvote = cvar("rm_legacyvote");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
 	registercmd("teamlasers");
 	registercmd("nobigtext");
+	registercmd("madoka");
+	registercmd("hidebigcomments");
+	registercmd("legacyvote");
+	
+	#ifdef RM_SUPPORT_MADOKA
+	if(cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/madoka-rune\n");
+	else
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	#endif
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
+	SendRMCFGReport();
+	#ifdef RM_SUPPORT_MADOKA
+	tmpmadoka = spawn();
+	#endif
 	postinit = true;
 }
 
@@ -374,6 +397,25 @@ void PostInit(void)
 float button_zoom;
 void Cmd_Sbar_SetFields(float);
 void Cmd_Sbar_Help(float);
+
+void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
+void SendRMCFGReport()
+{
+	float h, n, i;
+	string k, res;
+	
+	h = buf_create();
+	buf_cvarlist(h, "rm_", "");
+	n = buf_getsize(h);
+	
+	for(i = 0; i < n; ++i)
+	{
+		k = bufstr_get(h, i);
+		res = strcat(res, k, " ", cvar_string(k), " ");
+	}
+	
+	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
+}
 
 #define VALUEREQUIRED if(argc < 2) { print("Usage: ", strCmd, " VALUE\n"); return true; }
 float CSQC_ConsoleCommand(string strMessage)
@@ -431,13 +473,21 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
 		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
-		print("^2nobigtext^7: if enabled, the top-center big messages will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
+		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
+		#ifdef RM_SUPPORT_MADOKA
+		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
+		#endif
+		return true;
 	}
 	else if(
-		strCmd == "showspec" 	||
-		strCmd == "showdamage" 	||
-		strCmd == "teamlasers"	||
-		strCmd == "nobigtext"	 )
+		strCmd == "showspec" 		||
+		strCmd == "showdamage" 		||
+		strCmd == "teamlasers"		||
+		strCmd == "nobigtext"		||
+		strCmd == "hidebigcomments"	||
+		strCmd == "legacyvote"		 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -445,7 +495,35 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showdamage = cvar("rm_showdamage");
 		rm_teamlasers = cvar("rm_teamlasers");
 		rm_nobigtext = cvar("rm_nobigtext");
+		rm_hidebigcomments = cvar("rm_hidebigcomments");
+		rm_legacyvote = cvar("rm_legacyvote");
+		SendRMCFGReport();
 		return true;
+	}
+	else if(strCmd == "madoka")
+	{
+		#ifdef RM_SUPPORT_MADOKA
+		if(is_tmpmadoka)
+		{
+			print("^0Your Soul Gem darkened and turned into a Grief Seed\n");
+			localcmd("disconnect\n");
+			return;
+		}
+		
+		VALUEREQUIRED
+		cvar_set(strcat("rm_", strCmd), argv(1));
+		
+		if(cvar("rm_madoka"))
+			localcmd("loadfont user2 gfx/madoka-rune\n");
+		else
+			localcmd("loadfont user2 gfx/vera-sans-big\n");
+		
+		SendRMCFGReport();
+		return true;
+		#else
+		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
+		return false;
+		#endif
 	}
 
 	if(camera_active)
@@ -527,6 +605,28 @@ void ShotOrg_Spawn()
 	debug_shotorg.scale = 2;
 	debug_shotorg.view_ofs = '25 8 -8';
 }
+
+#ifdef RM_SUPPORT_MADOKA
+void TmpMadoka_Think()
+{
+	if(!cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	
+	is_tmpmadoka = 0;
+}
+
+void madokaprint(string m, string c, float t)
+{
+	if(is_tmpmadoka) return;
+	
+	is_tmpmadoka = 1;
+	tmpmadoka_fadetime = time + t + 1;
+	tmpmadoka.think = TmpMadoka_Think;
+	tmpmadoka.nextthink = tmpmadoka_fadetime;
+	localcmd("loadfont user2 gfx/madoka-rune\nplay2 misc/powerup\n");
+	bigprint(m, c, t);
+}
+#endif
 
 void GameCommand(string msg)
 {
@@ -620,6 +720,12 @@ void GameCommand(string msg)
 		strunzone(vote_statstring);
 		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
 	}
+	#ifdef RM_SUPPORT_MADOKA
+	else if(cmd == "walpurgis")
+	{
+		madokaprint("^1x ^0WALPURGIS NIGHT ^10", "", 5);
+	}
+	#endif
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
@@ -1141,6 +1247,22 @@ void Net_ReadSpecInfo()
 	}
 }
 
+void Net_VoteDialog(float highlight) {
+	if(highlight) {
+		vote_highlighted = ReadShort();
+		return;
+	}
+
+	vote_yescount = ReadShort();
+	vote_nocount = ReadShort();
+	vote_needed = ReadShort();
+	vote_active = 1;
+}
+
+void Net_VoteDialogReset() {
+	vote_active = 0;
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1189,6 +1311,14 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_SPECINFO:
 			Net_ReadSpecInfo();
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTE:
+			Net_VoteDialog(ReadByte());
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTERESET:
+			Net_VoteDialogReset();
 			bHandled = true;
 			break;
 		default:

@@ -377,6 +377,18 @@ void Nagger_Init();
 void ClientInit_Spawn();
 void WeaponStats_Init();
 void WeaponStats_Shutdown();
+
+void CTFCheck_Think()
+{
+	if(cvar("g_ctf")) if(!find(world, classname, "item_flag_team"))
+	{
+		bprint("\x01^2 * ^1This map is not CTF-compatible! ^7Forced endmatch.\n");
+		localcmd("endmatch\n");
+	}
+	
+	remove(self);
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -395,14 +407,14 @@ void spawnfunc_worldspawn (void)
 
 	check_unacceptable_compiler_bugs();
 
-	if(cvar_string("cvar_check_default") != "bypass")
+	/*if(cvar_string("cvar_check_default") != "bypass")
 	{
 		if(cvar_string("cvar_check_default") != CVAR_CHECK_DEFAULT)
 			error("Config file mismatch! Please update defaultNexuiz.cfg to match the QuakeC code, and restart the engine!");
 
 		if(cvar_string("cvar_check_balance") != CVAR_CHECK_BALANCE)
 			error("Config file mismatch! Please update balance*.cfg to match the QuakeC code, and restart the engine!");
-	}
+	}*/
 
 	compressShortVector_init();
 
@@ -659,7 +671,15 @@ void spawnfunc_worldspawn (void)
 	//</akari>
 
 	world_initialized = 1;
+	
+	
+	// hack
+	local entity ctfcheck = spawn();
+	ctfcheck.think = CTFCheck_Think;
+	ctfcheck.nextthink = time + 3;
 }
+
+
 
 void spawnfunc_light (void)
 {
