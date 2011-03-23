@@ -159,6 +159,13 @@ float RemapVote(string vote, string cmd, entity e)
 		sprint(e, strcat("No such config available. Available configurations: ^2", strcfgs, "\n"));
 		return FALSE;
 	}
+	#ifdef RM_SUPPORT_MADOKA
+	else if(argv(0) == "walpurgis")
+	{
+		RemapVote_vote = vote;
+		RemapVote_display = strzone("^2something terrible");
+	}
+	#endif
 	else
 	{
 		RemapVote_vote = vote;
@@ -299,7 +306,7 @@ float GameCommand_Vote(string s, entity e) {
 				} else if(VoteCheckNasty(dovote)) {
 					print_to(e, "Syntax error in command. See 'vhelp' for more info.");
 				} else if(RemapVote(dovote, "vdo", e)) { // strcat seems to be necessary
-					bprint("\{1}^2* ^3", VoteNetname(e), "^2 used his ^3master^2 status to do \"^2", RemapVote_display, "^2\".\n");
+					bprint("\{1}^2* ^3", VoteNetname(e), "^2 used his ^3master^2 status to do ^2", RemapVote_display, "^2.\n");
 					if(cvar("sv_eventlog"))
 						GameLogEcho(strcat(":vote:vdo:", ftos(e.playerid), ":", RemapVote_display));
 					localcmd(strcat(RemapVote_vote, "\n"));
@@ -430,7 +437,15 @@ void VoteHelp(entity e) {
 	print_to(e, "^7If enough of the players vote no the vote is rejected.");
 	print_to(e, strcat("^7If neither the vote will timeout after ", cvar_string("sv_vote_timeout"), "^7 seconds."));
 	print_to(e, "^7You can call a vote for or execute these commands:");
-	print_to(e, strcat("^3", cvar_string("sv_vote_commands"), "^7 and maybe further ^3arguments^7"));
+	
+	local string votes;
+	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
+	
+	for(i = 0; i < n; ++i)
+		if(argv(i) != "walpurgis")
+			votes = strcat(votes, argv(i), " ");
+	
+	print_to(e, strcat("^3", votes, "^7and maybe further ^3arguments^7"));
 }
 
 string VoteNetname(entity e)

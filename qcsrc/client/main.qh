@@ -190,3 +190,6 @@ float vote_nocount;
 float vote_needed;
 float vote_active;
 float vote_highlighted;
+
+float is_tmpmadoka;
+float tmpmadoka_fadetime;

@@ -600,6 +600,9 @@ void GameCommand(string command)
 		print("  bbox\n");
 		print("  cvar_changes\n");
 		print("  find classname\n");
+		#ifdef RM_SUPPORT_MADOKA
+		print("  ^0walpurgis^7\n");
+		#endif
 		GameCommand_Vote("help", world);
 		GameCommand_Ban("help");
 		GameCommand_Generic("help");
@@ -1040,6 +1043,30 @@ void GameCommand(string command)
 
 		return;
 	}
+	
+	#ifdef RM_SUPPORT_MADOKA
+	if(argv(0) == "walpurgis")
+	{
+		local entity e;
+		FOR_EACH_PLAYER(e)
+		{
+			if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
+			
+			if(random() <= 0.1)
+			{
+				bprint("^5A blessing saved ^7", e.netname, "^5 from his fate\n");
+				Damage(e, world, e, e.health * 0.5, DEATH_NOAMMO, '0 0 0', '0 0 0');
+			}
+			else
+			{
+				e.armorvalue = 0;
+				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		
+		return;
+	}
+	#endif
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

@@ -1075,6 +1075,9 @@ void Sbar_DrawScoreboard()
 	vector rgb, pos, tmp;
 	entity pl, tm;
 
+	if(is_tmpmadoka)
+		return;
+
 	if(time > lastpingstime + 10)
 	{
 		localcmd("pings\n");
@@ -1911,6 +1914,9 @@ void Sbar_DrawCenterPrint (void)
 	float a;
 
 	pos = centerprint_start;
+
+	if(is_tmpmadoka)
+		return;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
 	{
@@ -2971,6 +2977,13 @@ void Sbar_Draw (void)
 	
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 	drawstring(position, rm_watermark, sbar_fontsize, '1 1 1', 0.3, DRAWFLAG_NORMAL);
+	
+	if(tmpmadoka_fadetime >= time)
+	{
+		position_x = vid_conwidth;
+		position_y = vid_conheight;
+		drawfill('0 0 0', position, '1 0 0', bound(0, 1 - 4 * (time - (tmpmadoka_fadetime- 1)), 0.5), DRAWFLAG_ADDITIVE);
+	}
 	
 	return;
 }

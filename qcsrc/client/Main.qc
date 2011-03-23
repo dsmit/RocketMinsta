@@ -314,6 +314,10 @@ void TrueAim_Init();
 
 void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
+
+#ifdef RM_SUPPORT_MADOKA
+entity tmpmadoka;
+#endif
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -382,6 +386,9 @@ void PostInit(void)
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
+	#ifdef RM_SUPPORT_MADOKA
+	tmpmadoka = spawn();
+	#endif
 	postinit = true;
 }
 
@@ -496,6 +503,13 @@ float CSQC_ConsoleCommand(string strMessage)
 	else if(strCmd == "madoka")
 	{
 		#ifdef RM_SUPPORT_MADOKA
+		if(is_tmpmadoka)
+		{
+			print("^0Your Soul Gem darkened and turned into a Grief Seed\n");
+			localcmd("disconnect\n");
+			return;
+		}
+		
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		
@@ -592,6 +606,28 @@ void ShotOrg_Spawn()
 	debug_shotorg.view_ofs = '25 8 -8';
 }
 
+#ifdef RM_SUPPORT_MADOKA
+void TmpMadoka_Think()
+{
+	if(!cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	
+	is_tmpmadoka = 0;
+}
+
+void madokaprint(string m, string c, float t)
+{
+	if(is_tmpmadoka) return;
+	
+	is_tmpmadoka = 1;
+	tmpmadoka_fadetime = time + t + 1;
+	tmpmadoka.think = TmpMadoka_Think;
+	tmpmadoka.nextthink = tmpmadoka_fadetime;
+	localcmd("loadfont user2 gfx/madoka-rune\nplay2 misc/powerup\n");
+	bigprint(m, c, t);
+}
+#endif
+
 void GameCommand(string msg)
 {
 	float argc;
@@ -684,6 +720,12 @@ void GameCommand(string msg)
 		strunzone(vote_statstring);
 		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
 	}
+	#ifdef RM_SUPPORT_MADOKA
+	else if(cmd == "walpurgis")
+	{
+		madokaprint("^1x ^0WALPURGIS NIGHT ^10", "", 5);
+	}
+	#endif
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
