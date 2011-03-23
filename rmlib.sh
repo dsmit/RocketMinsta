@@ -125,5 +125,5 @@ function require
     echo "All OK, proceeding"
 }
 
-
+git symbolic-ref HEAD &> /dev/null || error "Can't proceed: not a git repository."
 
