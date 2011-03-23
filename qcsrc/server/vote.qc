@@ -168,6 +168,27 @@ float RemapVote(string vote, string cmd, entity e)
 	return TRUE;
 }
 
+void VoteDialog_UpdateHighlight(float selected) {
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_VOTE);
+	WriteByte(MSG_ONE, 1);
+	WriteShort(MSG_ONE, selected);
+}
+
+void VoteDialog_Update(float msg, float vyes, float vno, float needed) {
+	WriteByte(msg, SVC_TEMPENTITY);
+	WriteByte(msg, TE_CSQC_VOTE);
+	WriteByte(msg, 0);
+	WriteShort(msg, vyes);
+	WriteShort(msg, vno);
+	WriteShort(msg, needed);
+}
+
+void VoteDialog_Reset() {
+	WriteByte(MSG_ALL, SVC_TEMPENTITY);
+	WriteByte(MSG_ALL, TE_CSQC_VOTERESET);
+}
+
 float GameCommand_Vote(string s, entity e) {
 	float argc;
 	argc = tokenize_console(s);
@@ -221,6 +242,8 @@ float GameCommand_Vote(string s, entity e) {
 							GameLogEcho(strcat(":vote:vcall:", ftos(votecaller.playerid), ":", votecalledvote_display));
 						VoteCount(); // needed if you are the only one
 						Nagger_VoteChanged();
+						msg_entity = e;
+						VoteDialog_UpdateHighlight(1);
 					} else {
 						print_to(e, "^1This vote is not ok. See 'vhelp' for more info.");
 					}
@@ -232,10 +255,13 @@ float GameCommand_Vote(string s, entity e) {
 			if(!votecalled) {
 				print_to(e, "^1No vote called.");
 			} else if(e == votecaller) { // the votecaller can stop a vote
+				VoteDialog_Reset();
 				VoteStop(e);
 			} else if(!e) { // server admin / console can too
+				VoteDialog_Reset();
 				VoteStop(e);
 			} else if(e.vote_master) { // masters can too
+				VoteDialog_Reset();
 				VoteStop(e);
 			} else {
 				print_to(e, "^1You are not allowed to stop that Vote.");
@@ -309,6 +335,10 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1You can't vote from the server console.");
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
+				
+				msg_entity = e;
+				VoteDialog_UpdateHighlight(1);
+				
 				print_to(e, "^1You accepted the vote.");
 				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^2YES\n"));
 				e.vote_vote = 1;
@@ -326,6 +356,10 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1You can't vote from the server console.");
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
+				
+				msg_entity = e;
+				VoteDialog_UpdateHighlight(2);
+				
 				print_to(e, "^1You rejected the vote.");
 				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^1NO\n"));
 				e.vote_vote = -1;
@@ -343,6 +377,10 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1You can't vote from the server console.");
 			} else if(e.vote_vote == 0
 				  || cvar("sv_vote_change")) {
+				
+				msg_entity = e;
+				VoteDialog_UpdateHighlight(3);
+				
 				print_to(e, "^1You abstained from your vote.");
 				if(!cvar("g_explosive_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 abstained his vote\n"));
 				e.vote_vote = -2;
@@ -623,6 +661,12 @@ void VoteCount() {
 		playercount = realplayercount;
 	}
 
+	float votefactor, simplevotefactor;
+	votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);
+	simplevotefactor = cvar("sv_vote_simple_majority_factor");
+	float needed;
+	needed = floor((playercount - abstaincount) * max(votefactor, simplevotefactor)) + 1;
+	VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
 
 	if(votecalledmaster
 	   && playercount == 1) {
@@ -638,18 +682,17 @@ void VoteCount() {
 		}
 		VoteReset();
 	} else {
-		float votefactor, simplevotefactor;
-		votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);
-		simplevotefactor = cvar("sv_vote_simple_majority_factor");
 		if(yescount > (playercount - abstaincount) * votefactor)
 		{
 			VoteSpam(yescount, nocount, abstaincount, playercount - yescount - nocount - abstaincount, -1, "yes");
 			VoteAccept();
+			VoteDialog_Reset();
 		}
 		else if(nocount >= (playercount - abstaincount) * (1 - votefactor)) // that means, yescount cannot reach minyes any more
 		{
 			VoteSpam(yescount, nocount, abstaincount, playercount - yescount - nocount - abstaincount, -1, "no");
 			VoteReject();
+			VoteDialog_Reset();
 		}
 		else if(time > votefinished)
 		{
@@ -676,6 +719,7 @@ void VoteCount() {
 				VoteSpam(yescount, nocount, abstaincount, playercount - yescount - nocount - abstaincount, floor((playercount - abstaincount) * votefactor) + 1, "timeout");
 				VoteTimeout();
 			}
+		VoteDialog_Reset();
 		}
 	}
 

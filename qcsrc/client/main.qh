@@ -183,3 +183,10 @@ float rm_teamlasers;
 float rm_helptime;
 float rm_nobigtext;
 float rm_hidebigcomments;
+float rm_legacyvote;
+
+float vote_yescount;
+float vote_nocount;
+float vote_needed;
+float vote_active;
+float vote_highlighted;

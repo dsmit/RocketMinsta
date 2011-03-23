@@ -347,9 +347,11 @@ void PostInit(void)
 			localcmd("seta rm_madoka 0; madoka 0\n");
 		case 8:
 			localcmd("seta rm_hidebigcomments 0; hidebigcomments 0\n");
+		case 9:
+			localcmd("seta rm_legacyvote 0; legacyvote 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 9\n");
+		localcmd("seta rm_initialized 10\n");
 		RM_OUTDATED
 		break;
 	}
@@ -359,6 +361,7 @@ void PostInit(void)
 	rm_teamlasers = cvar("rm_teamlasers");
 	rm_nobigtext  = cvar("rm_nobigtext");
 	rm_hidebigcomments = cvar("rm_hidebigcomments");
+	rm_legacyvote = cvar("rm_legacyvote");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -367,6 +370,7 @@ void PostInit(void)
 	registercmd("nobigtext");
 	registercmd("madoka");
 	registercmd("hidebigcomments");
+	registercmd("legacyvote");
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(cvar("rm_madoka"))
@@ -464,6 +468,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
 		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
 		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
+		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		#endif
@@ -474,7 +479,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "showdamage" 		||
 		strCmd == "teamlasers"		||
 		strCmd == "nobigtext"		||
-		strCmd == "hidebigcomments"	 )
+		strCmd == "hidebigcomments"	||
+		strCmd == "legacyvote"		 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -483,6 +489,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_teamlasers = cvar("rm_teamlasers");
 		rm_nobigtext = cvar("rm_nobigtext");
 		rm_hidebigcomments = cvar("rm_hidebigcomments");
+		rm_legacyvote = cvar("rm_legacyvote");
 		SendRMCFGReport();
 		return true;
 	}
@@ -1198,6 +1205,22 @@ void Net_ReadSpecInfo()
 	}
 }
 
+void Net_VoteDialog(float highlight) {
+	if(highlight) {
+		vote_highlighted = ReadShort();
+		return;
+	}
+
+	vote_yescount = ReadShort();
+	vote_nocount = ReadShort();
+	vote_needed = ReadShort();
+	vote_active = 1;
+}
+
+void Net_VoteDialogReset() {
+	vote_active = 0;
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1246,6 +1269,14 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_SPECINFO:
 			Net_ReadSpecInfo();
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTE:
+			Net_VoteDialog(ReadByte());
+			bHandled = true;
+			break;
+		case TE_CSQC_VOTERESET:
+			Net_VoteDialogReset();
 			bHandled = true;
 			break;
 		default:
