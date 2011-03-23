@@ -183,6 +183,9 @@ void CSQC_Shutdown(void)
 	if(camera_active)
 		cvar_set("chase_active",ftos(chase_active_backup));
 
+	if(cvar("rm_madoka"))
+		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	
 	if not(isdemo())
 	{
 		if not(calledhooks & HOOK_START)
@@ -325,13 +328,6 @@ void PostInit(void)
 	TrueAim_Init();
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
-
-	/*if(!cvar("cl_rm_initialized"))
-	{
-		print("^xFB0First run, initializing RocketMinsta client cvars...\n");
-		localcmd("seta cl_rm_initialized 1\n");
-		localcmd("seta showspec 1\n");
-	}*/
 	
 	local float _printmsg;
 	switch(cvar("rm_initialized"))
