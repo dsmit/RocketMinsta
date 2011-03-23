@@ -39,3 +39,7 @@ function postpackage
 {
     echo
 }
+
+# NOTE: You can also overwrite any config.sh option here
+# See EXAMPLE_config.sh for reference
+
