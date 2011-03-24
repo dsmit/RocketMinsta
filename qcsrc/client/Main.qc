@@ -161,6 +161,13 @@ void CSQC_Init(void)
 	centerprint_init = 0;
 	
 	print("^1", rm_watermark, "\n");
+	
+	// hack for DSN users
+	if(substring(cvar_string("g_nexuizversion"), 0, strlen("2.5.1")) == "2.5.1")
+	{
+		print("^1Outdated engine detected. Some features will be unavailable.\n");
+		oldengine = 1;
+	}
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

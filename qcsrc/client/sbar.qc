@@ -2587,7 +2587,7 @@ void Sbar_Draw (void)
 	}
 	
 	#ifdef RM_SUPPORT_VOTEGFX
-	if(rm_legacyvote)
+	if(rm_legacyvote || oldengine)
 	{
 	#endif
 		if(vote_waiting)
