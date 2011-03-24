@@ -1152,7 +1152,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		else 
 			wpnstring = "^0unknown"; //??????????
 		
-		if(attacker.classname == "player")
+		if(attacker.classname == "player") if(attacker != targ)
 		{
 			if(targ.netname)
 				centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
@@ -1163,7 +1163,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(attacker.netname)
 			{
 				if(attacker == targ)
-					centerprint_spec(targ, strcat("\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
 				else
 					centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
 			}

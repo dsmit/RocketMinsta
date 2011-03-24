@@ -1048,19 +1048,22 @@ void GameCommand(string command)
 	if(argv(0) == "walpurgis")
 	{
 		local entity e;
-		FOR_EACH_PLAYER(e)
+		FOR_EACH_CLIENT(e)
 		{
 			if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
 			
-			if(random() <= 0.1)
+			if(e.classname == "player")
 			{
-				bprint("^5A blessing saved ^7", e.netname, "^5 from his fate\n");
-				Damage(e, world, e, e.health * 0.5, DEATH_NOAMMO, '0 0 0', '0 0 0');
-			}
-			else
-			{
-				e.armorvalue = 0;
-				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+				if(random() <= 0.1)
+				{
+					bprint("^5A blessing saved ^7", e.netname, "^5 from his fate\n");
+					Damage(e, world, e, e.health * 0.5, DEATH_NOAMMO, '0 0 0', '0 0 0');
+				}
+				else
+				{
+					e.armorvalue = 0;
+					Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+				}
 			}
 		}
 		
