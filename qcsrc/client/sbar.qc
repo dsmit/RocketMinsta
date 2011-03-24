@@ -1915,7 +1915,13 @@ void Sbar_DrawCenterPrint (void)
 
 	pos = centerprint_start;
 
-	if(is_tmpmadoka || (vote_active && !rm_legacyvote))
+	if(is_tmpmadoka)
+		return;
+	
+	if(vote_active)
+	if(!rm_legacyvote)
+	if(!vote_highlighted)
+	if(!oldengine)
 		return;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
@@ -2663,14 +2669,22 @@ void Sbar_Draw (void)
 
 			vector voteorigin; // = bottomright - '290 135 0';
 			
-			voteorigin_x = vid_conwidth / 2 - 145;
-			//voteorigin_y = vid_conheight / 3 - 67;
-			voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 67;
+			if(vote_highlighted)
+			{
+				s = strcat(ftos(vote_needed), " votes required");
+				voteorigin = bottomright - '290 135 0';
+			}
+			else
+			{
+				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
+				voteorigin_x = vid_conwidth / 2 - 145;
+				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 67;
+			}
 			
 			vector votesize = '290 70 0';
 			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, a * sbar_alpha_bg, DRAWFLAG_NORMAL);
 
-				s = strcat("Vote now! ", ftos(vote_needed), " votes required");
+			
 			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 			s = textShortenToWidth_svn(vote_called_vote, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
 			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
