@@ -193,3 +193,5 @@ float vote_highlighted;
 
 float is_tmpmadoka;
 float tmpmadoka_fadetime;
+
+float oldengine;
