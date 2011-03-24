@@ -179,6 +179,9 @@ float RemapVote(string vote, string cmd, entity e)
 }
 
 void VoteDialog_UpdateHighlight(float selected) {
+	if(msg_entity.classname == "")
+		return;
+	
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_VOTE);
 	WriteByte(MSG_ONE, 1);
@@ -186,6 +189,9 @@ void VoteDialog_UpdateHighlight(float selected) {
 }
 
 void VoteDialog_Update(float msg, float vyes, float vno, float needed) {
+	if(msg_entity.classname == "")
+		return;
+	
 	WriteByte(msg, SVC_TEMPENTITY);
 	WriteByte(msg, TE_CSQC_VOTE);
 	WriteByte(msg, 0);
@@ -195,8 +201,16 @@ void VoteDialog_Update(float msg, float vyes, float vno, float needed) {
 }
 
 void VoteDialog_Reset() {
-	WriteByte(MSG_ALL, SVC_TEMPENTITY);
-	WriteByte(MSG_ALL, TE_CSQC_VOTERESET);
+	local entity e;
+	FOR_EACH_REALCLIENT(e)
+	{
+		if(e.classname == "")
+			continue;
+		
+		msg_entity = e;
+		WriteByte(MSG_ONE, SVC_TEMPENTITY);
+		WriteByte(MSG_ONE, TE_CSQC_VOTERESET);
+	}
 }
 
 float GameCommand_Vote(string s, entity e) {
@@ -684,7 +698,14 @@ void VoteCount() {
 	simplevotefactor = cvar("sv_vote_simple_majority_factor");
 	float needed;
 	needed = floor((playercount - abstaincount) * max(votefactor, simplevotefactor)) + 1;
-	VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
+	//VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
+	
+	local entity _e;
+	FOR_EACH_REALCLIENT(_e)
+	{
+		msg_entity = _e;
+		VoteDialog_Update(MSG_ONE, yescount, nocount, needed);
+	}
 
 	if(votecalledmaster
 	   && playercount == 1) {
