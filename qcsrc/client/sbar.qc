@@ -1915,7 +1915,7 @@ void Sbar_DrawCenterPrint (void)
 
 	pos = centerprint_start;
 
-	if(is_tmpmadoka)
+	if(is_tmpmadoka || (vote_active && !rm_legacyvote))
 		return;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
@@ -2661,9 +2661,13 @@ void Sbar_Draw (void)
 				color_z = 0;
 			}
 
-			vector voteorigin = bottomright - '290 135 0';
-			//vector voteorigin = '0 0 0';
-			vector votesize = '280 70 0';
+			vector voteorigin; // = bottomright - '290 135 0';
+			
+			voteorigin_x = vid_conwidth / 2 - 145;
+			//voteorigin_y = vid_conheight / 3 - 67;
+			voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 67;
+			
+			vector votesize = '290 70 0';
 			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, a * sbar_alpha_bg, DRAWFLAG_NORMAL);
 
 				s = strcat("Vote now! ", ftos(vote_needed), " votes required");
