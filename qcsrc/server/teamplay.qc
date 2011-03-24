@@ -490,7 +490,7 @@ void PrintWelcomeMessage(entity pl)
 	}
 
 :normal
-	if(cvar("g_balance_minstanex_explosive"))
+	//if(cvar("g_balance_minstanex_explosive"))
 	{
 		RM_WelcomeMessage(pl);
 		return;
