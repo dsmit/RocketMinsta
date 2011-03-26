@@ -2678,11 +2678,11 @@ void Sbar_Draw (void)
 			{
 				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
 				voteorigin_x = vid_conwidth / 2 - 145;
-				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 67;
+				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37;
 			}
 			
 			vector votesize = '290 70 0';
-			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, a * sbar_alpha_bg, DRAWFLAG_NORMAL);
+			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
 
 			
 			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
