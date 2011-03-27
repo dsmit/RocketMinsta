@@ -2416,6 +2416,18 @@ void Sbar_Draw (void)
 
 	o2_y += sbar_fontsize_y * 1.5;
 
+	#ifdef RM_SUPPORT_MADOKA
+	//print("spectatee_status == ", ftos(spectatee_status), "; player_localentnum == ", ftos(player_localentnum), "\n");
+	
+	if(spectatee_status == -1)
+	if(madoka_locked)   //release madoka. Perhaps should be done elsewhere?
+	{
+		//print("releasing madoka\n");
+		madoka_locked = 0;
+		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+	}
+	#endif
+
 	if(spectatee_status && !intermission)
 	{
 		drawfont = sbar_bigfont;

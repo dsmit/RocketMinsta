@@ -2085,7 +2085,12 @@ void WriteSpectatorInfo(entity player)
 	
 	local entity spec;
 	FOR_EACH_SPECOF(player, spec, 0)
+	{
+		#ifdef RM_SUPPORT_MADOKA
+		stuffcmd(spec, "cl_cmd lockmadoka ", ftos(player.madoka), "\n");
+		#endif
 		WriteSpectatorInfoOf(spec, player);
+	}
 }
 
 float SpectateUpdate() {

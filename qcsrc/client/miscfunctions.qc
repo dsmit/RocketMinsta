@@ -411,5 +411,11 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 void loadfont(string slot, string font)
 {
+	if(cvar("rm_dontmesswithfonts"))
+	{
+		print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
+		return;
+	}
+	
 	localcmd("loadfont ", slot, " gfx/", font, "\n");
 }

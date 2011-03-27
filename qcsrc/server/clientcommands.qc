@@ -237,6 +237,9 @@ void SV_ParseClientCommand(string s) {
 		
 		sprint(self, "^1Invalid value for anonspec. Accepting only 1 or 0\n");
 		return;
+	} else if(cmd == "madoka") {
+		self.madoka = stof(argv(1));
+		return;
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));

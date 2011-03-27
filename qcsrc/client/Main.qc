@@ -364,14 +364,16 @@ void PostInit(void)
 			localcmd("seta rm_anonspec 0; anonspec 0\n");
 		case 11:
 			localcmd("seta rm_hidewatermark 0; hidewatermark 0\n");
+		case 12:
+			localcmd("seta rm_dontmesswithfonts 0; dontmesswithfonts 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 12\n");
+		localcmd("seta rm_initialized 13\n");
 		RM_OUTDATED
 		break;
 	}
 
-	rm_showspec   = cvar("rm_showspec"  );
+	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
 	rm_nobigtext  = cvar("rm_nobigtext");
@@ -389,6 +391,7 @@ void PostInit(void)
 	registercmd("legacyvote");
 	registercmd("anonspec");
 	registercmd("hidewatermark");
+	registercmd("dontmesswithfonts");
 	
 	#ifdef RM_SUPPORT_MADOKA
 	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
@@ -398,6 +401,7 @@ void PostInit(void)
 	
 	SendRMCFGReport();
 	#ifdef RM_SUPPORT_MADOKA
+	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
 	#endif
 	
@@ -491,6 +495,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
+		print("^2dontmesswithfonts^7: If enabled, the mod will NEVER alter font settings. Useful if you use a custom font for user2. Note: this breaks Madoka runes\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		#endif
@@ -503,7 +508,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nobigtext"		||
 		strCmd == "hidebigcomments"	||
 		strCmd == "legacyvote"		||
-		strCmd == "hidewatermark"	 )
+		strCmd == "hidewatermark"	||
+		strCmd == "dontmesswithfonts")
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -524,15 +530,22 @@ float CSQC_ConsoleCommand(string strMessage)
 		{
 			print("^0Your Soul Gem darkened and turned into a Grief Seed\n");
 			localcmd("disconnect\n");
-			return;
+			return true;
 		}
 		
 		VALUEREQUIRED
-		cvar_set(strcat("rm_", strCmd), argv(1));
 		
+		if(madoka_locked)
+		{
+			print("^1Won't change madoka while spectating!\n");
+			return true;
+		}
+		
+		cvar_set(strcat("rm_", strCmd), argv(1));
 		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
 		
 		SendRMCFGReport();
+		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		return true;
 		#else
 		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
@@ -646,7 +659,10 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
 	loadfont("user2", "madoka-rune");
 	localcmd("play2 misc/powerup\n");
-	bigprint(m, c, t);
+	
+	if(!cvar("rm_dontmesswithfonts"))
+	//We will either print runic text here, or won't print anything at all.
+		bigprint(m, c, t);
 }
 #endif
 
@@ -746,6 +762,13 @@ void GameCommand(string msg)
 	else if(cmd == "walpurgis")
 	{
 		madokaprint("^1x ^0WALPURGIS NIGHT ^10", "", 5);
+	}
+	else if(cmd == "lockmadoka")
+	{
+		//print("lockmadoka(", argv(1), ")\n");
+		
+		madoka_locked = 1;
+		loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 	}
 	#endif
 	else
