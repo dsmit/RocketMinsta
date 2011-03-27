@@ -408,7 +408,7 @@ void PostInit(void)
 	tmpmadoka = spawn();
 	#endif
 	
-	localcmd("cmd anonspec ", cvar_string("rm_anonspec"));
+	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	postinit = true;
 }
 
@@ -560,7 +560,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		localcmd("cmd anonspec ", cvar_string("rm_anonspec"));
+		localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 		SendRMCFGReport();
 		return true;
 	}
