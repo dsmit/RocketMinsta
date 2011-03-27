@@ -806,8 +806,6 @@ void UpdateSelectedPlayer()
 	selected = world;
 	selected_score = 0.95; // 18 degrees
 
-    return;
-
 	if(!cvar("sv_allow_shownames"))
 		return;
 
@@ -875,7 +873,7 @@ void UpdateSelectedPlayer()
 						self.selected_player_display_needs_update = TRUE;
 					}
 				}
-				centerprint_atprio(self, CENTERPRIO_POINT, namestr);
+				centerprint_spec(self, strcat("\x01", namestr));
 			}
 		}
 		else
