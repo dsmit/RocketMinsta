@@ -408,3 +408,8 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
 }
+
+void loadfont(string slot, string font)
+{
+	localcmd("loadfont ", slot, " gfx/", font, "\n");
+}

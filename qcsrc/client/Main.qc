@@ -391,10 +391,7 @@ void PostInit(void)
 	registercmd("hidewatermark");
 	
 	#ifdef RM_SUPPORT_MADOKA
-	if(cvar("rm_madoka"))
-		localcmd("loadfont user2 gfx/madoka-rune\n");
-	else
-		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
 	#endif
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
@@ -533,10 +530,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		
-		if(cvar("rm_madoka"))
-			localcmd("loadfont user2 gfx/madoka-rune\n");
-		else
-			localcmd("loadfont user2 gfx/vera-sans-big\n");
+		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
 		
 		SendRMCFGReport();
 		return true;
@@ -637,7 +631,7 @@ void ShotOrg_Spawn()
 void TmpMadoka_Think()
 {
 	if(!cvar("rm_madoka"))
-		localcmd("loadfont user2 gfx/vera-sans-big\n");
+		loadfont("user2", "vera-sans-big");
 	
 	is_tmpmadoka = 0;
 }
@@ -650,7 +644,8 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka_fadetime = time + t + 1;
 	tmpmadoka.think = TmpMadoka_Think;
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
-	localcmd("loadfont user2 gfx/madoka-rune\nplay2 misc/powerup\n");
+	loadfont("user2", "madoka-rune");
+	localcmd("play2 misc/powerup\n");
 	bigprint(m, c, t);
 }
 #endif
