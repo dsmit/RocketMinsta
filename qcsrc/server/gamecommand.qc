@@ -1089,11 +1089,25 @@ void GameCommand(string command)
 	
 	if(argv(0) == "killfc")
 	{
-		local entity e; FOR_EACH_CLIENT(e) if(e.flagcarried)
+		local entity e;
+		
+		if(cvar("g_ctf"))
 		{
-			madokaprint(e, "^1x ^0Votekilled ^10", "", 5);
-			e.armorvalue = 0;
-			Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+			FOR_EACH_CLIENT(e) if(e.flagcarried)
+			{
+				madokaprint(e, "^1x ^0Votekilled ^10", "", 5);
+				e.armorvalue = 0;
+				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		else if(cvar("g_keyhunt"))
+		{
+			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
+			{
+				madokaprint(e.owner, "^1x ^0Votekilled ^10", "", 5);
+				e.owner.armorvalue = 0;
+				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
 		}
 		
 		return;
