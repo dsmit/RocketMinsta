@@ -2049,7 +2049,7 @@ void SpectateCopy(entity spectatee) {
 	SetZoomState(spectatee.zoomstate);
 }
 
-#define FOR_EACH_SPECOF(p,e) FOR_EACH_REALCLIENT(e) if(spec.classname == "spectator") if(e.enemy == p)
+#define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((spec).classname == "spectator") if((e).enemy == p) if(!(a) || !(e).anonspec)
 
 void WriteSpectatorInfoOf(entity player, entity of)
 {
@@ -2066,15 +2066,16 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	
 	local entity spec;
 	local float count;
+	local float a = cvar("g_explosive_anonspecs");
 	
-	FOR_EACH_SPECOF(of, spec) count++;
+	FOR_EACH_SPECOF(of, spec, a) count++;
 	
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
 	WriteShort(MSG_ONE, count);
 	
-	FOR_EACH_SPECOF(of, spec)
+	FOR_EACH_SPECOF(of, spec, a)
 		WriteString(MSG_ONE, spec.netname);
 }
 
@@ -2083,7 +2084,7 @@ void WriteSpectatorInfo(entity player)
 	WriteSpectatorInfoOf(player, player);
 	
 	local entity spec;
-	FOR_EACH_SPECOF(player, spec)
+	FOR_EACH_SPECOF(player, spec, 0)
 		WriteSpectatorInfoOf(spec, player);
 }
 

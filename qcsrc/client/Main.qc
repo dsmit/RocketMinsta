@@ -360,9 +360,11 @@ void PostInit(void)
 			localcmd("seta rm_hidebigcomments 0; hidebigcomments 0\n");
 		case 9:
 			localcmd("seta rm_legacyvote 0; legacyvote 0\n");
+		case 10:
+			localcmd("seta rm_anonspec 0; anonspec 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 10\n");
+		localcmd("seta rm_initialized 11\n");
 		RM_OUTDATED
 		break;
 	}
@@ -382,6 +384,7 @@ void PostInit(void)
 	registercmd("madoka");
 	registercmd("hidebigcomments");
 	registercmd("legacyvote");
+	registercmd("anonspec");
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(cvar("rm_madoka"))
@@ -396,6 +399,8 @@ void PostInit(void)
 	#ifdef RM_SUPPORT_MADOKA
 	tmpmadoka = spawn();
 	#endif
+	
+	localcmd("cmd anonspec ", cvar_string("rm_anonspec"));
 	postinit = true;
 }
 
@@ -424,7 +429,7 @@ void SendRMCFGReport()
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
 }
 
-#define VALUEREQUIRED if(argc < 2) { print("Usage: ", strCmd, " VALUE\n"); return true; }
+#define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -483,6 +488,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
 		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
 		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
+		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		#endif
@@ -531,6 +537,13 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
 		return false;
 		#endif
+	}
+	else if(strCmd == "anonspec")
+	{
+		VALUEREQUIRED
+		cvar_set(strcat("rm_", strCmd), argv(1));
+		localcmd("cmd anonspec ", cvar_string("rm_anonspec"));
+		return true;
 	}
 
 	if(camera_active)

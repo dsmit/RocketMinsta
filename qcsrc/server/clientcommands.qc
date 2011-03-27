@@ -206,7 +206,37 @@ void SV_ParseClientCommand(string s) {
 		}
 		else
 			sprint(self, strcat(argv(1), "^1: failed to find player\n"));
+	} else if(cmd == "anonspec") {
+		local string val = argv(1);
 		
+		if(!cvar("g_explosive_anonspecs"))
+		{
+			sprint(self, "^1Anonymous spectators are not allowed on this server!\n");
+			return;
+		}
+		
+		if(val == "1")
+		{
+			if(!self.anonspec)
+			{
+				self.anonspec = 1;
+				sprint(self, "Your spectator status is now anonymous\n");
+			}
+			return;
+		}
+		
+		if(val == "0")
+		{
+			if(self.anonspec)
+			{
+				self.anonspec = 0;
+				sprint(self, "Your spectator status is now NOT anonymous\n");
+			}
+			return;
+		}
+		
+		sprint(self, "^1Invalid value for anonspec. Accepting only 1 or 0\n");
+		return;
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));
