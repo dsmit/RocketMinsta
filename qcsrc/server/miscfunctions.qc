@@ -2717,3 +2717,25 @@ void bigprint_spec(entity pl, string msg, string comment, float staytime)
             bigprint(e, msg, comment, staytime);
     }
 }
+
+void madokaprint(entity e, string bigstring, string comment, float staytime)
+{
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_MADOKAPRINT);
+    WriteString(MSG_ONE, bigstring);
+    WriteString(MSG_ONE, comment);
+    WriteShort(MSG_ONE, staytime);
+}
+
+void madokaprint_spec(entity pl, string msg, string comment, float staytime)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            madokaprint(e, msg, comment, staytime);
+    }
+}

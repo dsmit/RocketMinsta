@@ -1050,7 +1050,8 @@ void GameCommand(string command)
 		local entity e;
 		FOR_EACH_CLIENT(e)
 		{
-			if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
+			//if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
+			madokaprint(e, "^1x ^0WALPURGIS NIGHT ^10", "", 5);
 			
 			if(e.classname == "player")
 			{

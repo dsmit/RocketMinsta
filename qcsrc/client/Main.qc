@@ -759,10 +759,10 @@ void GameCommand(string msg)
 		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
 	}
 	#ifdef RM_SUPPORT_MADOKA
-	else if(cmd == "walpurgis")
+	/*else if(cmd == "walpurgis")
 	{
 		madokaprint("^1x ^0WALPURGIS NIGHT ^10", "", 5);
-	}
+	}*/
 	else if(cmd == "lockmadoka")
 	{
 		//print("lockmadoka(", argv(1), ")\n");
@@ -1275,6 +1275,11 @@ void Net_ReadBigPrint()
 	bigprint(ReadString(), ReadString(), ReadShort());
 }
 
+void Net_ReadMadokaPrint()
+{
+	madokaprint(ReadString(), ReadString(), ReadShort());
+}
+
 void Net_ReadSpecInfo()
 {
 	local float i, limit;
@@ -1364,6 +1369,10 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_VOTERESET:
 			Net_VoteDialogReset();
+			bHandled = true;
+			break;
+		case TE_CSQC_MADOKAPRINT:
+			Net_ReadMadokaPrint();
 			bHandled = true;
 			break;
 		default:
