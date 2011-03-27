@@ -1072,6 +1072,28 @@ void GameCommand(string command)
 	}
 	#endif
 
+	if(argv(0) == "kill")
+	{
+		bprint("Killing client #", argv(2), "\n");
+		
+		local entity victim e = edict_num(stof(argv(2)));
+		/*if not(victim.flags & FL_CLIENT)
+		{
+			bprint("Trying to kill a non-client???\n");
+			return;
+		}*/
+		
+		#ifdef RM_SUPPORT_MADOKA
+		madokaprint(e, "^1x ^0Votekilled ^10", "", 5);
+		#else
+		bigprint(e, "^9Votekilled", "", 5);
+		#endif
+		
+		e.armorvalue = 0;
+		Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+		return;
+	}
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

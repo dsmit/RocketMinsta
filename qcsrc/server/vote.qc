@@ -100,10 +100,17 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
+		
+		if(argv(0) == "kill" && victim.classname != "player")
+		{
+			sprint(self, victim.netname, "^1 is not playing.\n");
+			return FALSE;
+		}
+		
 		RemapVote_vote = GetKickVoteVictim_newcommand;
 		RemapVote_display = strcat("^1", vote, " (^7", victim.netname, "^1): ", GetKickVoteVictim_reason);
 	}
