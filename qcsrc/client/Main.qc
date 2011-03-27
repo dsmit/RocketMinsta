@@ -366,9 +366,11 @@ void PostInit(void)
 			localcmd("seta rm_hidewatermark 0; hidewatermark 0\n");
 		case 12:
 			localcmd("seta rm_dontmesswithfonts 0; dontmesswithfonts 0\n");
+		case 13:
+			localcmd("seta rm_specmadoka 1; specmadoka 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 13\n");
+		localcmd("seta rm_initialized 14\n");
 		RM_OUTDATED
 		break;
 	}
@@ -392,6 +394,7 @@ void PostInit(void)
 	registercmd("anonspec");
 	registercmd("hidewatermark");
 	registercmd("dontmesswithfonts");
+	registercmd("specmadoka");
 	
 	#ifdef RM_SUPPORT_MADOKA
 	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
@@ -498,6 +501,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2dontmesswithfonts^7: If enabled, the mod will NEVER alter font settings. Useful if you use a custom font for user2. Note: this breaks Madoka runes\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
+		print("^2specmadoka^7: if enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
 		#endif
 		return true;
 	}
@@ -535,7 +539,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		VALUEREQUIRED
 		
-		if(madoka_locked)
+		if(madoka_locked && cvar("rm_specmadoka"))
 		{
 			print("^1Won't change madoka while spectating!\n");
 			return true;
@@ -557,6 +561,18 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		localcmd("cmd anonspec ", cvar_string("rm_anonspec"));
+		SendRMCFGReport();
+		return true;
+	}
+	else if(strCmd == "specmadoka")
+	{
+		VALUEREQUIRED
+		cvar_set(strcat("rm_", strCmd), argv(1));
+		
+		if(!cvar("rm_specmadoka"))
+			loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		
+		SendRMCFGReport();
 		return true;
 	}
 
@@ -767,8 +783,11 @@ void GameCommand(string msg)
 	{
 		//print("lockmadoka(", argv(1), ")\n");
 		
-		madoka_locked = 1;
-		loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
+		if(cvar("rm_specmadoka"))
+		{
+			madoka_locked = 1;
+			loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
+		}
 	}
 	#endif
 	else
