@@ -2419,7 +2419,7 @@ void Sbar_Draw (void)
 	#ifdef RM_SUPPORT_MADOKA
 	//print("spectatee_status == ", ftos(spectatee_status), "; player_localentnum == ", ftos(player_localentnum), "\n");
 	
-	if(spectatee_status == -1)
+	if(spectatee_status == -1 || !spectatee_status)
 	if(madoka_locked)   //release madoka. Perhaps should be done elsewhere?
 	{
 		//print("releasing madoka\n");
