@@ -319,8 +319,8 @@ void Ent_Projectile()
 			case PROJECTILE_RM_LASER_YELLOW:
 			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
-			case PROJECTILE_GRENADE: setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_GRENADE_BOUNCING: setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_GRENADE: /*setmodel(self, "models/grenademodel.md3");*/ break;
+			case PROJECTILE_GRENADE_BOUNCING: /*setmodel(self, "models/grenademodel.md3");*/ break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
