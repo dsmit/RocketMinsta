@@ -184,6 +184,7 @@ float rm_helptime;
 float rm_nobigtext;
 float rm_hidebigcomments;
 float rm_legacyvote;
+float rm_hidewatermark;
 
 float vote_yescount;
 float vote_nocount;
