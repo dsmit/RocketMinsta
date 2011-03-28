@@ -1296,7 +1296,11 @@ void Net_ReadBigPrint()
 
 void Net_ReadMadokaPrint()
 {
+	#ifdef RM_SUPPORT_MADOKA
 	madokaprint(ReadString(), ReadString(), ReadShort());
+	#else
+	print("Warning: the server attempted a madokaprint, but RM has been built without madoka-rune support! This should never happen, the mod is B0RKED!!\n");
+	#fi
 }
 
 void Net_ReadSpecInfo()
