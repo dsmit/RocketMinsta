@@ -2079,9 +2079,23 @@ void WriteSpectatorInfoOf(entity player, entity of)
 		WriteString(MSG_ONE, spec.netname);
 }
 
+void ResetSpectatorInfo(entity player)
+{
+    if(clienttype(player) != CLIENTTYPE_REAL)
+		return;
+
+    msg_entity = player;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+    WriteShort(MSG_ONE, 0);
+}
+
 void WriteSpectatorInfo(entity player)
 {
-	WriteSpectatorInfoOf(player, player);
+    if(cvar("g_explosive_showspecs_hidefromplayers"))
+        ResetSpectatorInfo(player);
+    else
+    	WriteSpectatorInfoOf(player, player);
 	
 	local entity spec;
 	FOR_EACH_SPECOF(player, spec, 0)
