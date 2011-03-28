@@ -657,11 +657,13 @@ void ShotOrg_Spawn()
 }
 
 #ifdef RM_SUPPORT_MADOKA
+.float oldspecmadoka
 void TmpMadoka_Think()
 {
 	if(!cvar("rm_madoka"))
 		loadfont("user2", "vera-sans-big");
 	
+	cvar_set("rm_specmadoka", ftos(self.oldspecmadoka));
 	is_tmpmadoka = 0;
 }
 
@@ -673,6 +675,8 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka_fadetime = time + t + 1;
 	tmpmadoka.think = TmpMadoka_Think;
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
+	self.oldspecmadoka = cvar("rm_specmadoka");
+	cvar_set("rm_specmadoka", "0");
 	loadfont("user2", "madoka-rune");
 	localcmd("play2 misc/powerup\n");
 	
