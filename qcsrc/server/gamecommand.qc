@@ -1077,9 +1077,9 @@ void GameCommand(string command)
 		local entity victim e = edict_num(stof(argv(2)));
 		
 		#ifdef RM_SUPPORT_MADOKA
-		madokaprint(e, "^1x ^0Votekilled ^10", "", 5);
+		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
 		#else
-		bigprint(e, "^9Votekilled", "", 5);
+		bigprint_spec(e, "^9Votekilled", "", 5);
 		#endif
 		
 		e.armorvalue = 0;
@@ -1095,7 +1095,11 @@ void GameCommand(string command)
 		{
 			FOR_EACH_CLIENT(e) if(e.flagcarried)
 			{
-				madokaprint(e, "^1x ^0Votekilled ^10", "", 5);
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
 				e.armorvalue = 0;
 				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
@@ -1104,7 +1108,11 @@ void GameCommand(string command)
 		{
 			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
 			{
-				madokaprint(e.owner, "^1x ^0Votekilled ^10", "", 5);
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
 				e.owner.armorvalue = 0;
 				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
