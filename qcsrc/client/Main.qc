@@ -1300,7 +1300,7 @@ void Net_ReadMadokaPrint()
 	madokaprint(ReadString(), ReadString(), ReadShort());
 	#else
 	print("Warning: the server attempted a madokaprint, but RM has been built without madoka-rune support! This should never happen, the mod is B0RKED!!\n");
-	#fi
+	#endif
 }
 
 void Net_ReadSpecInfo()
