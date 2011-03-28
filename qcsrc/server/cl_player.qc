@@ -1121,6 +1121,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	}
 	else
 		bprint(msgstr);
+	
+	if(!teamsay)
+	if(!privatesay)
+	if(substring(msgin, 0, strlen("rmhelp"))  == "rmhelp"
+	|| substring(msgin, 0, strlen("/rmhelp")) == "/rmhelp")
+		sprint(source, "\x01^1NOTE: ^2rmhelp^7 has to be typed in the console. To open the console, press ^2Shift+Escape\n");
 }
 
 float GetVoiceMessageVoiceType(string type)
