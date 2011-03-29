@@ -197,3 +197,7 @@ float tmpmadoka_fadetime;
 
 float oldengine;
 float madoka_locked;
+
+float mr_appeartime;
+float mr_fadetime;
+float morningrescue;

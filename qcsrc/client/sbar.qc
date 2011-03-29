@@ -2352,6 +2352,93 @@ void Sbar_Reset (void)
 		CSQC_ctf_hudreset();
 }
 
+void Sbar_MorningRescue(void)
+{
+	// vectors for top right, bottom right, bottom and bottom left corners
+
+	vector topright;
+	vector bottom;
+	vector bottomright;
+	vector bottomleft;
+
+	topright_x = vid_conwidth;
+	topright_y = 0;
+	topright_z = 0;
+
+	bottom_x = vid_conwidth/2;
+	bottom_y = vid_conheight;
+	bottom_z = 0;
+
+	bottomright_x = vid_conwidth;
+	bottomright_y = vid_conheight;
+	bottomright_z = 0;
+
+	bottomleft_x = 0;
+	bottomleft_y = vid_conheight;
+	bottomleft_z = 0;
+	
+	local vector mrpos;
+	local float mralpha;
+	mrpos = bottomleft;
+	local vector offset;
+	
+	mralpha = 1 - bound(0, 1 - 2 * (time - mr_appeartime), 1);
+	if(mralpha >= 1)
+		mralpha = bound(0, 1 - 2 * (time - (mr_fadetime - 1)), 1);
+	
+	local vector mrcolor;
+	mrcolor_x = 1;
+	mrcolor_y = random();
+	drawfill('0 0 0', bottomright, mrcolor, mralpha * random(), DRAWFLAG_ADDITIVE);
+	
+	mrpos_y -= 200 * mralpha;
+	drawpic (mrpos, "gfx/morningrescue", '57 200 0', '1 1 1', mralpha, DRAWFLAG_NORMAL);
+	
+	mrpos = topright;
+	mrpos_y -= 500 * 0.5 * (1 - mralpha);
+	offset_y = 3 * cos(mrpos_y + 5 * time) - 5;
+	mrpos_x -= 513 * 0.5;
+	offset_x = 3 * cos(mrpos_x + 5 * time) + 5;
+	local vector mrsize;
+	drawpic (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
+	
+	local string mycolor;
+	local string mychar;
+	local float j;
+	local string mrstring = "^xFB0MMorning ^7Rescue";
+	
+	drawfont = sbar_bigfont;
+	mrpos_y = vid_conheight / 2 - 12;
+	mrpos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(mrstring) * 24);
+	for(j = 0; j < strlen(mrstring); ++j)
+	{
+		mychar = substring(mrstring, j, 1);
+		
+		if(mychar == "^")
+		{
+			if(substring(mrstring, j+1, 1) == "x") 
+			{
+				mycolor = substring(mrstring, j, 5);
+				j += 5;
+			}
+			else
+			{
+				mycolor = substring(mrstring, j, 2);
+				++j;
+			}
+			continue;
+		}
+		
+		offset_y = 10 * cos(mrpos_x + 3 * time) * (mod(j, 2)? 1 : -1);
+		offset_x = offset_y * (mod(j, 2)? -1 : 1);
+		local string resultstr = strcat(mycolor, mychar);
+
+		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+		mrpos_x += stringwidth(resultstr, TRUE) * 24;
+		drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
+	}
+}
+
 float vote_active; // is there an active vote?
 float vote_prev; // previous state of vote_active to check for a change
 float vote_alpha;
@@ -2425,6 +2512,20 @@ void Sbar_Draw (void)
 		//print("releasing madoka\n");
 		madoka_locked = 0;
 		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+	}
+	#endif
+
+	#ifdef RM_SUPPORT_MORNINGRESCUE
+	if(morningrescue)
+	if(time <= mr_fadetime)
+	{
+		Sbar_MorningRescue();
+		return;
+	}
+	else
+	{
+		morningrescue = 0;
+		drawfont = sbar_font;
 	}
 	#endif
 

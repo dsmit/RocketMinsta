@@ -176,6 +176,16 @@ float RemapVote(string vote, string cmd, entity e)
 		return FALSE;
 		#endif
 	}
+	else if(argv(0) == "supermentalrescue")
+	{
+		#ifdef RM_SUPPORT_MORNINGRESCUE
+		RemapVote_vote = vote;
+		RemapVote_display = strzone("^2something awesome");
+		#else
+		sprint(e, "^7The rescue team is not ready yet\n");
+		return FALSE;
+		#endif
+	}
 	else
 	{
 		RemapVote_vote = vote;
@@ -466,7 +476,7 @@ void VoteHelp(entity e) {
 	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
 	
 	for(i = 0; i < n; ++i)
-		if(argv(i) != "walpurgis")
+		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
 			votes = strcat(votes, argv(i), " ");
 	
 	print_to(e, strcat("^3", votes, "^7and maybe further ^3arguments^7"));

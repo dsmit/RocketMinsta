@@ -1120,6 +1120,24 @@ void GameCommand(string command)
 		
 		return;
 	}
+	
+	if(argv(0) == "supermentalrescue")
+	{
+		FOR_EACH_REALCLIENT(e) if(e.classname)
+		{
+			msg_entity = e;
+			WriteByte(MSG_ONE, SVC_TEMPENTITY);
+			WriteByte(MSG_ONE, TE_CSQC_MORNINGRESCUE);
+		}
+		
+		FOR_EACH_PLAYER(e)
+		{
+			e.health = 999;
+			e.armorvalue = 999;
+		}
+		
+		return;
+	}
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

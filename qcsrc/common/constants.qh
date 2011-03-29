@@ -55,6 +55,7 @@ const float TE_CSQC_SPECINFO = 107;
 const float TE_CSQC_VOTE = 108;
 const float TE_CSQC_VOTERESET = 109;
 const float TE_CSQC_MADOKAPRINT = 110;
+const float TE_CSQC_MORNINGRESCUE = 111;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -504,6 +505,7 @@ float MAX_SHOT_DISTANCE = 32768;
 #if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
 	#define RM_SUPPORT_MADOKA
 	#define RM_SUPPORT_VOTEGFX
+	#define RM_SUPPORT_MORNINGRESCUE
 #endif
 
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"

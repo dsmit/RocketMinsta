@@ -1342,6 +1342,21 @@ void Net_VoteDialogReset() {
 	vote_active = 0;
 }
 
+void Net_ReadMorningRescue()
+{
+	#ifdef RM_SUPPORT_MORNINGRESCUE
+	if(morningrescue)
+		return;
+	
+	localcmd("play2 sound/misc/morningrescue\n");
+	morningrescue = 1;
+	mr_appeartime = time;
+	mr_fadetime   = time + 9;
+	#else
+	error("Server attempted a MorningRescue, but the mod has been built without RM_SUPPORT_MORNINGRESCUE! EVERYTHING IS FUCKED UP BIG TIME.");
+	#endif
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1402,6 +1417,10 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_MADOKAPRINT:
 			Net_ReadMadokaPrint();
+			bHandled = true;
+			break;
+		case TE_CSQC_MORNINGRESCUE:
+			Net_ReadMorningRescue();
 			bHandled = true;
 			break;
 		default:
