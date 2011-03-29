@@ -2519,7 +2519,48 @@ void Sbar_Draw (void)
 			{
 				bp_pos = '0 1 0' * (vid_conheight/5);
 				drawfont = sbar_bigfont;
-				drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+				
+				if(tmpmadoka_fadetime >= time)
+				{
+					local string mycolor;
+					local string mychar;
+					local vector offset;
+					local float j;
+					
+					bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
+					for(j = 0; j < strlen(bigprint_string); ++j)
+					{
+						mychar = substring(bigprint_string, j, 1);
+						
+						if(mychar == "^")
+						{
+							if(substring(bigprint_string, j+1, 1) == "x") 
+							{
+								mycolor = substring(bigprint_string, j, 5);
+								j += 5;
+							}
+							else
+							{
+								mycolor = substring(bigprint_string, j, 2);
+								++j;
+							}
+							continue;
+						}
+						
+						offset_y = 3 * cos(bp_pos_x + 5 * time) * (mod(j, 2)? 1 : -1);
+						offset_x = offset_y * (mod(j, 2)? -1 : 1);
+						local string resultstr = strcat(mycolor, mychar);
+
+						dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+						//drawcolorcodedstringcenter(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+						//bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
+						
+						bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
+						drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+					}
+				}
+				else
+					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 				
 				drawfont = sbar_font;
 				
