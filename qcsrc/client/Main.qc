@@ -682,6 +682,7 @@ void madokaprint(string m, string c, float t)
 	localcmd("play2 misc/powerup\n");
 	
 	if(!cvar("rm_dontmesswithfonts"))
+	if(!rm_nobigtext)
 	//We will either print runic text here, or won't print anything at all.
 		bigprint(m, c, t);
 }
