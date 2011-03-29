@@ -1458,6 +1458,8 @@ string getcommandkey(string text, string command)
 
 void bigprint_old(string bigstr, string comment, float fadetime)
 {
+	if(is_tmpmadoka) return;
+	
 	if(bigprint_oldstring)
 		fstrunzone(bigprint_oldstring);
 	if(bigprint_oldcomment)
