@@ -672,10 +672,11 @@ void madokaprint(string m, string c, float t)
 	if(is_tmpmadoka) return;
 	
 	is_tmpmadoka = 1;
+	
 	tmpmadoka_fadetime = time + t + 1;
 	tmpmadoka.think = TmpMadoka_Think;
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
-	self.oldspecmadoka = cvar("rm_specmadoka");
+	tmpmadoka.oldspecmadoka = cvar("rm_specmadoka");
 	cvar_set("rm_specmadoka", "0");
 	loadfont("user2", "madoka-rune");
 	localcmd("play2 misc/powerup\n");
