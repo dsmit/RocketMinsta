@@ -325,8 +325,8 @@ RELEASE_RMCUSTOM=1
 PREFIX="-$BRANCH"
 [ $PREFIX = "-master" ] && PREFIX=""
 
-makedata-all -$BRANCH "git build"
-buildall -$BRANCH "git build"
+makedata-all "$PREFIX" "git build"
+buildall "$PREFIX" "git build"
 finalize-install
 
 cat <<EOF
