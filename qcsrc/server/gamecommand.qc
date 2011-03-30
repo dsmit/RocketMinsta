@@ -1132,8 +1132,10 @@ void GameCommand(string command)
 		
 		FOR_EACH_PLAYER(e)
 		{
-			e.health = 999;
-			e.armorvalue = 999;
+			//e.health = 999;
+			//e.armorvalue = 999;
+			
+			e.health = max(e.health, 100);
 		}
 		
 		return;
