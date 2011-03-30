@@ -402,12 +402,15 @@ void PostInit(void)
 		case 11:
 			localcmd("seta rm_hidewatermark 0; hidewatermark 0\n");
 		case 12:
+			//deprecated, but gets set to be friendly to servers with older RM
 			localcmd("seta rm_dontmesswithfonts 0; dontmesswithfonts 0\n");
 		case 13:
 			localcmd("seta rm_specmadoka 1; specmadoka 1\n");
+		case 14:
+			localcmd("seta rm_crosshealth 0; crosshealth 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 14\n");
+		localcmd("seta rm_initialized 15\n");
 		RM_OUTDATED
 		break;
 	}
@@ -420,6 +423,7 @@ void PostInit(void)
 	rm_legacyvote = cvar("rm_legacyvote");
 	rm_hidewatermark = cvar("rm_hidewatermark");
 	rm_madoka = cvar("rm_madoka");
+	rm_crosshealth = cvar("rm_crosshealth");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -433,6 +437,7 @@ void PostInit(void)
 	registercmd("hidewatermark");
 	registercmd("dontmesswithfonts");
 	registercmd("specmadoka");
+	registercmd("crosshealth");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -477,6 +482,7 @@ void SendRMCFGReport()
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
+#define RMSETTINGREPORT print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n"));
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -537,6 +543,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
+		print("^2crosshealth^7: If enabled, the crosshair color will depend on current health (disabled by default)\n");
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
@@ -545,14 +552,15 @@ float CSQC_ConsoleCommand(string strMessage)
 		return true;
 	}
 	else if(
-		strCmd == "showspec" 		||
-		strCmd == "showdamage" 		||
-		strCmd == "teamlasers"		||
-		strCmd == "nobigtext"		||
-		strCmd == "hidebigcomments"	||
-		strCmd == "legacyvote"		||
-		strCmd == "hidewatermark"	||
-		strCmd == "dontmesswithfonts")
+		strCmd == "showspec" 			||
+		strCmd == "showdamage" 			||
+		strCmd == "teamlasers"			||
+		strCmd == "nobigtext"			||
+		strCmd == "hidebigcomments"		||
+		strCmd == "legacyvote"			||
+		strCmd == "hidewatermark"		||
+		strCmd == "dontmesswithfonts"	||
+		strCmd == "crosshealth"			 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -563,7 +571,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_hidebigcomments = cvar("rm_hidebigcomments");
 		rm_legacyvote = cvar("rm_legacyvote");
 		rm_hidewatermark = cvar("rm_hidewatermark");
+		rm_crosshealth = cvar("rm_crosshealth");
 		SendRMCFGReport();
+		RMSETTINGREPORT
 		return true;
 	}
 	else if(strCmd == "madoka")
@@ -591,6 +601,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		SendRMCFGReport();
 		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+		RMSETTINGREPORT
 		return true;
 		#else
 		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
@@ -603,6 +614,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 		SendRMCFGReport();
+		RMSETTINGREPORT
 		return true;
 	}
 	else if(strCmd == "specmadoka")
@@ -615,6 +627,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
+		RMSETTINGREPORT
 		return true;
 	}
 
