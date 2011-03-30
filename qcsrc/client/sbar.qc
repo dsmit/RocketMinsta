@@ -2407,35 +2407,40 @@ void Sbar_MorningRescue(void)
 	local float j;
 	local string mrstring = "^xFB0MMorning ^7Rescue";
 	
-	drawfont = sbar_bigfont;
-	mrpos_y = vid_conheight / 2 - 12;
-	mrpos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(mrstring) * 24);
-	for(j = 0; j < strlen(mrstring); ++j)
+	local float k;
+	
+	for(k = 0; k < 2; ++k)
 	{
-		mychar = substring(mrstring, j, 1);
-		
-		if(mychar == "^")
+		drawfont = (k? sbar_madokafont : sbar_bigfont_real);
+		mrpos_y = vid_conheight / 2 - 12;
+		mrpos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(mrstring) * 24);
+		for(j = 0; j < strlen(mrstring); ++j)
 		{
-			if(substring(mrstring, j+1, 1) == "x") 
+			mychar = substring(mrstring, j, 1);
+			
+			if(mychar == "^")
 			{
-				mycolor = substring(mrstring, j, 5);
-				j += 5;
+				if(substring(mrstring, j+1, 1) == "x") 
+				{
+					mycolor = substring(mrstring, j, 5);
+					j += 5;
+				}
+				else
+				{
+					mycolor = substring(mrstring, j, 2);
+					++j;
+				}
+				continue;
 			}
-			else
-			{
-				mycolor = substring(mrstring, j, 2);
-				++j;
-			}
-			continue;
-		}
-		
-		offset_y = 10 * cos(mrpos_x + 3 * time) * (mod(j, 2)? 1 : -1);
-		offset_x = offset_y * (mod(j, 2)? -1 : 1);
-		local string resultstr = strcat(mycolor, mychar);
+			
+			offset_y = 10 * ((k*10)+1) * cos(mrpos_x + 3 * time) * (mod(j, 2)? 1 : -1) * (k? 1 : -1);
+			offset_x = offset_y * (mod(j, 2)? -1 : 1);
+			local string resultstr = strcat(mycolor, mychar);
 
-		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-		mrpos_x += stringwidth(resultstr, TRUE) * 24;
-		drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
+			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+			mrpos_x += stringwidth(resultstr, TRUE) * 24;
+			drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
+		}
 	}
 }
 
