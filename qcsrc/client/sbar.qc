@@ -2511,7 +2511,8 @@ void Sbar_Draw (void)
 	{
 		//print("releasing madoka\n");
 		madoka_locked = 0;
-		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		//loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		SetMadokaFont(MDKF_AUTO);
 	}
 	#endif
 

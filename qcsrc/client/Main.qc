@@ -190,8 +190,8 @@ void CSQC_Shutdown(void)
 	if(camera_active)
 		cvar_set("chase_active",ftos(chase_active_backup));
 
-	if(cvar("rm_madoka"))
-		localcmd("loadfont user2 gfx/vera-sans-big\n");
+	//if(cvar("rm_madoka"))
+	//	localcmd("loadfont user2 gfx/vera-sans-big\n");
 	
 	if not(isdemo())
 	{
@@ -325,6 +325,43 @@ void SendRMCFGReport();
 #ifdef RM_SUPPORT_MADOKA
 entity tmpmadoka;
 #endif
+
+void SetMadokaFont(float v)
+{
+	#ifdef RM_SUPPORT_MADOKA
+	switch(v)
+	{
+		case MDKF_SET:
+			sbar_bigfont = sbar_madokafont;
+			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
+			break;
+		case MDKF_UNSET:
+			sbar_bigfont = sbar_bigfont_real;
+			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
+			break;
+		default: case MDKF_AUTO:
+			if(madoka_locked)
+			{
+				if(cvar("rm_specmadoka"))
+				{
+					SetMadokaFont(madokalockstate);
+					return;
+				}
+				/*else
+				{
+					madoka_locked = 0;
+				}*/
+			}
+			
+			sbar_bigfont = (rm_madoka? sbar_madokafont : sbar_bigfont_real);
+			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
+			break;
+	}
+	#else
+	sbar_bigfont = sbar_bigfont_real;
+	#endif
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -382,6 +419,7 @@ void PostInit(void)
 	rm_hidebigcomments = cvar("rm_hidebigcomments");
 	rm_legacyvote = cvar("rm_legacyvote");
 	rm_hidewatermark = cvar("rm_hidewatermark");
+	rm_madoka = cvar("rm_madoka");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -395,17 +433,18 @@ void PostInit(void)
 	registercmd("hidewatermark");
 	registercmd("dontmesswithfonts");
 	registercmd("specmadoka");
-	
-	#ifdef RM_SUPPORT_MADOKA
-	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
-	#endif
-	
+
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
 	#ifdef RM_SUPPORT_MADOKA
 	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
+	
+	//loadfont("user3", "gfx/madoka-rune");
+	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
+	localcmd("loadfont user3 gfx/madoka-rune\n");
+	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
@@ -498,7 +537,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
-		print("^2dontmesswithfonts^7: If enabled, the mod will NEVER alter font settings. Useful if you use a custom font for user2. Note: this breaks Madoka runes\n");
+		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: if enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -546,7 +585,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		}
 		
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		//loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		rm_madoka = cvar("rm_madoka");
+		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
 		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
@@ -569,8 +610,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		
-		if(!cvar("rm_specmadoka"))
-			loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		//if(!cvar("rm_specmadoka"))
+		//	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
 		return true;
@@ -660,11 +702,12 @@ void ShotOrg_Spawn()
 .float oldspecmadoka
 void TmpMadoka_Think()
 {
-	if(!cvar("rm_madoka"))
-		loadfont("user2", "vera-sans-big");
+	//if(!cvar("rm_madoka"))
+	//	loadfont("user2", "vera-sans-big");
 	
 	cvar_set("rm_specmadoka", ftos(self.oldspecmadoka));
 	is_tmpmadoka = 0;
+	SetMadokaFont(MDKF_AUTO);
 }
 
 void madokaprint(string m, string c, float t)
@@ -678,7 +721,8 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
 	tmpmadoka.oldspecmadoka = cvar("rm_specmadoka");
 	cvar_set("rm_specmadoka", "0");
-	loadfont("user2", "madoka-rune");
+	//loadfont("user2", "madoka-rune");
+	SetMadokaFont(MDKF_SET);
 	localcmd("play2 misc/powerup\n");
 	
 	if(!cvar("rm_dontmesswithfonts"))
@@ -792,7 +836,9 @@ void GameCommand(string msg)
 		if(cvar("rm_specmadoka"))
 		{
 			madoka_locked = 1;
-			loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
+			madokalockstate = stof(argv(1));
+			SetMadokaFont(madokalockstate);
+			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
 	#endif

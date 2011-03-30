@@ -213,6 +213,7 @@ void CSQC_CheckEngine()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
+	sbar_madokafont = FONT_USER+3;
 }
 
 vector Sbar_GetFontsize(string cvarname)
@@ -411,11 +412,11 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 void loadfont(string slot, string font)
 {
-	if(cvar("rm_dontmesswithfonts"))
+	/*if(cvar("rm_dontmesswithfonts"))
 	{
 		print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
 		return;
-	}
+	}*/
 	
 	localcmd("loadfont ", slot, " gfx/", font, "\n");
 }

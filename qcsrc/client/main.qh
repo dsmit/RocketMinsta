@@ -185,6 +185,7 @@ float rm_nobigtext;
 float rm_hidebigcomments;
 float rm_legacyvote;
 float rm_hidewatermark;
+float rm_madoka;
 
 float vote_yescount;
 float vote_nocount;
@@ -197,7 +198,17 @@ float tmpmadoka_fadetime;
 
 float oldengine;
 float madoka_locked;
+float madokalockstate;
 
 float mr_appeartime;
 float mr_fadetime;
 float morningrescue;
+
+float sbar_madokafont;
+
+#define MDKF_SET 1
+#define MDKF_UNSET 0
+#define MDKF_AUTO -1
+#define sbar_bigfont_real FONT_USER+2
+
+void SetMadokaFont(float);
