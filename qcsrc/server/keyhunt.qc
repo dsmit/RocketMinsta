@@ -113,7 +113,10 @@ void kh_Controller_Think()  // called a lot
 				if(clienttype(e) == CLIENTTYPE_REAL)
 					//centerprint_atprio(e, CENTERPRIO_SPAM, s);
 					if(_bigprint)
+					{
+						bigprint_clear_spec(e);
 						bigprint_spec(e, argv(0), argv(1), 1);
+					}
 					else
 						centerprint_atprio(e, CENTERPRIO_SPAM, s);
 		}

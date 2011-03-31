@@ -2521,8 +2521,17 @@ void Sbar_Draw (void)
 	}
 	#endif
 
+	local float rev;
+    rev = getstatf(STAT_REVIVE_PROGRESS);
+
 	if(getstati(STAT_FROZEN))
-		drawfill('0 0 0', bottomright, '0 1 1', 0.6, DRAWFLAG_ADDITIVE);
+	{
+		local vector fcolor;
+		fcolor_x = rev;
+		fcolor_y = 1;
+		fcolor_z = 1 - rev;
+		drawfill('0 0 0', bottomright, fcolor, 0.6, DRAWFLAG_ADDITIVE);
+	}
 
 	#ifdef RM_SUPPORT_MORNINGRESCUE
 	if(morningrescue)
@@ -2599,9 +2608,6 @@ void Sbar_Draw (void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-
-    local float rev;
-    rev = getstatf(STAT_REVIVE_PROGRESS);
 
     if(rev)
     {
