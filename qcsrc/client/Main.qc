@@ -1551,11 +1551,11 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 	
 	if(bigprint_oldstring)
 		fstrunzone(bigprint_oldstring);
-	if(bigprint_oldcomment)
-		fstrunzone(bigprint_oldcomment);
+	//if(bigprint_oldcomment)
+	//	fstrunzone(bigprint_oldcomment);
 	
 	bigprint_oldstring = strzone(bigstr);
-	bigprint_oldcomment = strzone(comment);
+	//bigprint_oldcomment = strzone(comment);
 	
 	bigprint_oldfadetime = fadetime - 0.1;
 }
@@ -1563,9 +1563,6 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 void bigprint(string bigstr, string comment, float staytime)
 {
 	//staytime = 1337;
-	if(bigstr == "")
-		error("Why the fuck would you want to bigprint WITHOUT the 'big' part?");
-	
 	if(rm_nobigtext)
 	{
 		local string s;
@@ -1578,16 +1575,36 @@ void bigprint(string bigstr, string comment, float staytime)
 		return;
 	}
 	
-	bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
+	if(bigstr != "")
+	{
+		bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
+		
+		if(bigprint_string)
+			fstrunzone(bigprint_string);
+		
+		bigprint_string = strzone(bigstr);
+		bigprint_fadetime = time + staytime;
+		bigprint_appeartime = time;
+		
+		if(comment == "")
+			comment = " ";
+	}
 	
-	if(bigprint_string)
-		fstrunzone(bigprint_string);
 	if(bigprint_comment);
 		fstrunzone(bigprint_comment);
 	
-	bigprint_string = strzone(bigstr);
-	bigprint_comment = strzone(comment);
-	
-	bigprint_fadetime = time + staytime;
-	bigprint_appeartime = time;
+	if(comment != "")
+	{
+		bigprint_nofadein = 0;
+		
+		if(substring(comment, 0, 1) == "\x01")
+		{
+			comment = substring(comment, 1, strlen(comment));
+			bigprint_nofadein = 1;
+		}
+		
+		bigprint_comment = strzone(comment);
+		bigprint_commentfadetime = time + staytime;
+		bigprint_commentappeartime = time;
+	}
 }

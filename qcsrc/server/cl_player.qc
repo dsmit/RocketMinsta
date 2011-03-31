@@ -892,7 +892,8 @@ void UpdateSelectedPlayer()
 						self.selected_player_display_needs_update = TRUE;
 					}
 				}
-				centerprint_spec(self, strcat("\x01", namestr));
+				//centerprint_spec(self, strcat("\x01", namestr));
+				bigprint_spec(self, "", strcat("\x01", namestr), 2);
 			}
 		}
 		else

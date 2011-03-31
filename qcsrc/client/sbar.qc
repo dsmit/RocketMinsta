@@ -2637,6 +2637,7 @@ void Sbar_Draw (void)
 		}
 	}
 
+	bp_pos = '0 1 0' * (vid_conheight/5);
 	if(bigprint_string)
 	{
 		for(i = 0; i < 2; ++i)
@@ -2645,7 +2646,6 @@ void Sbar_Draw (void)
 			
 			if(bp_alpha > 0)
 			{
-				bp_pos = '0 1 0' * (vid_conheight/5);
 				drawfont = sbar_bigfont;
 				
 				if(tmpmadoka_fadetime >= time)
@@ -2691,17 +2691,26 @@ void Sbar_Draw (void)
 					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 				
 				drawfont = sbar_font;
-				
-				if(!rm_hidebigcomments)
-				if(bigprint_comment)
-				{
-					bp_pos_y += 24;
-					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
-				}
 			}
 		}
 	}
 
+	if(bigprint_comment)
+	if(!rm_hidebigcomments)
+	{
+		bp_pos_y += 24;
+		
+		for(i = 0; i < 2; ++i)
+		{
+			if(bigprint_nofadein && i)
+				continue;
+				
+			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_commentappeartime : bigprint_commentfadetime)), 1);
+			
+			if(bp_alpha)
+				drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+		}
+	}
 
 	if(rm_showspec)
 	//if(!spectatee_status)
