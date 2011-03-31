@@ -780,7 +780,7 @@ void spawnfunc_item_flag_team1()
 {
 	if (!g_ctf)
 	{
-		if(g_keyhunt && g_minstagib)
+		if((g_keyhunt || g_freezetag) && g_minstagib)
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -892,7 +892,7 @@ void spawnfunc_item_flag_team2()
 {
 	if (!g_ctf)
 	{
-		if(g_keyhunt && g_minstagib)
+		if((g_keyhunt || g_freezetag) && g_minstagib)
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);

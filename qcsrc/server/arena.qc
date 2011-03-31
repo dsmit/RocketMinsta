@@ -20,6 +20,14 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
+float next_round;
+float stopalivecheck;
+float redalive, bluealive, yellowalive, pinkalive;
+float totalalive;
+.float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
+float redspawned, bluespawned, yellowspawned, pinkspawned;
+float totalspawned;
+
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
  * Sets the 'warmup' global variable.
@@ -30,8 +38,12 @@ void reset_map(float dorespawn)
 	oldself = self;
 
 	if(g_arena)
-	if(cvar("g_arena_warmup"))
-		warmup = time + cvar("g_arena_warmup");
+	{
+		if(cvar("g_arena_warmup"))
+			warmup = time + cvar("g_arena_warmup");
+	}
+	else if(g_freezetag)
+		warmup = time + cvar("g_explosive_freezetag_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
@@ -80,6 +92,11 @@ void reset_map(float dorespawn)
 					PutClientInServer();
 				else
 					PutObserverInServer();
+			}
+			else if(g_freezetag)
+			{
+				if(self.classname == "player")
+					PutClientInServer();
 			}
 			else
 			{
@@ -217,7 +234,75 @@ void Arena_Warmup()
 
 }
 
-float next_round;
+void count_spawned_players()
+{
+	// TODO fix "*spawned" name, it should rather be "*players" or so
+	// not doing this now to prevent merge hell with Tag
+	// fix after merging with Tag
+
+	// count amount of players in each team
+	totalspawned = redspawned = bluespawned = yellowspawned = pinkspawned = 0;
+	FOR_EACH_PLAYER(self) {
+		if (self.team == COLOR_TEAM1)
+		{
+			redspawned += 1;
+			totalspawned += 1;
+		}
+		else if (self.team == COLOR_TEAM2)
+		{
+			bluespawned += 1;
+			totalspawned += 1;
+		}
+		else if (self.team == COLOR_TEAM3)
+		{
+			yellowspawned += 1;
+			totalspawned += 1;
+		}
+		else if (self.team == COLOR_TEAM4)
+		{
+			pinkspawned += 1;
+			totalspawned += 1;
+		}
+	}
+}
+
+void count_alive_players()
+{
+	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
+	if(g_freezetag)
+	{
+		// count amount of alive players in each team
+		FOR_EACH_PLAYER(self) {
+			if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0 && self.health >= 1)
+			{
+				redalive += 1;
+				totalalive += 1;
+			}
+			else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0 && self.health >= 1)
+			{
+				bluealive += 1;
+				totalalive += 1;
+			}
+			else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0 && self.health >= 1)
+			{
+				yellowalive += 1;
+				totalalive += 1;
+			}
+			else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0 && self.health >= 1)
+			{
+				pinkalive += 1;
+				totalalive += 1;
+			}
+		}
+		FOR_EACH_PLAYER(self) {
+			self.redalive_stat = redalive;
+			self.bluealive_stat = bluealive;
+			self.yellowalive_stat = yellowalive;
+			self.pinkalive_stat = pinkalive;
+		}
+	}
+
+}
 
 /**
  * This function finds out whether an arena round is over 1 player is left.
@@ -228,37 +313,62 @@ float next_round;
  */
 void Spawnqueue_Check()
 {
+	count_spawned_players();
+	if(g_freezetag) // we want to perform this before the return block below (CA)...
+	{
+		count_alive_players();
+	}
 	if(time < warmup + 1)
 		return;
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
-	if(!next_round)
-	if(numspawned < 2)
-		next_round = time + 3;
-
-	if(!arena_roundbased || (next_round && next_round < time && player_count > 1))
+	
+	if(g_freezetag)
 	{
-		next_round = 0;
-
-		if(arena_roundbased)
+		if((next_round && next_round < time))
 		{
-			champion = find(world, classname, "player");
-			while(champion && champion.deadflag)
-				champion = find(champion, classname, "player");
+			if(intermission_running)
+			{
+				//bprint("Freezetag: GAME OVER (2)\n");
+				next_round = 0;
+				return;
+			}
+			
+			//bprint("Freezetag: round reset\n");
+			next_round = 0;
 			reset_map(TRUE);
 		}
+	}
+	else
+	{
+		if(!next_round)
+		if(numspawned < 2)
+			next_round = time + 3;
 
-		while(numspawned < maxspawned && spawnqueue_first)
+		if(!arena_roundbased || (next_round && next_round < time && player_count > 1))
 		{
-			self = spawnqueue_first;
+			next_round = 0;
 
-			bprint ("^4", self.netname, "^4 is the next challenger\n");
+			if(arena_roundbased)
+			{
+				champion = find(world, classname, "player");
+				while(champion && champion.deadflag)
+					champion = find(champion, classname, "player");
+				reset_map(TRUE);
+			}
 
-			Spawnqueue_Remove(self);
-			Spawnqueue_Mark(self);
+			while(numspawned < maxspawned && spawnqueue_first)
+			{
+				self = spawnqueue_first;
 
-			self.classname = "player";
-			PutClientInServer();
+				bprint ("^4", self.netname, "^4 is the next challenger\n");
+
+				Spawnqueue_Remove(self);
+				Spawnqueue_Mark(self);
+
+				self.classname = "player";
+				PutClientInServer();
+			}
 		}
 	}
 }

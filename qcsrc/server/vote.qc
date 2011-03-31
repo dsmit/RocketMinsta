@@ -98,6 +98,14 @@ float RemapVote(string vote, string cmd, entity e)
 		vote = strcat("gotomap ", vote);
 		vote_argc = tokenize_console(vote); // ValidateMap may have done some stuff to it
 	}
+    if(argv(0) == "endround")
+    {
+        if(!g_freezetag)
+        {
+            sprint(self, "endround is available only in Freezetag\n");
+            return FALSE;
+        }
+    }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
 	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill")

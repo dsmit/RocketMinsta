@@ -1141,6 +1141,20 @@ void GameCommand(string command)
 		return;
 	}
 
+    if(argv(0) == "endround")
+    {
+        FOR_EACH_PLAYER(e)
+            bigprint_spec(e, "round aborted", "", 5);
+
+        if(!g_freezetag)
+        {
+            bprint("Attempted to endround, but the gametype is not Freezetag!\n");
+            return;
+        }
+
+        freezetag_EndRound();
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

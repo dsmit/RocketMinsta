@@ -59,6 +59,10 @@ void PlayerJump (void)
 		return;
 	}
 
+	if(g_freezetag)
+	if(self.freezetag_frozen)
+		return;
+
 	if (!(self.flags & FL_ONGROUND))
 		return;
 
@@ -734,6 +738,7 @@ void SV_PlayerPhysics()
 	}
 
 	dodging_PlayerPhysics();
+	freezetag_PlayerPhysics();
 
 	swampspd_mod = 1;
 	if(self.in_swamp) {

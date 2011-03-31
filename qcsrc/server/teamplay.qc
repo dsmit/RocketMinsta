@@ -99,6 +99,7 @@ void WriteGameCvars()
 	cvar_set("g_race", ftos(g_race));
 	cvar_set("g_nexball", ftos(g_nexball));
 	cvar_set("g_cts", ftos(g_cts));
+	cvar_set("g_freezetag", ftos(g_freezetag));
 }
 
 void ReadGameCvars()
@@ -124,6 +125,7 @@ void ReadGameCvars()
 		found += (g_race = (!found && (prev != GAME_RACE) && cvar("g_race")));
 		found += (g_nexball = (!found && (prev != GAME_NEXBALL) && cvar("g_nexball")));
 		found += (g_cts = (!found && (prev != GAME_CTS) && cvar("g_cts")));
+		found += (g_freezetag = (!found && (prev != GAME_FREEZETAG) && cvar("g_freezetag")));
 
 		if(found)
 			break;
@@ -298,6 +300,16 @@ void InitGameplayMode()
 		fraglimit_override = cvar("g_keyhunt_point_limit");
 		leadlimit_override = cvar("g_keyhunt_point_leadlimit");
 		kh_init();
+	}
+
+	if(g_freezetag)
+	{
+		game = GAME_FREEZETAG;
+		gamemode_name = "Freeze Tag";
+		ActivateTeamplay();
+		fraglimit_override = cvar("g_explosive_freezetag_point_limit");
+		leadlimit_override = cvar("g_explosive_freezetag_point_leadlimit");
+		freezetag_Initialize();
 	}
 
 	if(g_assault)

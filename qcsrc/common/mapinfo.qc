@@ -532,6 +532,7 @@ float MapInfo_Type_FromString(string t)
 	else if(t == "nexball") return MAPINFO_TYPE_NEXBALL;
 	else if(t == "cts")     return MAPINFO_TYPE_CTS;
 	else if(t == "all")     return MAPINFO_TYPE_ALL;
+	else if(t == "ft")		return MAPINFO_TYPE_CTF;
 	else                    return 0;
 }
 
@@ -945,6 +946,8 @@ float MapInfo_CurrentGametype()
 		return MAPINFO_TYPE_NEXBALL;
 	else if(cvar("g_cts"))
 		return MAPINFO_TYPE_CTS;
+	else if(cvar("g_freezetag"))
+		return MAPINFO_TYPE_CTF;
 	else
 		return MAPINFO_TYPE_DEATHMATCH;
 }
@@ -1005,6 +1008,7 @@ void MapInfo_SwitchGameType(float t)
 	cvar_set("g_race",       (t == MAPINFO_TYPE_RACE)            ? "1" : "0");
 	cvar_set("g_nexball",    (t == MAPINFO_TYPE_NEXBALL)         ? "1" : "0");
 	cvar_set("g_cts",        (t == MAPINFO_TYPE_CTS)             ? "1" : "0");
+	cvar_set("g_freezetag",  (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
 }
 
 void MapInfo_SwitchGameType_String(string gtname)
@@ -1014,10 +1018,19 @@ void MapInfo_SwitchGameType_String(string gtname)
 	if(gtname == "kh")
 	{
 		cvar_set("g_ctf", "0");
+		cvar_set("g_freezetag", "0");
 		_is_key_hunt = 1;
 	}
-	else
+	else if(gtname == "ft")
 	{
+		cvar_set("g_ctf", "0");
+		cvar_set("g_keyhunt", "0");
+		_is_key_hunt = 0;
+	}
+	else if(gtname == "ctf")
+	{
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
 		_is_key_hunt = 0;
 	}
 	

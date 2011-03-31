@@ -26,8 +26,6 @@ campaign.qh
 csqcprojectile.qh
 csqceffects.qc
 
-dodging.qc
-
 portals.qh
 
 g_hook.qh
@@ -44,6 +42,8 @@ antilag.qh
 
 vote.qh
 
+freezetag.qh
+
 scores_rules.qc
 
 miscfunctions.qc
@@ -58,6 +58,9 @@ g_tetris.qc
 
 runematch.qc
 arena.qc
+
+dodging.qc
+freezetag.qc
 
 g_violence.qc
 g_damage.qc

@@ -270,7 +270,8 @@ void GrapplingHookThink()
 //<akari>
 void HookDamage_Think()
 {
-	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0)
+	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0
+	  || (g_freezetag && self.hooker.hooked_to.freezetag_frozen))
 	{
 		remove(self);
 		return;
@@ -429,6 +430,10 @@ void FireGrapplingHook (void)
 	local vector org;
 
 	if((arena_roundbased && time < warmup) || (time < game_starttime))
+		return;
+
+	if(g_freezetag)
+	if(self.freezetag_frozen)
 		return;
 
 	makevectors(self.v_angle);

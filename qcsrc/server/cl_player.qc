@@ -626,16 +626,35 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			}
 		}
 
-		// become fully visible
-		self.alpha = 1;
-		// clear selected player display
-		ClearSelectedPlayer();
-		// throw a weapon
-		SpawnThrownWeapon (self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
+		if(!g_freezetag)
+		{
+			// become fully visible
+			self.alpha = 1;
+			// clear selected player display
+			ClearSelectedPlayer();
+			// throw a weapon
+			SpawnThrownWeapon (self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
+		}
+		
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
 		DropAllRunes(self);
+		
+		if(deathtype == DEATH_HURTTRIGGER && g_freezetag)
+		{
+			PutClientInServer();
+			count_alive_players(); // re-count players
+			freezetag_CheckWinner();
+			return;
+		}
+		
+		frag_attacker = attacker;
+		frag_inflictor = inflictor;
+		frag_target = self;
+		if(freezetag_PlayerDies())
+			return;
+			
 		if(self == attacker)
 			kh_Key_DropAll(self, TRUE);
 		else if(attacker.classname == "player" || attacker.classname == "gib")

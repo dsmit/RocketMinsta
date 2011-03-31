@@ -175,6 +175,10 @@ void GiveFrags (entity attacker, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
+	else if(g_freezetag)
+	{
+		f = 0;
+	}
 
 	attacker.totalfrags += f;
 
@@ -924,6 +928,20 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			mirrordamage *= g_weapondamagefactor;
 			force = force * g_weaponforcefactor;
 			mirrorforce *= g_weaponforcefactor;
+		}
+
+		if(g_freezetag) if(targ.freezetag_frozen)
+		{
+			damage = 0;
+			force = force * cvar("g_explosive_freezetag_frozen_force");
+			
+			if(deathtype == DEATH_HURTTRIGGER)
+			{
+				oldself = self;
+				self = targ;
+				PutClientInServer();
+				self = oldself;
+			}
 		}
 
 		// apply strength multiplier

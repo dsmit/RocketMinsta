@@ -213,7 +213,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag)
         if (self.team)
             have_team_spawns = 1;
 
@@ -2718,6 +2718,22 @@ void bigprint_spec(entity pl, string msg, string comment, float staytime)
     }
 }
 
+void bigprint_clear(entity pl)
+{
+    msg_entity = pl;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_CLEARBIGPRINT);
+}
+
+void bigprint_clear_spec(entity pl)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            bigprint_clear(e);
+    }
+}
+
 void madokaprint(entity e, string bigstring, string comment, float staytime)
 {
     if(clienttype(e) != CLIENTTYPE_REAL)
@@ -2739,3 +2755,4 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
             madokaprint(e, msg, comment, staytime);
     }
 }
+

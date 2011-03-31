@@ -1008,6 +1008,10 @@ float weapon_prepareattack(float secondary, float attacktime)
 		return FALSE;
 	}
 
+	if(g_freezetag)
+	if(self.freezetag_frozen)
+		return FALSE;
+
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{

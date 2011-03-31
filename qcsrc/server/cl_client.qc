@@ -550,7 +550,7 @@ void PutObserverInServer (void)
 
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
-
+	freezetag_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -999,6 +999,9 @@ void PutClientInServer (void)
 				SUB_UseTargets();
 			activator = world;
 		self = oldself;
+		
+		freezetag_PlayerSpawn();
+		
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1504,7 +1507,7 @@ void ClientDisconnect (void)
 
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
-
+	freezetag_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -2426,6 +2429,8 @@ void PlayerPreThink (void)
 	if (TetrisPreFrame())
 		return;
 #endif
+
+	freezetag_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")

@@ -38,6 +38,7 @@ const float GAME_ONSLAUGHT	= 10;
 const float GAME_RACE	= 11;
 const float GAME_NEXBALL = 12;
 const float GAME_CTS = 13;
+const float GAME_FREEZETAG = 14;
 
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
@@ -56,6 +57,7 @@ const float TE_CSQC_VOTE = 108;
 const float TE_CSQC_VOTERESET = 109;
 const float TE_CSQC_MADOKAPRINT = 110;
 const float TE_CSQC_MORNINGRESCUE = 111;
+const float TE_CSQC_CLEARBIGPRINT = 112;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -288,7 +290,12 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 //const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
 
 
-
+const float STAT_FROZEN = 104;
+const float STAT_REVIVE_PROGRESS = 105;
+const float STAT_REDALIVE = 106;
+const float STAT_BLUEALIVE = 107;
+const float STAT_YELLOWALIVE = 108;
+const float STAT_PINKALIVE = 109;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P

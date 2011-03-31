@@ -618,6 +618,16 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 
+	if(g_freezetag)
+	{
+		/*addstat(STAT_REDALIVE, AS_INT, redalive_stat);
+		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
+		addstat(STAT_YELLOWALIVE, AS_INT, yellowalive_stat);
+		addstat(STAT_PINKALIVE, AS_INT, pinkalive_stat);*/
+		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
+		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+	}
+
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
 
@@ -672,6 +682,7 @@ void spawnfunc_worldspawn (void)
 
 	world_initialized = 1;
 	
+	sys_frametime = (cvar("sys_ticrate") * cvar("slowmo"));
 	
 	// hack
 	local entity ctfcheck = spawn();

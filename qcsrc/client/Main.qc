@@ -1416,6 +1416,12 @@ void Net_ReadMorningRescue()
 	#endif
 }
 
+void Net_ReadClearBigPrint()
+{
+    bigprint(" ", "", 0);
+    //bigprint("", "", 0);
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1482,6 +1488,10 @@ float CSQC_Parse_TempEntity()
 			Net_ReadMorningRescue();
 			bHandled = true;
 			break;
+        case TE_CSQC_CLEARBIGPRINT:
+            Net_ReadClearBigPrint();
+            bHandled = true;
+            break;
 		default:
 			// No special logic for this temporary entity; return 0 so the engine can handle it
 			bHandled = false;

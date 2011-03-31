@@ -326,6 +326,7 @@ void minstagib_ammocheck (void)
 	//<akari>
 	//Health draining
 	
+	if(!g_freezetag || !self.freezetag_frozen)
 	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_health_drain") && self.health > cvar("g_explosive_health_min"))
 	{
 		self.health -= cvar("g_explosive_health_drain");
@@ -492,6 +493,10 @@ float w_minstanex(float req)
 	{
 		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells))
 		{
+			if(g_freezetag)
+			if(self.freezetag_frozen)
+				return TRUE;
+			
 			if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
 			{
 				if (self.jump_interval <= time && !self.held_down)

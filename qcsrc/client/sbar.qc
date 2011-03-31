@@ -463,9 +463,9 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		//<akari>
-		"ping pl name | hfrags ",
+		"ping pl name | hfrags +ft/kills +ft/deaths +ft/suicides +ft/revivals ",
 		//</akari>
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm/frags ", // tdm already has this in "score"
+		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
 		"+lms/lives +lms/rank ",
 		"+kh/caps +kh/pickups +kh/kckills ",
@@ -2521,6 +2521,9 @@ void Sbar_Draw (void)
 	}
 	#endif
 
+	if(getstati(STAT_FROZEN))
+		drawfill('0 0 0', bottomright, '0 1 1', 0.6, DRAWFLAG_ADDITIVE);
+
 	#ifdef RM_SUPPORT_MORNINGRESCUE
 	if(morningrescue)
 	if(time <= mr_fadetime)
@@ -2596,6 +2599,18 @@ void Sbar_Draw (void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
+
+    local float rev;
+    rev = getstatf(STAT_REVIVE_PROGRESS);
+
+    if(rev)
+    {
+        local vector revpos;
+        revpos_y = vid_height / 2 + sbar_fontsize_y * 2;
+
+        drawfont = sbar_font;
+        drawcolorcodedstringcenter(revpos, strcat("Revival progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
+    }
 
 	local float bp_alpha;
 	local vector bp_pos;

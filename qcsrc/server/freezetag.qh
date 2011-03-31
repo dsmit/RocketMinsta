@@ -1,0 +1,7 @@
+float g_freezetag;
+.float freezetag_frozen;
+.float freezetag_revive_progress;
+entity frag_inflictor;
+entity frag_attacker;
+entity frag_target;
+float sys_frametime;

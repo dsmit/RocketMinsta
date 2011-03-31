@@ -24,7 +24,7 @@
 // the jump part of the dodge cannot be ramped
 .float dodging_single_action;
 
-#define sys_frametime (cvar("sys_ticrate") * cvar("slowmo"))
+//#define sys_frametime (cvar("sys_ticrate") * cvar("slowmo"))
 
 void dodging_Initialize() {
 	// print("dodging_Initialize\n");
