@@ -28,6 +28,7 @@ void CSQC_kh_hudreset();
 void CSQC_kh_hud();
 void CSQC_ctf_hudreset();
 void CSQC_ctf_hud();
+void CSQC_ft_hud();
 void CSQC_nb_hud();
 void MapVote_Draw();
 void Sbar_FinaleOverlay()
@@ -3181,6 +3182,8 @@ void Sbar_Draw (void)
 			CSQC_kh_hud();
 		else if(gametype == GAME_CTF)
 			CSQC_ctf_hud();
+		else if(gametype == GAME_FREEZETAG)
+			CSQC_ft_hud();
 		else if(gametype == GAME_NEXBALL)
 			CSQC_nb_hud();
 	}
@@ -3500,4 +3503,25 @@ void CSQC_nb_hud(void)
 
 	if (stat_items & IT_KEY1)
 		drawpic(pos, "gfx/hud/sb_nexball_carrying", '80 34 0', '1 1 1', 1, DRAWFLAG_NORMAL);
+}
+
+//Freezetag HUD
+
+void CSQC_ft_hud(void)
+{
+	float redalive, bluealive; //Currently supports only red and blue teams
+	
+	redalive = getstati(STAT_REDALIVE);
+	bluealive = getstati(STAT_BLUEALIVE);
+	
+	vector position;
+	position = '0 0 0';
+	
+	position_y = vid_conheight - sbar_fontsize_y*2;
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+	drawcolorcodedstring(position, strcat("^4Blue alive^7: ", ftos(bluealive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+	
+	position_y -= sbar_fontsize_y;
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+	drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 }
