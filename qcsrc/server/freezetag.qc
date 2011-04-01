@@ -144,6 +144,7 @@ void freezetag_Ice_Think()
 {
 	setorigin(self, self.owner.origin - '0 0 16');
 	self.nextthink = time;
+    self.alpha = 0.6 * (1 - self.owner.freezetag_revive_progress);
 }
 
 void freezetag_Freeze(entity attacker)

@@ -2451,6 +2451,11 @@ float vote_alpha;
 float vote_change; // "time" when vote_active changed
 
 string vote_statstring;
+
+float revalpha;
+float revfadetime;
+float revsaved;
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -2527,11 +2532,25 @@ void Sbar_Draw (void)
 
 	if(getstati(STAT_FROZEN))
 	{
+		revfadetime = 0;
+		revsaved = rev;
+		revalpha = 0.6;
+	}
+	else
+	{
+		if(!revfadetime)
+			revfadetime = time;
+	}
+	
+	if(revalpha > 0)
+	{
 		local vector fcolor;
-		fcolor_x = rev;
-		fcolor_y = 1;
-		fcolor_z = 1 - rev;
-		drawfill('0 0 0', bottomright, fcolor, 0.6, DRAWFLAG_ADDITIVE);
+		fcolor_x = revsaved;
+		fcolor_y = 1 - revsaved * 0.9;
+		fcolor_z = 1 - revsaved;
+		
+		revalpha = (revfadetime? bound(0, 1 - 4 * (time - revfadetime), 0.6) : 0.6);
+		drawfill('0 0 0', bottomright, fcolor, revalpha, DRAWFLAG_ADDITIVE);
 	}
 
 	#ifdef RM_SUPPORT_MORNINGRESCUE
