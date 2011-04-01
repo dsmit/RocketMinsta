@@ -2060,8 +2060,8 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	if(clienttype(of) != CLIENTTYPE_REAL)
-		return;
+	//if(clienttype(of) != CLIENTTYPE_REAL)
+	//	return;
 	
 	if(!cvar("g_explosive_showspecs"))
 		return;
