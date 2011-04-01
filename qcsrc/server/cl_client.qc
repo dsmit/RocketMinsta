@@ -2048,6 +2048,8 @@ void SpectateCopy(entity spectatee) {
 	self.dmg_inflictor = spectatee.dmg_inflictor;
 	self.angles = spectatee.v_angle;
 	self.fixangle = TRUE;
+	self.freezetag_frozen = spectatee.freezetag_frozen;
+	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
