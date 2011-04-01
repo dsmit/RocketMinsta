@@ -2692,6 +2692,9 @@ void bigprint(entity e, string bigstring, string comment, float staytime)
     if(clienttype(e) != CLIENTTYPE_REAL)
         return;
     
+    if(e.classname == "")
+        return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_BIGPRINT);
@@ -2737,6 +2740,9 @@ void bigprint_clear_spec(entity pl)
 void madokaprint(entity e, string bigstring, string comment, float staytime)
 {
     if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    if(e.classname == "")
         return;
     
     msg_entity = e;
