@@ -2935,11 +2935,14 @@ void Sbar_Draw (void)
 				{
 					if (tm.team_size == ts_max)
 					{
+						local vector centeroffs;
+						centeroffs_y = 3 * cos(o2_y + 3 * time);
+						
 						s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
-						o2 = Sbar_DrawCenterNoteLine(o2, s);
+						o2 = Sbar_DrawCenterNoteLine(o2 + centeroffs, s);
 						
 						s = strcat(blinkcolor, "Press ^3", getcommandkey("team menu", "menu_showteamselect"), blinkcolor, " to adjust");
-						o2 = Sbar_DrawCenterNoteLine(o2, s);
+						o2 = Sbar_DrawCenterNoteLine(o2 + centeroffs, s);
 					}
 					else
 					{
