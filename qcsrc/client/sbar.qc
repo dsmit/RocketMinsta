@@ -3071,6 +3071,7 @@ void Sbar_Draw (void)
 		}
 
 		// weapon icons
+		/*
 		x = 1.0;
 		Sbar_DrawWeapon_Clear();
 		for(i = 1; i <= 24; ++i)
@@ -3082,6 +3083,7 @@ void Sbar_Draw (void)
 			}
 			x *= 2;
 		}
+		*/
 
 		// ammo
 		float a; // i will be the ammo type (already declared), a will contain how much ammo there is of type i
