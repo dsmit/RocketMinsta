@@ -757,6 +757,10 @@ void GameCommand(string msg)
 		print("  radar\n");
 		print("  sbar_columns_set ...\n");
 		print("  sbar_columns_help\n");
+		print("  bigprint text command staytime\n");
+		#ifdef RM_SUPPORT_MADOKA
+		print("  madokaprint text command staytime\n");
+		#endif
 		GameCommand_Generic("help");
 		return;
 	}
@@ -854,7 +858,27 @@ void GameCommand(string msg)
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
+	else if(cmd == "madokaprint")
+	{
+		if(argc < 3)
+		{
+			print("Usage: madokaprint text comment staytime\n");
+			return;
+		}
+		
+		madokaprint(argv(1), argv(2), stof(argv(3)));
+	}
 	#endif
+	else if(cmd == "bigprint")
+	{
+		if(argc < 3)
+		{
+			print("Usage: bigprint text comment staytime\n");
+			return;
+		}
+		
+		bigprint(argv(1), argv(2), stof(argv(3)));
+	}
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
@@ -1585,9 +1609,6 @@ void bigprint(string bigstr, string comment, float staytime)
 		bigprint_string = strzone(bigstr);
 		bigprint_fadetime = time + staytime;
 		bigprint_appeartime = time;
-		
-		//if(comment == "")
-		//	comment = " ";
 	}
 	
 	if(comment != "")
