@@ -2713,7 +2713,7 @@ void Sbar_Draw (void)
 	}
 
 	if(rm_showspec)
-	//if(!spectatee_status)
+	if(spectatee_status != -1)
 	if(num_spectators)
 	{
 		local float i;
