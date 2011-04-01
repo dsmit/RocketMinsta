@@ -1586,16 +1586,16 @@ void bigprint(string bigstr, string comment, float staytime)
 		bigprint_fadetime = time + staytime;
 		bigprint_appeartime = time;
 		
-		if(comment == "")
-			comment = " ";
+		//if(comment == "")
+		//	comment = " ";
 	}
-	
-	if(bigprint_comment);
-		fstrunzone(bigprint_comment);
 	
 	if(comment != "")
 	{
 		bigprint_nofadein = 0;
+		
+		if(bigprint_comment);
+			fstrunzone(bigprint_comment);
 		
 		if(substring(comment, 0, 1) == "\x01")
 		{
