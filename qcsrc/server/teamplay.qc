@@ -309,6 +309,7 @@ void InitGameplayMode()
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_explosive_freezetag_point_limit");
 		leadlimit_override = cvar("g_explosive_freezetag_point_leadlimit");
+		timelimit_override = cvar("g_explosive_freezetag_timelimit");
 		freezetag_Initialize();
 	}
 
