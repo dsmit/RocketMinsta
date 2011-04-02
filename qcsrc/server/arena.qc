@@ -294,7 +294,7 @@ void count_alive_players()
 				totalalive += 1;
 			}
 		}
-		FOR_EACH_PLAYER(self) {
+		FOR_EACH_CLIENT(self) {
 			self.redalive_stat = redalive;
 			self.bluealive_stat = bluealive;
 			self.yellowalive_stat = yellowalive;
