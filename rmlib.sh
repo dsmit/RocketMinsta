@@ -41,8 +41,13 @@ function buildqc
     qcdir="$QCSOURCE/$1"
 
     echo " -- Building $qcdir" >&2
+    local olddir="$PWD"
     pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
     $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
+    
+    local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
+    local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
+    [ "$(readlink -f "$compiled")" != "$olddir/$cname" ] && cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
     popd &>/dev/null
 }
 
