@@ -1076,6 +1076,9 @@ void GameCommand(string command)
 	{
 		local entity victim e = edict_num(stof(argv(2)));
 		
+		if(!e)
+			bprint("^1kill: ^7Could not find victim!\n");
+		
 		#ifdef RM_SUPPORT_MADOKA
 		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
 		#else
