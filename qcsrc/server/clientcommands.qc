@@ -805,7 +805,7 @@ void SV_ParseClientCommand(string s) {
 
 		clientcommand(self,s);
 
-        if(cmd == "name")
+        if(cmd == "name") if(self.classname != "")
         {
             WriteSpectatorInfo(self);
             WriteSpectatorInfo(self.enemy);
