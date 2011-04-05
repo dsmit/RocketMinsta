@@ -1047,7 +1047,6 @@ void GameCommand(string command)
 	#ifdef RM_SUPPORT_MADOKA
 	if(argv(0) == "walpurgis")
 	{
-		local entity e;
 		FOR_EACH_CLIENT(e)
 		{
 			//if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
@@ -1074,7 +1073,7 @@ void GameCommand(string command)
 
 	if(argv(0) == "kill")
 	{
-		local entity victim e = edict_num(stof(argv(2)));
+		e = edict_num(stof(argv(2)));
 		
 		if(!e)
 		{
@@ -1095,8 +1094,6 @@ void GameCommand(string command)
 	
 	if(argv(0) == "killfc")
 	{
-		local entity e;
-		
 		if(cvar("g_ctf"))
 		{
 			FOR_EACH_CLIENT(e) if(e.flagcarried)
