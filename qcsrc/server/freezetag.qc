@@ -240,6 +240,7 @@ float freezetag_RemovePlayer()
 	return 1;
 }
 
+string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vector velo);
 float freezetag_PlayerDies()
 {
     DEPENDON(g_freezetag)
@@ -282,7 +283,7 @@ float freezetag_PlayerDies()
 	}*/
 
 	frag_target.health = 100; // "respawn" the player :P
-
+	W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
 	freezetag_CheckWinner();
 
 	return 1;

@@ -1,3 +1,4 @@
+
 #define ITEM_RESPAWN_TICKS 10
 
 #define ITEM_RESPAWNTIME(i)         ((i).respawntime + crandom() * (i).respawntimejitter)
@@ -239,6 +240,10 @@ float Item_GiveTo(entity item, entity player)
 	float it;
 	float i;
 	entity e;
+
+	if(g_freezetag)
+	if(player.freezetag_frozen)
+		return 0;
 
 	// if nothing happens to player, just return without taking the item
 	pickedup = FALSE;
