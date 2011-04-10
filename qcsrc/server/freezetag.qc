@@ -80,6 +80,34 @@ void freezetag_CheckWinner()
     bprint("pinkalive = ", ftos(pinkalive), "\n");
     */
     
+    local entity oldself;
+    oldself = self;
+    
+    FOR_EACH_PLAYER(self) {
+		if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0)
+		{
+			redalive += 1;
+			totalalive += 1;
+		}
+		else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0)
+		{
+			bluealive += 1;
+			totalalive += 1;
+		}
+		else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0)
+		{
+			yellowalive += 1;
+			totalalive += 1;
+		}
+		else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0)
+		{
+			pinkalive += 1;
+			totalalive += 1;
+		}
+	}
+    
+	self = oldself;
+	
 	if((redalive >= 1 && bluealive >= 1) // counted in arena.qc
 		|| (redalive >= 1 && yellowalive >= 1)
 		|| (redalive >= 1 && pinkalive >= 1)
