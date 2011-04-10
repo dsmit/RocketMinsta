@@ -63,7 +63,22 @@ void dompoint_captured ()
 	//bprint(self.message);
 	//bprint("\n");
 
-	bprint("^3", head.netname, "^3", self.message, "\n");
+	//bprint("^3", head.netname, "^3", self.message, "\n");
+	
+	string teamname_full;
+	
+	if(self.enemy.team == COLOR_TEAM1)
+		teamname_full = "^1Red team";
+	else if(self.enemy.team == COLOR_TEAM2)
+		teamname_full = "^4Blue team";
+	else if(self.enemy.team == COLOR_TEAM3)
+		teamname_full = "^3Yellow team";
+	else
+		teamname_full = "^6Pink team";
+	
+	bprint(self.enemy.netname, " ^5has captured a control point for the ", teamname_full, "\n");
+	centerprint_spec(self.enemy, "^5You have captured a control point!");
+	
 	if(self.enemy.playerid == self.enemy_playerid)
 		PlayerScore_Add(self.enemy, SP_DOM_TAKES, 1);
 	else

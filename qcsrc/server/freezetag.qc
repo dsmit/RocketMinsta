@@ -120,7 +120,7 @@ void freezetag_CheckWinner()
 		else if(winner.team == COLOR_TEAM3)
         {
 			teamname = "^3yellow";
-            teamname = "^3Yellow team";
+            teamname_full = "^3Yellow team";
         }
 		else
         {
