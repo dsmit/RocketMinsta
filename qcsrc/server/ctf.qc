@@ -778,7 +778,7 @@ Keys:
 
 void spawnfunc_item_flag_team1()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
 		if((g_keyhunt || g_freezetag) && g_minstagib)
 			minstagib_items(IT_STRENGTH);
@@ -850,12 +850,15 @@ void spawnfunc_item_flag_team1()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+		WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+	}
 
 	precache_model("models/ctf/shield.md3");
 	precache_model("models/ctf/shockwavetransring.md3");
@@ -890,7 +893,7 @@ Keys:
 
 void spawnfunc_item_flag_team2()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
 		if((g_keyhunt || g_freezetag) && g_minstagib)
 			minstagib_items(IT_STRENGTH);
@@ -961,13 +964,16 @@ void spawnfunc_item_flag_team2()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
-
+		WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+	}
+	
 	precache_model("models/ctf/shield.md3");
 
 	self.reset = item_flag_reset;

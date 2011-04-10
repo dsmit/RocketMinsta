@@ -569,8 +569,8 @@ void dom_spawnpoint(vector org)
 	self.classname = "dom_controlpoint";
 	self.think = spawnfunc_dom_controlpoint;
 	self.nextthink = time;
-	setorigin(self, org);
 	spawnfunc_dom_controlpoint();
+	setorigin(self, org + '0 0 1' * (1 - self.mins_z + 24));
 	self = oldself;
 };
 
@@ -592,33 +592,80 @@ void dom_spawnteams()
 	dom_spawnteam("", 0, "models/domination/dom_unclaimed.md3", 0, "", "", "");
 };
 
-void dom_delayedinit()
+float dom_spawnpointsfor(string clname)
 {
 	local entity head;
+	local float i;
+	
+	//head = find(world, classname, clname);
+	for(head = world; (head = find(head, classname, clname));)
+	{
+		bprint("^5Domination: ^7found a ", head.classname, " at ", vtos(head.origin), "\n");
+		dom_spawnpoint(head.origin);
+		++i;
+	}
+	
+	bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints for ^6", clname, "\n");
+	return i;
+}
 
+void dom_removeall(string clname)
+{
+	local entity head;
+	head = find(world, classname, "");
+	
+	for(head = world; (head = find(head, classname, clname));)
+	{
+		bprint("^5Domination: ^7removed a ", head.classname, " at ", vtos(head.origin), "\n");
+		remove(head);
+	}
+}
+
+void dom_cp_placeholder()
+{
+	local entity oldself = self;
+	
+	self = spawn();
+	self.classname = "dom_cp_placeholder";
+	self.origin = oldself.origin;
+	setorigin(self, oldself.origin);
+	
+	bprint("^5Domination: ^7spawned a dom_cp_placeholder at ", vtos(self.origin), "\n");
+}
+
+void dom_delayedinit()
+{
 	// if no teams are found, spawn defaults, if custom teams are set, use them
 	if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
 		dom_spawnteams();
 	// if no control points are found, spawn defaults
-	if (find(world, classname, "dom_controlpoint") == world)
+	//if (find(world, classname, "dom_controlpoint") == world)
 	{
-		// here follow default domination points for each map
-		/*
-		if (world.model == "maps/e1m1.bsp")
-		{
-			dom_spawnpoint('0 0 0');
-		}
-		else
+		// if no supported map was found, make every deathmatch spawn a point
+		//info_player_deathmatch
+		
+		local float i, j, n;
+		i = 0;
+		
+		/*i += dom_spawnpointsfor("dom_cp_placeholder");
+		i += dom_spawnpointsfor("item_strength");
+		i += dom_spawnpointsfor("item_invincible");
+		//i += dom_spawnpointsfor("info_player_deathmatch");
+		i += dom_spawnpointsfor("item_flag_team");
+		i += dom_spawnpointsfor("minstagib");
 		*/
-		{
-			// if no supported map was found, make every deathmatch spawn a point
-			head = find(world, classname, "info_player_deathmatch");
-			while (head)
-			{
-				dom_spawnpoint(head.origin);
-				head = find(head, classname, "info_player_deathmatch");
-			}
-		}
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+		for(j = 0; j < n; ++j)
+			i += dom_spawnpointsfor(argv(j));
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		for(j = 0; j < n; ++j)
+			dom_removeall(argv(j));
+		
+		//dom_removeall("item_flag_team");
+		
+		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
 	}
 
 	ScoreRules_dom();
@@ -641,4 +688,3 @@ void dom_init()
 	//if(!teams_matter)
 	//	cvar_set("teamplay", "3");
 };
-

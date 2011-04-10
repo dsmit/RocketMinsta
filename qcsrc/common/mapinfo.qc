@@ -1019,21 +1019,30 @@ void MapInfo_SwitchGameType_String(string gtname)
 	{
 		cvar_set("g_ctf", "0");
 		cvar_set("g_freezetag", "0");
+		cvar_set("g_domination", "0");
 		_is_key_hunt = 1;
 	}
 	else if(gtname == "ft")
 	{
 		cvar_set("g_ctf", "0");
 		cvar_set("g_keyhunt", "0");
+		cvar_set("g_domination", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "ctf")
 	{
 		cvar_set("g_keyhunt", "0");
 		cvar_set("g_freezetag", "0");
+		cvar_set("g_domination", "0");
 		_is_key_hunt = 0;
 	}
-	
+	else if(gtname == "dom")
+	{
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		_is_key_hunt = 0;
+	}
 }
 
 void MapInfo_LoadMap(string s)

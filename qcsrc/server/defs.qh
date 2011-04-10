@@ -631,3 +631,5 @@ void bigprint_spec(entity, string, string, float);
 .string rmcfgreport
 .float anonspec
 .float madoka;
+
+void dom_cp_placeholder();

@@ -80,6 +80,8 @@ void freezetag_CheckWinner()
     bprint("pinkalive = ", ftos(pinkalive), "\n");
     */
     
+    count_alive_players();
+    
 	if((redalive >= 1 && bluealive >= 1) // counted in arena.qc
 		|| (redalive >= 1 && yellowalive >= 1)
 		|| (redalive >= 1 && pinkalive >= 1)
