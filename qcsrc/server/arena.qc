@@ -268,7 +268,7 @@ void count_spawned_players()
 
 void count_alive_players()
 {
-	bprint("count_alive_players() called\n");
+	//bprint("count_alive_players() called\n");
 	
 	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
 	if(g_freezetag)
@@ -304,10 +304,12 @@ void count_alive_players()
 		}
 	}
 	
+	/*
 	bprint("count_alive_players():\n");
 	bprint("totalalive = ", ftos(totalalive), "\n");
 	bprint("redalive = ", ftos(redalive), "\n");
 	bprint("bluealive = ", ftos(bluealive), "\n");
+	*/
 }
 
 /**
