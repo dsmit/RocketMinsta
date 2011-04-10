@@ -1139,6 +1139,9 @@ void GameCommand(string command)
 			//e.armorvalue = 999;
 			
 			e.health = max(e.health, 100);
+			
+			if(g_freezetag)
+				freezetag_Unfreeze(e);
 		}
 		
 		return;
