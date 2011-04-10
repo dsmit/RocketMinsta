@@ -216,6 +216,10 @@ void freezetag_Unfreeze(entity attacker)
 		WaypointSprite_Kill(self.waypointsprite_attached);
 }
 
+.vector ft_oldorigin;
+.vector ft_oldangles;
+.float ft_oldteam;
+.float ft_forcespawn;
 float freezetag_RemovePlayer()
 {
     DEPENDON(g_freezetag)
@@ -235,8 +239,16 @@ float freezetag_RemovePlayer()
 	if(totalspawned > 2) // only check for winners if we had more than two players (one of them left, don't let the other player win just because of that)
 		freezetag_CheckWinner();
 
-	freezetag_Unfreeze(world);
+	if(self.freezetag_frozen)
+	{
+		self.ft_oldorigin = self.origin;
+		self.ft_oldangles = self.angles;
+		self.ft_oldteam = self.team;
+		self.ft_forcespawn = TRUE;
+	}
 
+	freezetag_Unfreeze(world);
+	
 	return 1;
 }
 
@@ -306,6 +318,17 @@ float freezetag_PlayerSpawn()
 		freezetag_Freeze(world);
 	}
 
+	// Prevents frozen players from "teleporting" around
+	if(self.freezetag_frozen) if(self.ft_forcespawn) if(self.ft_oldteam == self.team)
+	{
+		self.origin = self.ft_oldorigin;
+		self.angles = self.ft_oldangles;
+		self.angles_z = 0;
+		self.fixangle = 1;
+		setorigin(self, self.ft_oldorigin + '0 0 1' * (1 - self.mins_z - 24));
+	}
+
+	self.ft_forcespawn = FALSE;
 	return 1;
 }
 
