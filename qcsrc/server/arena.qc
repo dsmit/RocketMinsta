@@ -268,27 +268,29 @@ void count_spawned_players()
 
 void count_alive_players()
 {
+	bprint("count_alive_players() called\n");
+	
 	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
 	if(g_freezetag)
 	{
 		// count amount of alive players in each team
 		FOR_EACH_PLAYER(self) {
-			if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0 && self.health >= 1)
+			if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0)
 			{
 				redalive += 1;
 				totalalive += 1;
 			}
-			else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0)
 			{
 				bluealive += 1;
 				totalalive += 1;
 			}
-			else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0)
 			{
 				yellowalive += 1;
 				totalalive += 1;
 			}
-			else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0)
 			{
 				pinkalive += 1;
 				totalalive += 1;
@@ -301,7 +303,11 @@ void count_alive_players()
 			self.pinkalive_stat = pinkalive;
 		}
 	}
-
+	
+	bprint("count_alive_players():\n");
+	bprint("totalalive = ", ftos(totalalive), "\n");
+	bprint("redalive = ", ftos(redalive), "\n");
+	bprint("bluealive = ", ftos(bluealive), "\n");
 }
 
 /**

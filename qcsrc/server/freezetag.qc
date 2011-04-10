@@ -152,6 +152,7 @@ void freezetag_Freeze(entity attacker)
     DEPENDON(g_freezetag)
 	if(self.freezetag_frozen)
 		return;
+		
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
 
