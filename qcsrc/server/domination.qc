@@ -638,35 +638,21 @@ void dom_delayedinit()
 	// if no teams are found, spawn defaults, if custom teams are set, use them
 	if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
 		dom_spawnteams();
-	// if no control points are found, spawn defaults
-	//if (find(world, classname, "dom_controlpoint") == world)
-	{
-		// if no supported map was found, make every deathmatch spawn a point
-		//info_player_deathmatch
-		
-		local float i, j, n;
-		i = 0;
-		
-		/*i += dom_spawnpointsfor("dom_cp_placeholder");
-		i += dom_spawnpointsfor("item_strength");
-		i += dom_spawnpointsfor("item_invincible");
-		//i += dom_spawnpointsfor("info_player_deathmatch");
-		i += dom_spawnpointsfor("item_flag_team");
-		i += dom_spawnpointsfor("minstagib");
-		*/
-		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
-		for(j = 0; j < n; ++j)
-			i += dom_spawnpointsfor(argv(j));
-		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
-		for(j = 0; j < n; ++j)
-			dom_removeall(argv(j));
-		
-		//dom_removeall("item_flag_team");
-		
-		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
-	}
+
+	local float i, j, n;
+	i = 0;
+	
+	dom_removeall("dom_controlpoint");
+	
+	n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+	for(j = 0; j < n; ++j)
+		i += dom_spawnpointsfor(argv(j));
+	
+	n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+	for(j = 0; j < n; ++j)
+		dom_removeall(argv(j));
+	
+	bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
 
 	ScoreRules_dom();
 };
