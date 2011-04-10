@@ -218,7 +218,7 @@ void InitGameplayMode()
 	if(g_tdm)
 	{
 		game = GAME_TEAM_DEATHMATCH;
-		gamemode_name = "Team Deathmatch";
+		//gamemode_name = "Team Deathmatch";
 		ActivateTeamplay();
 		tdm_init();
 	}
@@ -226,7 +226,7 @@ void InitGameplayMode()
 	if(g_domination)
 	{
 		game = GAME_DOMINATION;
-		gamemode_name = "Domination";
+		//gamemode_name = "Domination";
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_domination_point_limit");
 		leadlimit_override = cvar("g_domination_point_leadlimit");
@@ -236,7 +236,7 @@ void InitGameplayMode()
 	if(g_ctf)
 	{
 		game = GAME_CTF;
-		gamemode_name = "Capture the Flag";
+		//gamemode_name = "Capture the Flag";
 		ActivateTeamplay();
 		if(cvar("g_campaign"))
 			g_ctf_win_mode = 2;
@@ -259,7 +259,7 @@ void InitGameplayMode()
 	if(g_runematch)
 	{
 		game = GAME_RUNEMATCH;
-		gamemode_name = "Rune Match";
+		//gamemode_name = "Rune Match";
 		if(cvar("deathmatch_force_teamplay"))
 			ActivateTeamplay();
 		fraglimit_override = cvar("g_runematch_point_limit");
@@ -270,7 +270,7 @@ void InitGameplayMode()
 	if(g_lms)
 	{
 		game = GAME_LMS;
-		gamemode_name = "Last Man Standing";
+		//gamemode_name = "Last Man Standing";
 		fraglimit_override = cvar("g_lms_lives_override");
 		leadlimit_override = 0; // not supported by LMS
 		if(fraglimit_override == 0)
@@ -283,7 +283,7 @@ void InitGameplayMode()
 	if(g_arena)
 	{
 		game = GAME_ARENA;
-		gamemode_name = "Arena";
+		//gamemode_name = "Arena";
 		fraglimit_override = cvar("g_arena_point_limit");
 		leadlimit_override = cvar("g_arena_point_leadlimit");
 		maxspawned = cvar("g_arena_maxspawned");
@@ -295,7 +295,7 @@ void InitGameplayMode()
 	if(g_keyhunt)
 	{
 		game = GAME_KEYHUNT;
-		gamemode_name = "Key Hunt";
+		//gamemode_name = "Key Hunt";
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_keyhunt_point_limit");
 		leadlimit_override = cvar("g_keyhunt_point_leadlimit");
@@ -305,7 +305,7 @@ void InitGameplayMode()
 	if(g_freezetag)
 	{
 		game = GAME_FREEZETAG;
-		gamemode_name = "Freeze Tag";
+		//gamemode_name = "Freeze Tag";
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_explosive_freezetag_point_limit");
 		leadlimit_override = cvar("g_explosive_freezetag_point_leadlimit");
@@ -316,7 +316,7 @@ void InitGameplayMode()
 	if(g_assault)
 	{
 		game = GAME_ASSAULT;
-		gamemode_name = "Assault";
+		//gamemode_name = "Assault";
 		ActivateTeamplay();
 		ScoreRules_assault();
 	}
@@ -324,14 +324,14 @@ void InitGameplayMode()
 	if(g_onslaught)
 	{
 		game = GAME_ONSLAUGHT;
-		gamemode_name = "Onslaught";
+		//gamemode_name = "Onslaught";
 		ActivateTeamplay();
 	}
 
 	if(g_race)
 	{
 		game = GAME_RACE;
-		gamemode_name = "Race";
+		//gamemode_name = "Race";
 
 		if(cvar("g_race_teams"))
 		{
@@ -349,7 +349,7 @@ void InitGameplayMode()
 	if(g_cts)
 	{
 		game = GAME_CTS;
-		gamemode_name = "CTS";
+		//gamemode_name = "CTS";
 		g_race_qualifying = 1;
 		fraglimit_override = 0;
 		leadlimit_override = 0;
@@ -358,12 +358,14 @@ void InitGameplayMode()
 	if(g_nexball)
 	{
 		game = GAME_NEXBALL;
-		gamemode_name = "Nexball";
+		//gamemode_name = "Nexball";
 		fraglimit_override = cvar("g_nexball_goallimit");
 		leadlimit_override = cvar("g_nexball_goalleadlimit");
 		ActivateTeamplay();
 		nb_init();
 	}
+
+	gamemode_name = GametypeFullNameFromType(game);
 
 	if(teams_matter)
 		entcs_init();

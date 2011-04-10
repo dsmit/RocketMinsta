@@ -432,6 +432,25 @@ string GametypeNameFromType(float g)
 	return "dm";
 }
 
+string GametypeFullNameFromType(float g)
+{
+	if      (g == GAME_DEATHMATCH) return "Deathmatch";
+	else if (g == GAME_TEAM_DEATHMATCH) return "Team Deathmatch";
+	else if (g == GAME_DOMINATION) return "Domination";
+	else if (g == GAME_CTF) return "Capture the Flag";
+	else if (g == GAME_RUNEMATCH) return "Rune Match";
+	else if (g == GAME_LMS) return "Last Man Standing";
+	else if (g == GAME_ARENA) return "Arena";
+	else if (g == GAME_KEYHUNT) return "Key Hunt";
+	else if (g == GAME_ONSLAUGHT) return "Onslaught";
+	else if (g == GAME_ASSAULT) return "Assault";
+	else if (g == GAME_RACE) return "Race";
+	else if (g == GAME_NEXBALL) return "Nexball";
+	else if (g == GAME_CTS) return "CTS";
+	else if (g == GAME_FREEZETAG) return "Freeze Tag";
+	return "Unknown";
+}
+
 string mmsss(float tenths)
 {
 	float minutes;

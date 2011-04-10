@@ -1069,6 +1069,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb, vector bg_si
 	return pos;
 }
 
+string GametypeFullNameFromType(float g);
 float lastpingstime;
 float scoreboard_bottom;
 void Sbar_DrawScoreboard()
@@ -1100,7 +1101,7 @@ void Sbar_DrawScoreboard()
 
 	// Heading
 	drawfont = sbar_bigfont;
-	drawstringcenter('0 1 0' * ymin, "Scoreboard", '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
+	//drawstringcenter('0 1 0' * ymin, "Scoreboard", '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
 
 	pos_y += 24 + 4;
 	pos_y += sbar_fontsize_y;
@@ -1164,7 +1165,10 @@ void Sbar_DrawScoreboard()
 	// Print info string
 	string str;
 	float tl, fl, ll;
-	str = strcat("playing on ^2", shortmapname, "^7");
+	//str = strcat("playing on ^2", shortmapname, "^7");
+	
+	str = strcat("playing ^5", GametypeFullNameFromType(gametype), "^7 on ^2", shortmapname, "^7");
+	
 	tl = getstatf(STAT_TIMELIMIT);
 	fl = getstatf(STAT_FRAGLIMIT);
 	ll = getstatf(STAT_LEADLIMIT);
