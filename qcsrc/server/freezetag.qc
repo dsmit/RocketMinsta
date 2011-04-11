@@ -1,5 +1,5 @@
 
-#define DEPENDON(d) if(!d) return 0;
+#define DEPENDON(d) if(!(d)) return 0;
 
 void update_playercount()
 {

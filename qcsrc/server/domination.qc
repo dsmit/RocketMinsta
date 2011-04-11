@@ -187,6 +187,8 @@ void dompointthink()
 	}
 }
 
+.float pointupdatetime;
+
 void dompointtouch()
 {
 	local entity head;
@@ -204,6 +206,16 @@ void dompointtouch()
 		head = find(head, classname, "dom_team");
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
+
+	other.freezetag_revive_progress = bound(0, other.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
+	other.pointupdatetime = time;
+	
+	if(other.freezetag_revive_progress < 1)
+	{
+		//bprint(other.netname, "^7.freezetag_revive_progress = ", ftos(other.freezetag_revive_progress), "\n");
+		return;
+	}
+	other.freezetag_revive_progress = 0;
 
 	// delay capture
 
@@ -238,6 +250,16 @@ void dompointtouch()
 	self.enemy_playerid = other.playerid;
 	dompoint_captured();
 };
+
+float domination_PlayerPreThink()
+{
+	DEPENDON(g_domination)
+	
+	if(time - self.pointupdatetime >= 0.01)
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+	
+	return 1;
+}
 
 /*QUAKED spawnfunc_dom_team (0 .5 .8) (-32 -32 -24) (32 32 32)
 Team declaration for Domination gameplay, this allows you to decide what team

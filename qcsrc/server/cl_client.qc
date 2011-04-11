@@ -2382,6 +2382,7 @@ Called every frame for each client before the physics are run
 void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
+float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
 	self.stat_game_starttime = game_starttime;
@@ -2447,6 +2448,7 @@ void PlayerPreThink (void)
 #endif
 
 	freezetag_PlayerPreThink();
+	domination_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")

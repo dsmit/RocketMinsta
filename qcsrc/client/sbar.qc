@@ -2642,7 +2642,11 @@ void Sbar_Draw (void)
         revpos_y = vid_height / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
-        drawcolorcodedstringcenter(revpos, strcat("Revival progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
+        
+        if(gametype == GAME_FREEZETAG)
+			drawcolorcodedstringcenter(revpos, strcat("Revival progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
+		else
+			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
     }
 
 	local float bp_alpha;
