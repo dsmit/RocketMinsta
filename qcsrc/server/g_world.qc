@@ -400,6 +400,7 @@ void spawnfunc_worldspawn (void)
 	dprint_load(); // load dprint status from cvar
 
 	registercvar("g_freezetag", "0");
+	registercvar("g_total_domination", "0");
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");

@@ -20,6 +20,52 @@ Note: The only teams who can use dom control points are identified by spawnfunc_
 .float enemy_playerid;
 .entity sprite;
 .float captime;
+float tdom_maycap;
+
+void tdom_EndRound_Think()
+{
+    local float timeleft = rint(self.cnt - time);
+
+    if(intermission_running)
+    {
+        remove(self);
+        return;
+    }
+    
+    if(timeleft <= cvar("g_totaldomination_warmup"))
+    {
+        if(timeleft <= 0)
+        {
+            local entity e;
+            FOR_EACH_PLAYER(e)
+            {
+                bigprint_clear_spec(e);
+                bigprint_spec(e, "^5Begin!", "", 1);
+                tdom_maycap = 1;
+            }
+            remove(self);
+            return;
+        }
+        
+        local entity e;
+        FOR_EACH_PLAYER(e)
+        {
+            bigprint_clear_spec(e);
+            bigprint_spec(e, strcat("total domination starts in: ", ftos(timeleft)), "", 1);
+        }
+    }
+    self.nextthink = time + 1;
+}
+
+void tdom_EndRound()
+{
+    local entity e = spawn();
+    e.think = tdom_EndRound_Think;
+    e.nextthink = time + 1;
+    next_round = time + 5;
+    e.cnt = cvar("g_totaldomination_warmup") + next_round;
+    tdom_maycap = 0;
+}
 
 void() dom_controlpoint_setup;
 
@@ -35,6 +81,50 @@ void LogDom(string mode, float team_before, entity actor)
 }
 
 void() dom_spawnteams;
+
+#define FOR_EACH_CONTROLPOINT(v) for(v = world; (v = find(v, classname, "dom_controlpoint")) != world; )
+void tdom_checkwinner()
+{
+	local entity e;
+	
+	local float totalpoints, redpoints, bluepoints;
+	
+	FOR_EACH_CONTROLPOINT(e)
+	{
+		++totalpoints;
+		
+		if(e.goalentity.team == COLOR_TEAM1)
+			++redpoints;
+		else if(e.goalentity.team == COLOR_TEAM2)
+			++bluepoints;
+		
+		bprint("^5Total domination: ^7Found a controlpoint, belongs to ", e.enemy.netname, "^7; team ", ftos(e.goalentity.team), "\n");
+	}
+	
+	bprint("^5Total domination: ^7", ftos(totalpoints), " ", ftos(redpoints), " ", ftos(bluepoints), "\n");
+	
+	if(!bluepoints && redpoints && redpoints == totalpoints)
+	{
+		bprint("^5Total domination: ^1RED WINS\n");
+		FOR_EACH_PLAYER(e)
+			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
+		bprint("^1Red team ^5wins the round since they have captured all of the control points\n");
+		play2all("ctf/red_capture.wav");
+		TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
+		tdom_EndRound();
+	}
+	
+	if(!redpoints && bluepoints && bluepoints == totalpoints)
+	{
+		bprint("^5Total domination: ^4BLUE WINS\n");
+		FOR_EACH_PLAYER(e)
+			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
+		bprint("^4Blue team ^5wins the round since they have captured all of the control points\n");
+		play2all("ctf/blue_capture.wav");
+		TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
+		tdom_EndRound();
+	}
+}
 
 void dompoint_captured ()
 {
@@ -129,6 +219,9 @@ void dompoint_captured ()
 	WaypointSprite_Ping(self.sprite);
 
 	self.captime = time;
+	
+	if(g_totaldomination)
+		tdom_checkwinner();
 };
 
 void AnimateDomPoint()
@@ -173,7 +266,10 @@ void dompointthink()
 		fragamt = cvar("g_domination_point_amt");
 		if(!fragamt)
 			fragamt = self.DOMPOINTFRAGS;
-		TeamScore_AddToTeam(self.goalentity.team, ST_SCORE, fragamt);
+			
+		if(!g_totaldomination)
+			TeamScore_AddToTeam(self.goalentity.team, ST_SCORE, fragamt);
+			
 		TeamScore_AddToTeam(self.goalentity.team, ST_DOM_TICKS, fragamt);
 
 		// give credit to the individual player, if he is still there
@@ -198,6 +294,9 @@ void dompointtouch()
 		return;
 
 	if(time < self.captime + 0.3)
+		return;
+
+	if(!tdom_maycap)
 		return;
 
 	// only valid teams can claim it
@@ -694,6 +793,18 @@ void dom_delayedinit()
 	ScoreRules_dom();
 };
 
+void totaldom_init()
+{
+	if(inWarmupStage)
+		warmup = time;
+	else
+		warmup = time + cvar("g_start_delay");
+	
+	tdom_maycap = 1;
+	precache_sound("ctf/red_capture.wav");
+    precache_sound("ctf/blue_capture.wav");
+}
+
 void dom_init()
 {
 	// we have to precache default models/sounds even if they might not be
@@ -710,4 +821,7 @@ void dom_init()
 	// teamplay is always on in domination, defaults to hurt self but not teammates
 	//if(!teams_matter)
 	//	cvar_set("teamplay", "3");
+	
+	if(g_totaldomination)
+		totaldom_init();
 };

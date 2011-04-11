@@ -89,6 +89,7 @@ void WriteGameCvars()
 	cvar_set("g_dm", ftos(g_dm));
 	cvar_set("g_tdm", ftos(g_tdm));
 	cvar_set("g_domination", ftos(g_domination));
+	cvar_set("g_total_domination", ftos(g_total_domination));
 	cvar_set("g_ctf", ftos(g_ctf));
 	cvar_set("g_runematch", ftos(g_runematch));
 	cvar_set("g_lms", ftos(g_lms));
@@ -114,7 +115,8 @@ void ReadGameCvars()
 	{
 		found += (g_dm = (!found && (prev != GAME_DEATHMATCH) && cvar("g_dm")));
 		found += (g_tdm = (!found && (prev != GAME_TEAM_DEATHMATCH) && cvar("g_tdm")));
-		found += (g_domination = (!found && (prev != GAME_DOMINATION) && cvar("g_domination")));
+		found += (g_total_domination = (!found && (prev != GAME_TOTAL_DOMINATION) && cvar("g_total_domination")));
+		found += (g_domination = (!found && (prev != GAME_DOMINATION) && cvar("g_domination") && !cvar("g_total_domination")));
 		found += (g_ctf = (!found && (prev != GAME_CTF) && cvar("g_ctf")));
 		found += (g_runematch = (!found && (prev != GAME_RUNEMATCH) && cvar("g_runematch")));
 		found += (g_lms = (!found && (prev != GAME_LMS) && cvar("g_lms")));
@@ -126,6 +128,9 @@ void ReadGameCvars()
 		found += (g_nexball = (!found && (prev != GAME_NEXBALL) && cvar("g_nexball")));
 		found += (g_cts = (!found && (prev != GAME_CTS) && cvar("g_cts")));
 		found += (g_freezetag = (!found && (prev != GAME_FREEZETAG) && cvar("g_freezetag")));
+
+		if(g_total_domination)
+			g_domination = 1;
 
 		if(found)
 			break;
@@ -212,7 +217,7 @@ void InitGameplayMode()
 	if(g_dm)
 	{
 		game = GAME_DEATHMATCH;
-		gamemode_name = "Deathmatch";
+		//gamemode_name = "Deathmatch";
 	}
 
 	if(g_tdm)
@@ -225,11 +230,22 @@ void InitGameplayMode()
 
 	if(g_domination)
 	{
-		game = GAME_DOMINATION;
-		//gamemode_name = "Domination";
+		if(g_total_domination)
+		{
+			fraglimit_override = cvar("g_totaldomination_point_limit");
+			leadlimit_override = cvar("g_totaldomination_point_leadlimit");
+			timelimit_override = cvar("g_totaldomination_time_limit");
+			game = GAME_TOTAL_DOMINATION;
+		}
+		else
+		{
+			fraglimit_override = cvar("g_domination_point_limit");
+			leadlimit_override = cvar("g_domination_point_leadlimit");
+			timelimit_override = cvar("g_domination_time_limit");
+			game = GAME_DOMINATION;
+		}
+		
 		ActivateTeamplay();
-		fraglimit_override = cvar("g_domination_point_limit");
-		leadlimit_override = cvar("g_domination_point_leadlimit");
 		dom_init();
 	}
 

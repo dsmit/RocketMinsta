@@ -418,6 +418,7 @@ string GametypeNameFromType(float g)
 	if      (g == GAME_DEATHMATCH) return "dm";
 	else if (g == GAME_TEAM_DEATHMATCH) return "tdm";
 	else if (g == GAME_DOMINATION) return "dom";
+	else if (g == GAME_TOTAL_DOMINATION) return "totaldom";
 	else if (g == GAME_CTF) return "ctf";
 	else if (g == GAME_RUNEMATCH) return "rune";
 	else if (g == GAME_LMS) return "lms";
@@ -437,6 +438,7 @@ string GametypeFullNameFromType(float g)
 	if      (g == GAME_DEATHMATCH) return "Deathmatch";
 	else if (g == GAME_TEAM_DEATHMATCH) return "Team Deathmatch";
 	else if (g == GAME_DOMINATION) return "Domination";
+	else if (g == GAME_TOTAL_DOMINATION) return "Total Domination";
 	else if (g == GAME_CTF) return "Capture the Flag";
 	else if (g == GAME_RUNEMATCH) return "Rune Match";
 	else if (g == GAME_LMS) return "Last Man Standing";

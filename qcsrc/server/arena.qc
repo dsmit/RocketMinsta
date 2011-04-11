@@ -93,7 +93,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag)
+			else if(g_freezetag || g_totaldomination)
 			{
 				if(self.classname == "player")
 					PutClientInServer();
@@ -338,7 +338,7 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag)
+	if(g_freezetag || g_totaldomination)
 	{
 		if((next_round && next_round < time))
 		{

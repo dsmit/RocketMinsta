@@ -175,7 +175,7 @@ void GiveFrags (entity attacker, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag)
+	else if(g_freezetag || g_totaldomination)
 	{
 		f = 0;
 	}

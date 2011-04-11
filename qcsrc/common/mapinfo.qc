@@ -533,6 +533,7 @@ float MapInfo_Type_FromString(string t)
 	else if(t == "cts")     return MAPINFO_TYPE_CTS;
 	else if(t == "all")     return MAPINFO_TYPE_ALL;
 	else if(t == "ft")		return MAPINFO_TYPE_CTF;
+	else if(t == "totaldom") return MAPINFO_TYPE_DOMINATION;
 	else                    return 0;
 }
 
@@ -924,6 +925,8 @@ float MapInfo_CurrentGametype()
 {
 	if(cvar("g_domination"))
 		return MAPINFO_TYPE_DOMINATION;
+	else if(cvar("g_total_domination"))
+		return MAPINFO_TYPE_DOMINATION;
 	else if(cvar("g_ctf"))
 		return MAPINFO_TYPE_CTF;
 	else if(cvar("g_runematch"))
@@ -998,6 +1001,7 @@ void MapInfo_SwitchGameType(float t)
 	cvar_set("g_dm",         (t == MAPINFO_TYPE_DEATHMATCH)      ? "1" : "0");
 	cvar_set("g_tdm",        (t == MAPINFO_TYPE_TEAM_DEATHMATCH) ? "1" : "0");
 	cvar_set("g_domination", (t == MAPINFO_TYPE_DOMINATION)      ? "1" : "0");
+	cvar_set("g_total_domination", (t == MAPINFO_TYPE_DOMINATION)      ? "1" : "0");
 	cvar_set("g_ctf",        (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
 	cvar_set("g_runematch",  (t == MAPINFO_TYPE_RUNEMATCH)       ? "1" : "0");
 	cvar_set("g_lms",        (t == MAPINFO_TYPE_LMS)             ? "1" : "0");
@@ -1020,6 +1024,7 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_ctf", "0");
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_domination", "0");
+		cvar_set("g_total_domination", "0");
 		_is_key_hunt = 1;
 	}
 	else if(gtname == "ft")
@@ -1027,6 +1032,7 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_ctf", "0");
 		cvar_set("g_keyhunt", "0");
 		cvar_set("g_domination", "0");
+		cvar_set("g_total_domination", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "ctf")
@@ -1034,6 +1040,7 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_keyhunt", "0");
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_domination", "0");
+		cvar_set("g_total_domination", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "dom")
@@ -1041,6 +1048,16 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_keyhunt", "0");
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		_is_key_hunt = 0;
+	}
+	else if(gtname == "totaldom")
+	{
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "1");
+		cvar_set("g_domination", "1");
 		_is_key_hunt = 0;
 	}
 }

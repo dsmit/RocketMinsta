@@ -175,7 +175,7 @@ void freezetag_CheckWinner()
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
             bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
 		}
-		bprint(teamname_full, "^5 wins the round since all their opponents were frozen.\n");
+		bprint(teamname_full, "^5 wins the round since all their opponents were frozen\n");
 		TeamScore_AddToTeam(winner.team, ST_SCORE, +1);
 	}
 
