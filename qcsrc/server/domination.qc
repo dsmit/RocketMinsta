@@ -423,7 +423,8 @@ void dom_controlpoint_setup()
 	self.goalentity = head;
 	setmodel(self, head.mdl); // precision already set
 	self.skin = head.skin;
-
+	self.enemy = world;
+	
 	self.cnt = -1;
 
 	if(!self.message)
