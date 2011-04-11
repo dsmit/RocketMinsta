@@ -2679,8 +2679,11 @@ void Sbar_Draw (void)
 	if(bp_draw)
 	if(bigprint_string)
 	{
-		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
+		for(i = 0; i < 2; ++i)
 		{
+			if(rm_simpleeffects) if(i)
+				break;
+			
 			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_appeartime : bigprint_fadetime)), 1);
 			
 			if(bp_alpha > 0)
@@ -2691,7 +2694,6 @@ void Sbar_Draw (void)
 					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0', bp_alpha, DRAWFLAG_NORMAL);
 				else
 				{
-				
 					if(tmpmadoka_fadetime >= time)
 					{
 						local string mycolor;
@@ -2737,7 +2739,7 @@ void Sbar_Draw (void)
 				
 				drawfont = sbar_font;
 			}
-			else
+			else if(!i)
 				bp_draw = 0;
 		}
 	}
@@ -2750,9 +2752,12 @@ void Sbar_Draw (void)
 		
 		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
 		{
-			if(bigprint_nofadein && i)
+			if(bigprint_nofadein) if(i)
 				continue;
-				
+			
+			if(rm_simpleeffects) if(i)
+				break;
+			
 			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_commentappeartime : bigprint_commentfadetime)), 1);
 			
 			if(bp_alpha)
@@ -2762,7 +2767,7 @@ void Sbar_Draw (void)
 				else
 					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			}
-			else
+			else if(!i)
 				bpc_draw = 0;
 		}
 	}
