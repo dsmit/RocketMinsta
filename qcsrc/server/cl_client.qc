@@ -1278,6 +1278,17 @@ void FixClientCvars(entity e)
 	 */
 }
 
+void ServerTopic()
+{
+	local string topicby = cvar_string("_sv_explosive_topicby");
+	local string servertopic = cvar_string("_sv_explosive_topic");
+	
+	if(servertopic) if(servertopic != "")
+		sprint(self, "\x01^2* ^3Current topic^7: ", servertopic, "\n"
+			   "\x01^2* ^7Topic set by ^3", ((topicby && topicby != "")? topicby : "<server>"),
+		"\n");
+}
+
 /*
 =============
 ClientConnect
@@ -1465,6 +1476,9 @@ void ClientConnect (void)
 	}
 	else
 		self.hitplotfh = -1;
+	
+	if(clienttype(self) == CLIENTTYPE_REAL)
+		defer(5, ServerTopic);
 }
 
 /*

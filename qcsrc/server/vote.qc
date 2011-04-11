@@ -200,6 +200,12 @@ float RemapVote(string vote, string cmd, entity e)
 		RemapVote_display = strzone(strcat("^1", vote));
 	}
 
+	if(argv(0) == "topic")
+	{
+		keeptopic = TRUE;
+		cvar_set("_sv_explosive_topicby", e.netname);
+	}
+
 	return TRUE;
 }
 

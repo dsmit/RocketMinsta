@@ -2762,3 +2762,29 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
     }
 }
 
+void defer_think()
+{
+    entity oself;
+
+    oself           = self;
+    self            = self.owner;
+    oself.think     = SUB_Remove;
+    oself.nextthink = time;
+
+    oself.use();
+}
+
+/*
+    Execute func() after time + fdelay.
+    self when func is executed = self when defer is called
+*/
+void defer(float fdelay, void() func)
+{
+    entity e;
+
+    e           = spawn();
+    e.owner     = self;
+    e.use       = func;
+    e.think     = defer_think;
+    e.nextthink = time + fdelay;
+}

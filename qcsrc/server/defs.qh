@@ -633,3 +633,5 @@ void bigprint_spec(entity, string, string, float);
 .float madoka;
 
 void dom_cp_placeholder();
+
+float keeptopic;

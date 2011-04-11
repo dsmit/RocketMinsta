@@ -1161,6 +1161,20 @@ void GameCommand(string command)
         freezetag_EndRound();
     }
 
+	if(argv(0) == "topic")
+	{
+		if(!keeptopic)
+			cvar_set("_sv_explosive_topicby", "");
+		keeptopic = FALSE;
+		
+		local string topicby = cvar_string("_sv_explosive_topicby");
+		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
+		
+		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		
+		return;
+	}
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 
