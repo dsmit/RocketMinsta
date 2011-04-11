@@ -1,6 +1,14 @@
 
 #define DEPENDON(d) if(!d) return 0;
 
+void update_playercount()
+{
+	local entity oldself;
+	oldself = self;
+	count_alive_players();
+	self = oldself;
+}
+
 void freezetag_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
@@ -15,6 +23,8 @@ void freezetag_EndRound_Think()
         remove(self);
         return;
     }
+    
+    update_playercount();
     
     if(timeleft <= cvar("g_explosive_freezetag_warmup"))
     {
@@ -47,6 +57,7 @@ void freezetag_EndRound()
     e.nextthink = time + 1;
     next_round = time + 5;
     e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
+    update_playercount();
 }
 
 void freezetag_Initialize()
@@ -61,11 +72,14 @@ void freezetag_Initialize()
     precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");
 	ScoreRules_freezetag();
+	update_playercount();
 }
 
 void freezetag_CheckWinner()
 {
     DEPENDON(g_freezetag)
+    
+    //bprint("freezetag_CheckWinner()\n");
     
 	if(time <= game_starttime) // game didn't even start yet! nobody can win in that case.
 		return;
@@ -80,6 +94,7 @@ void freezetag_CheckWinner()
     bprint("pinkalive = ", ftos(pinkalive), "\n");
     */
     
+    /*
     local entity oldself;
     oldself = self;
     
@@ -107,6 +122,9 @@ void freezetag_CheckWinner()
 	}
     
 	self = oldself;
+	*/
+	
+	update_playercount();
 	
 	if((redalive >= 1 && bluealive >= 1) // counted in arena.qc
 		|| (redalive >= 1 && yellowalive >= 1)
@@ -200,6 +218,8 @@ void freezetag_Freeze(entity attacker)
 	freezetag_Ice_Think();
 	self = oldself;
 
+	update_playercount();
+
 	// add waypoint
 	WaypointSprite_Spawn("freezetag_frozen", 0, 0, self, '0 0 64', world, self.team, self, waypointsprite_attached, TRUE);
 	if(self.waypointsprite_attached)
@@ -240,6 +260,8 @@ void freezetag_Unfreeze(entity attacker)
 		break;
 	}
 
+	update_playercount();
+
 	// remove waypoint
 	if(self.waypointsprite_attached)
 		WaypointSprite_Kill(self.waypointsprite_attached);
@@ -277,6 +299,8 @@ float freezetag_RemovePlayer()
 	}
 
 	freezetag_Unfreeze(world);
+	
+	update_playercount();
 	
 	return 1;
 }
@@ -333,6 +357,9 @@ float freezetag_PlayerDies()
 float freezetag_PlayerSpawn()
 {
     DEPENDON(g_freezetag)
+    
+    //bprint("freezetag_PlayerSpawn() for ", self.netname, "\n");
+    
     freezetag_Unfreeze(world); // start by making sure that all ice blocks are removed
 
 	if(totalspawned == 1 && time > game_starttime) // only one player active on server, start a new match immediately
@@ -358,6 +385,11 @@ float freezetag_PlayerSpawn()
 	}
 
 	self.ft_forcespawn = FALSE;
+	
+	update_playercount();
+	defer(0.1, update_playercount);
+	//freezetag_CheckWinner();
+	
 	return 1;
 }
 

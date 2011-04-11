@@ -274,27 +274,34 @@ void count_alive_players()
 	if(g_freezetag)
 	{
 		// count amount of alive players in each team
-		FOR_EACH_PLAYER(self) {
+		FOR_EACH_PLAYER(self)
+		{
 			if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0)
 			{
 				redalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
 			else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0)
 			{
 				bluealive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
 			else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0)
 			{
 				yellowalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
 			else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0)
 			{
 				pinkalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
+			
+			//bprint(self.netname, " ^6is ^1DEAD^7: team = ", ftos(self.team), "; freezetag_frozen = ", ftos(self.freezetag_frozen), "\n");
 		}
 		FOR_EACH_CLIENT(self) {
 			self.redalive_stat = redalive;
@@ -324,7 +331,7 @@ void Spawnqueue_Check()
 	count_spawned_players();
 	if(g_freezetag) // we want to perform this before the return block below (CA)...
 	{
-		count_alive_players();
+		//count_alive_players();
 	}
 	if(time < warmup + 1)
 		return;
