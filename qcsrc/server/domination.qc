@@ -98,14 +98,14 @@ void tdom_checkwinner()
 		else if(e.goalentity.team == COLOR_TEAM2)
 			++bluepoints;
 		
-		bprint("^5Total domination: ^7Found a controlpoint, belongs to ", e.enemy.netname, "^7; team ", ftos(e.goalentity.team), "\n");
+		//bprint("^5Total domination: ^7Found a controlpoint, belongs to ", e.enemy.netname, "^7; team ", ftos(e.goalentity.team), "\n");
 	}
 	
-	bprint("^5Total domination: ^7", ftos(totalpoints), " ", ftos(redpoints), " ", ftos(bluepoints), "\n");
+	//bprint("^5Total domination: ^7", ftos(totalpoints), " ", ftos(redpoints), " ", ftos(bluepoints), "\n");
 	
 	if(!bluepoints && redpoints && redpoints == totalpoints)
 	{
-		bprint("^5Total domination: ^1RED WINS\n");
+		//bprint("^5Total domination: ^1RED WINS\n");
 		FOR_EACH_PLAYER(e)
 			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
 		bprint("^1Red team ^5wins the round since they have captured all of the control points\n");
@@ -116,7 +116,7 @@ void tdom_checkwinner()
 	
 	if(!redpoints && bluepoints && bluepoints == totalpoints)
 	{
-		bprint("^5Total domination: ^4BLUE WINS\n");
+		//bprint("^5Total domination: ^4BLUE WINS\n");
 		FOR_EACH_PLAYER(e)
 			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
 		bprint("^4Blue team ^5wins the round since they have captured all of the control points\n");
