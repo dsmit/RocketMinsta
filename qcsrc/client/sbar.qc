@@ -1939,15 +1939,18 @@ void Sbar_DrawCenterPrint (void)
 			strunzone(centerprint_messages[i]);
 		}
 
-		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * a) * 0.5;
+		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (rm_simpleeffects? 1 : a)) * 0.5;
 		ts = centerprint_messages[i];
 
 		if (ts != "")
 		{
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-			drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
+			if(rm_simpleeffects)
+				drawcolorcodedstring(pos, ts, centerprint_fontsize, a, DRAWFLAG_NORMAL);
+			else
+				drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
-			pos_y = pos_y + centerprint_fontsize_y * a;
+			pos_y = pos_y + centerprint_fontsize_y * (rm_simpleeffects? 1 : a);
 		}
 		else
 			// half height for empty lines looks better
@@ -2645,6 +2648,7 @@ void Sbar_Draw (void)
 	local float bp_alpha;
 	local vector bp_pos;
 
+	if(obp_draw)
 	if(bigprint_oldstring)
 	{
 		bp_alpha = bound(0, 1 - 4 * (time - bigprint_oldfadetime), 1);
@@ -2654,17 +2658,24 @@ void Sbar_Draw (void)
 			bp_pos = '0 1 0' * (vid_conheight/5);
 			bp_pos_y -= 24;
 			drawfont = sbar_bigfont;
-			drawcolorcodedstringcenter(bp_pos, bigprint_oldstring, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+			
+			if(rm_simpleeffects)
+				drawcolorcodedstringcenter(bp_pos, bigprint_oldstring, '24 24 0', bp_alpha, DRAWFLAG_NORMAL);
+			else
+				drawcolorcodedstringcenter(bp_pos, bigprint_oldstring, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 			
 			drawfont = sbar_font;
 			//comment for oldbigprint is not displayed
 		}
+		else
+			obp_draw = 0;
 	}
 
 	bp_pos = '0 1 0' * (vid_conheight/5);
+	if(bp_draw)
 	if(bigprint_string)
 	{
-		for(i = 0; i < 2; ++i)
+		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
 		{
 			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_appeartime : bigprint_fadetime)), 1);
 			
@@ -2672,59 +2683,68 @@ void Sbar_Draw (void)
 			{
 				drawfont = sbar_bigfont;
 				
-				if(tmpmadoka_fadetime >= time)
-				{
-					local string mycolor;
-					local string mychar;
-					local vector offset;
-					local float j;
-					
-					bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
-					for(j = 0; j < strlen(bigprint_string); ++j)
-					{
-						mychar = substring(bigprint_string, j, 1);
-						
-						if(mychar == "^")
-						{
-							if(substring(bigprint_string, j+1, 1) == "x") 
-							{
-								mycolor = substring(bigprint_string, j, 5);
-								j += 5;
-							}
-							else
-							{
-								mycolor = substring(bigprint_string, j, 2);
-								++j;
-							}
-							continue;
-						}
-						
-						offset_y = 3 * cos(bp_pos_x + 5 * time) * (mod(j, 2)? 1 : -1);
-						offset_x = offset_y * (mod(j, 2)? -1 : 1);
-						local string resultstr = strcat(mycolor, mychar);
-
-						dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-						//drawcolorcodedstringcenter(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
-						//bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
-						
-						bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
-						drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
-					}
-				}
+				if(rm_simpleeffects)
+					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0', bp_alpha, DRAWFLAG_NORMAL);
 				else
-					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+				{
+				
+					if(tmpmadoka_fadetime >= time)
+					{
+						local string mycolor;
+						local string mychar;
+						local vector offset;
+						local float j;
+						
+						bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
+						for(j = 0; j < strlen(bigprint_string); ++j)
+						{
+							mychar = substring(bigprint_string, j, 1);
+							
+							if(mychar == "^")
+							{
+								if(substring(bigprint_string, j+1, 1) == "x") 
+								{
+									mycolor = substring(bigprint_string, j, 5);
+									j += 5;
+								}
+								else
+								{
+									mycolor = substring(bigprint_string, j, 2);
+									++j;
+								}
+								continue;
+							}
+							
+							offset_y = 3 * cos(bp_pos_x + 5 * time) * (mod(j, 2)? 1 : -1);
+							offset_x = offset_y * (mod(j, 2)? -1 : 1);
+							local string resultstr = strcat(mycolor, mychar);
+
+							dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
+							//drawcolorcodedstringcenter(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+							//bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
+							
+							bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
+							drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+						}
+					}
+					else
+						drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+				}
 				
 				drawfont = sbar_font;
 			}
+			else
+				bp_draw = 0;
 		}
 	}
 
+	if(bpc_draw)
 	if(bigprint_comment)
 	if(!rm_hidebigcomments)
 	{
 		bp_pos_y += 24;
 		
-		for(i = 0; i < 2; ++i)
+		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
 		{
 			if(bigprint_nofadein && i)
 				continue;
@@ -2732,7 +2752,14 @@ void Sbar_Draw (void)
 			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_commentappeartime : bigprint_commentfadetime)), 1);
 			
 			if(bp_alpha)
-				drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+			{
+				if(rm_simpleeffects)
+					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize, bp_alpha, DRAWFLAG_NORMAL);
+				else
+					drawcolorcodedstringcenter(bp_pos, bigprint_comment, sbar_fontsize * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+			}
+			else
+				bpc_draw = 0;
 		}
 	}
 

@@ -190,6 +190,7 @@ float rm_legacyvote;
 float rm_hidewatermark;
 float rm_madoka;
 float rm_crosshealth;
+float rm_simpleeffects;
 
 float vote_yescount;
 float vote_nocount;
@@ -216,3 +217,7 @@ float sbar_madokafont;
 #define sbar_bigfont_real FONT_USER+2
 
 void SetMadokaFont(float);
+
+float bp_draw;
+float bpc_draw;
+float obp_draw;
