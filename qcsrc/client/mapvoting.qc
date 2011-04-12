@@ -39,6 +39,62 @@ vector MapVote_RGB(float id)
 		return '1 1 1';
 }
 
+string GameTypeVote_GameTypeName(string gtype)
+{
+	switch(gtype)
+	{
+		case "ctf":
+			return "Capture the Flag";
+		case "kh":
+			return "Key Hunt";
+		case "ft":
+			return "Freeze Tag";
+		case "dom":
+			return "Domination";
+		case "totaldom":
+			return "Total Domination";
+	}
+	
+	return strcat(gtype, " (unknown gametype?!)");
+}
+
+string GameTypeVote_GameTypeDescription(string gtype)
+{
+	switch(gtype)
+	{
+		case "ctf":
+			return "Each team has a flag placed on their base.\nYou must steal the enemy flag and bring it to yours to score.";
+		case "kh":
+			return "Each team posseses a key of it's color.\nYour team must steal all the keys and connect them to score.";
+		case "ft":
+			return "Frag your opponenets to turn them into iceblocks.\nFreeze the whole opposite team to win the round.\nYou can revive your frozen teammates by standing nearby them.";
+		case "dom":
+			return "Several control points are placed on the map.\nYou can capture a contol point by walking over it.\nOnce captured, a control point repeatedly gives you score until the limit is reached.";
+		case "totaldom":
+			return "A round based Domination spin-off.\nYou must overtake all of the control points on the map to win the round.";
+	}
+	
+	return "No description is available for this gametype";
+}
+
+#define drawGameTypeLine(s,c,sc) \
+drawstring(o, (s), sbar_fontsize * (sc), (c), 1, DRAWFLAG_NORMAL); \
+o_y += sbar_fontsize_y * sc
+
+vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
+{
+	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2);
+	
+	local float i, n = tokenizebyseparator(GameTypeVote_GameTypeDescription(gtype), "\n");
+	for(i = 0; i < n; ++i)
+	{
+		drawGameTypeLine(argv(i), '1 1 1', 1);
+	}
+	
+	drawGameTypeLine("", '1 1 1', 1);
+	return o;
+}
+
 void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, string pic, float count, float id)
 {
 	vector img_size;
@@ -149,8 +205,8 @@ void MapVote_Draw()
 
 	pos_y = ymin;
 	pos_z = 0;
-	pos_x = center - stringwidth("Vote for a map", false) * 0.5 * 24;
-	drawstring(pos, "Vote for a map", '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
+	pos_x = center - stringwidth((gametypevote? "Decide the gametype" : "Vote for a map"), false) * 0.5 * 24;
+	drawstring(pos, (gametypevote? "Decide the gametype" : "Vote for a map"), '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
 	pos_y += 26;
 
 	i = ceil(max(0, mv_timeout - time));
@@ -183,16 +239,29 @@ void MapVote_Draw()
 	pos_x += (xmax - xmin) / (2 * columns);
 	pos_y += (dist_y - isize) / 2;
 	ymax -= isize;
+	
+	local vector o;
+	//o_x += sbar_fontsize_x * 10;
+	o_x = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);
+	o_y += sbar_fontsize_y * 10;
 	for(i = 0; i < mv_num_maps; ++i)
 	{
 		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
 		if(tmp < 0)
 			continue;
 		map = mv_maps[i];
-		if(mv_preview[i])
-			MapVote_DrawMapItem(pos + MapVote_GridVec(dist, i, columns), isize, tsize, map, mv_pics[i], tmp, i);
+		
+		if(gametypevote)
+		{
+			o = GameTypeVote_DrawGametypeItem(o, map, tmp, i);
+		}
 		else
-			MapVote_DrawMapItem(pos + MapVote_GridVec(dist, i, columns), isize, tsize, map, "", tmp, i);
+		{
+			if(mv_preview[i])
+				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, i, columns), isize, tsize, map, mv_pics[i], tmp, i);
+			else
+				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, i, columns), isize, tsize, map, "", tmp, i);
+		}
 	}
 
 	if(mv_abstain)

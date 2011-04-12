@@ -296,6 +296,7 @@ void dompointtouch()
 	if(time < self.captime + 0.3)
 		return;
 
+	if(g_totaldomination)
 	if(!tdom_maycap)
 		return;
 

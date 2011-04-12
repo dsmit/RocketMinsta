@@ -221,3 +221,6 @@ void SetMadokaFont(float);
 float bp_draw;
 float bpc_draw;
 float obp_draw;
+
+float gametypevote;
+float gametypevote_longest;

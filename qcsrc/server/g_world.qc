@@ -2082,6 +2082,13 @@ float mapvote_detail;
 float mapvote_abstain;
 .float mapvote;
 
+float gametypevote;
+
+void MapVote_AddVotable(string, float);
+void GameTypeVote_Start();
+void GameTypeVote_Tick();
+float GameTypeVote_Finished(float);
+
 void MapVote_ClearAllVotes()
 {
 	FOR_EACH_CLIENT(other)
@@ -2321,6 +2328,8 @@ float MapVote_Finished(float mappos)
 	float i;
 	float didntvote;
 
+	bprint("^5MAPVOTE FINISHED^7: ", ftos(mappos), "\n");
+
 	if(cvar("sv_eventlog"))
 	{
 		result = strcat(":vote:finished:", mapvote_maps[mappos]);
@@ -2346,10 +2355,19 @@ float MapVote_Finished(float mappos)
 	FOR_EACH_REALCLIENT(other)
 		FixClientCvars(other);
 
-	Map_Goto_SetStr(mapvote_maps[mappos]);
-	Map_Goto();
-	alreadychangedlevel = TRUE;
-	return TRUE;
+	//Map_Goto_SetStr(mapvote_maps[mappos]);
+	//Map_Goto();
+	//alreadychangedlevel = TRUE;
+	//return TRUE;
+	
+	if(!gametypevote)
+	{
+		Map_Goto_SetStr(mapvote_maps[mappos]);
+		GameTypeVote_Start();
+		return FALSE;
+	}
+	
+	return GameTypeVote_Finished(mappos);
 }
 void MapVote_CheckRules_1()
 {
@@ -2412,6 +2430,7 @@ float MapVote_CheckRules_2()
 	if(secondPlace == -1 || time > mapvote_timeout || (mapvote_voters_real - firstPlaceVotes) < firstPlaceVotes)
 		return MapVote_Finished(firstPlace);
 
+	if(!gametypevote)
 	if(mapvote_keeptwotime)
 		if(time > mapvote_keeptwotime || (mapvote_voters_real - firstPlaceVotes - secondPlaceVotes) < secondPlaceVotes)
 		{
@@ -2490,6 +2509,7 @@ void MapVote_Tick()
 	}
 
 	MapVote_CheckRules_1(); // just count
+	GameTypeVote_Tick();
 }
 void MapVote_Start()
 {
@@ -2529,6 +2549,53 @@ void MapVote_Think()
 
 	MapVote_Tick();
 };
+
+.float gtv_aware;
+void GameTypeVote_Tick()
+{
+	if(!gametypevote)
+		return;
+	
+	local entity e;
+	FOR_EACH_REALCLIENT(e) if(e.classname != "") if(!e.gtv_aware)
+	{
+		e.gtv_aware = 1;
+		stuffcmd(e, strcat("cl_cmd gametypevote ", cvar_string("g_explosive_gametypevote_options"), "\n"));
+	}
+}
+
+float GameTypeVote_Finished(float pos)
+{
+	if(!gametypevote)
+		return FALSE;
+	
+	localcmd("gametype ", mapvote_maps[pos], "\n");
+	Map_Goto();
+	alreadychangedlevel = TRUE;
+	return TRUE;
+}
+
+void GameTypeVote_Start()
+{
+	local float j;
+	MapVote_ClearAllVotes();
+	
+	for(j = 0; j < mapvote_count; ++j)
+		if(mapvote_maps[j])
+			strunzone(mapvote_maps[j]);
+	
+	mapvote_count = 0;
+	mapvote_timeout = time + cvar("g_explosive_gametypevote_timeout");
+	mapvote_abstain = 0;
+	
+	local float n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
+	
+	for(j = 0; j < n; ++j)
+		MapVote_AddVotable(argv(j), 0);
+	
+	gametypevote = 1;
+	MapVote_Spawn();
+}
 
 string GotoMap(string m)
 {
