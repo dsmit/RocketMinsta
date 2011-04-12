@@ -21,6 +21,7 @@ Note: The only teams who can use dom control points are identified by spawnfunc_
 .entity sprite;
 .float captime;
 float tdom_maycap;
+.float pointupdatetime;
 
 void tdom_EndRound_Think()
 {
@@ -244,6 +245,9 @@ void dompointthink()
 
 	self.nextthink = time + 0.1;
 
+    if(time - self.pointupdatetime > 0.1)
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
 	//	self.frame = 0;
@@ -283,8 +287,6 @@ void dompointthink()
 	}
 }
 
-.float pointupdatetime;
-
 void dompointtouch()
 {
 	local entity head;
@@ -307,15 +309,18 @@ void dompointtouch()
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	other.freezetag_revive_progress = bound(0, other.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
-	other.pointupdatetime = time;
-	
-	if(other.freezetag_revive_progress < 1)
+	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
+	self.pointupdatetime = time;
+    other.pointupdatetime = time;
+
+    other.freezetag_revive_progress = self.freezetag_revive_progress;
+	if(self.freezetag_revive_progress < 1)
 	{
 		//bprint(other.netname, "^7.freezetag_revive_progress = ", ftos(other.freezetag_revive_progress), "\n");
 		return;
 	}
-	other.freezetag_revive_progress = 0;
+	self.freezetag_revive_progress = 0;
+    other.freezetag_revive_progress = self.freezetag_revive_progress;
 
 	// delay capture
 
