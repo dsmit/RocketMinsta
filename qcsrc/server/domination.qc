@@ -780,17 +780,22 @@ void dom_delayedinit()
 	local float i, j, n;
 	i = 0;
 	
-	dom_removeall("dom_controlpoint");
-	
-	n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
-	for(j = 0; j < n; ++j)
-		i += dom_spawnpointsfor(argv(j));
-	
-	n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
-	for(j = 0; j < n; ++j)
-		dom_removeall(argv(j));
-	
-	bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
+	if(find(world, classname, "dom_controlpoint") == world)
+	{
+		//dom_removeall("dom_controlpoint");
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+		for(j = 0; j < n; ++j)
+			i += dom_spawnpointsfor(argv(j));
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		for(j = 0; j < n; ++j)
+			dom_removeall(argv(j));
+		
+		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
+	}
+	else
+		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
 
 	ScoreRules_dom();
 };
