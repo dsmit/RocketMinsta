@@ -716,10 +716,15 @@ void dom_spawnpoint(vector org)
 void dom_spawnteams()
 {
 	float numteams;
+	/*
 	if(cvar("g_domination_teams_override") < 2)
 		numteams = cvar("g_domination_default_teams");
 	else
 		numteams = cvar("g_domination_teams_override");
+	*/
+	
+	numteams = 2;
+	
 	// LordHavoc: edit this if you want to change defaults
 	dom_spawnteam("Red", COLOR_TEAM1-1, "models/domination/dom_red.md3", 0, "domination/claim.wav", "", "Red team has captured a control point");
 	dom_spawnteam("Blue", COLOR_TEAM2-1, "models/domination/dom_blue.md3", 0, "domination/claim.wav", "", "Blue team has captured a control point");
