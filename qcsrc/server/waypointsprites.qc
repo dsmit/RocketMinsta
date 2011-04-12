@@ -84,6 +84,10 @@ void WaypointSprite_UpdateTeamRadar(entity e, float icon, vector col)
 void WaypointSprite_Ping(entity e)
 {
 	// ALWAYS sends (this causes a radar circle), thus no check
+
+    if(!e)
+        return;
+
 	e.cnt |= 0x80;
 	e.SendFlags |= 32;
 }
