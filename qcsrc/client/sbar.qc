@@ -29,6 +29,7 @@ void CSQC_kh_hud();
 void CSQC_ctf_hudreset();
 void CSQC_ctf_hud();
 void CSQC_ft_hud();
+void CSQC_dom_hud();
 void CSQC_nb_hud();
 void MapVote_Draw();
 void Sbar_FinaleOverlay()
@@ -3249,6 +3250,10 @@ void Sbar_Draw (void)
 			CSQC_ctf_hud();
 		else if(gametype == GAME_FREEZETAG)
 			CSQC_ft_hud();
+        else if(gametype == GAME_DOMINATION)
+            CSQC_dom_hud();
+        else if(gametype == GAME_TOTAL_DOMINATION)
+            CSQC_dom_hud();
 		else if(gametype == GAME_NEXBALL)
 			CSQC_nb_hud();
 	}
@@ -3590,3 +3595,29 @@ void CSQC_ft_hud(void)
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 	drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 }
+
+//Domination / Total Domination HUD
+
+void CSQC_dom_hud(void)
+{
+	float redpoints, bluepoints, totalpoints; //Currently supports only red and blue teams
+	
+	redpoints = getstati(STAT_REDPOINTS);
+	bluepoints = getstati(STAT_BLUEPOINTS);
+    totalpoints = getstati(STAT_TOTALPOINTS);
+	
+	vector position;
+	position = '0 0 0';
+	
+	position_y = vid_conheight - sbar_fontsize_y*2;
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+	drawcolorcodedstring(position, strcat("^4Blue points^7: ", ftos(bluepoints), "/", ftos(totalpoints)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+	
+	position_y -= sbar_fontsize_y;
+	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+	drawcolorcodedstring(position, strcat("^1Red points^7: ", ftos(redpoints), "/", ftos(totalpoints)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+}
+
+
+
+

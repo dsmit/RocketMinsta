@@ -638,3 +638,6 @@ void bigprint_spec(entity, string, string, float);
 void dom_cp_placeholder();
 
 float keeptopic;
+
+.float totalpoints_stat, redpoints_stat, bluepoints_stat;
+

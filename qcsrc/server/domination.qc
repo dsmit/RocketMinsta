@@ -16,12 +16,37 @@ Note: The only teams who can use dom control points are identified by spawnfunc_
 */
 
 #define DOMPOINTFRAGS frags
+#define FOR_EACH_CONTROLPOINT(v) for(v = world; (v = find(v, classname, "dom_controlpoint")) != world; )
 
 .float enemy_playerid;
 .entity sprite;
 .float captime;
 float tdom_maycap;
 .float pointupdatetime;
+float totalpoints, redpoints, bluepoints;
+
+void dom_recountpoints()
+{
+    totalpoints = redpoints = bluepoints = 0;
+
+    local entity e;
+    FOR_EACH_CONTROLPOINT(e)
+	{
+		++totalpoints;
+		
+		if(e.goalentity.team == COLOR_TEAM1)
+			++redpoints;
+		else if(e.goalentity.team == COLOR_TEAM2)
+			++bluepoints;
+	}
+
+    FOR_EACH_CLIENT(e)
+    {
+        e.totalpoints_stat = totalpoints;
+        e.redpoints_stat   = redpoints  ;
+        e.bluepoints_stat  = bluepoints ;
+    }
+}
 
 void tdom_EndRound_Think()
 {
@@ -35,6 +60,7 @@ void tdom_EndRound_Think()
     
     if(timeleft <= cvar("g_totaldomination_warmup"))
     {
+        dom_recountpoints();
         if(timeleft <= 0)
         {
             local entity e;
@@ -83,26 +109,10 @@ void LogDom(string mode, float team_before, entity actor)
 
 void() dom_spawnteams;
 
-#define FOR_EACH_CONTROLPOINT(v) for(v = world; (v = find(v, classname, "dom_controlpoint")) != world; )
 void tdom_checkwinner()
 {
-	local entity e;
-	
-	local float totalpoints, redpoints, bluepoints;
-	
-	FOR_EACH_CONTROLPOINT(e)
-	{
-		++totalpoints;
-		
-		if(e.goalentity.team == COLOR_TEAM1)
-			++redpoints;
-		else if(e.goalentity.team == COLOR_TEAM2)
-			++bluepoints;
-		
-		//bprint("^5Total domination: ^7Found a controlpoint, belongs to ", e.enemy.netname, "^7; team ", ftos(e.goalentity.team), "\n");
-	}
-	
-	//bprint("^5Total domination: ^7", ftos(totalpoints), " ", ftos(redpoints), " ", ftos(bluepoints), "\n");
+    local entity e;
+    dom_recountpoints(); 
 	
 	if(!bluepoints && redpoints && redpoints == totalpoints)
 	{
@@ -458,6 +468,8 @@ void dom_controlpoint_setup()
 	waypoint_spawnforitem(self);
 	WaypointSprite_SpawnFixed("dom-neut", self.origin + '0 0 32', self, sprite);
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
+
+    dom_recountpoints();
 };
 
 
@@ -841,6 +853,7 @@ void dom_init()
 	//if(!teams_matter)
 	//	cvar_set("teamplay", "3");
 	
+    dom_recountpoints();
 	if(g_totaldomination)
 		totaldom_init();
 };

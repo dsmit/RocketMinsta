@@ -297,6 +297,9 @@ const float STAT_REDALIVE = 106;
 const float STAT_BLUEALIVE = 107;
 const float STAT_YELLOWALIVE = 108;
 const float STAT_PINKALIVE = 109;
+const float STAT_TOTALPOINTS = 110;
+const float STAT_REDPOINTS = 111;
+const float STAT_BLUEPOINTS = 112;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -519,3 +522,5 @@ float MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
+
+

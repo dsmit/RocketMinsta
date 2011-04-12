@@ -630,6 +630,14 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
 		//addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
 	}
+
+    if(g_domination)
+    {
+        addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);
+        addstat(STAT_REDPOINTS, AS_INT, redpoints_stat);
+        addstat(STAT_BLUEPOINTS, AS_INT, bluepoints_stat);
+    }
+
 	if(g_freezetag || g_domination)
 		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
 
