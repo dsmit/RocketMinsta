@@ -913,7 +913,7 @@ void GameCommand(string msg)
 				if(tmp > gametypevote_longest)
 				{
 					gametypevote_longest = tmp;
-					print("Found longest (", ftos(tmp), "): ", argv(j), "\n");
+					//print("Found longest (", ftos(tmp), "): ", argv(j), "\n");
 				}
 			}
 			

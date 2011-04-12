@@ -2328,7 +2328,7 @@ float MapVote_Finished(float mappos)
 	float i;
 	float didntvote;
 
-	bprint("^5MAPVOTE FINISHED^7: ", ftos(mappos), "\n");
+	//bprint("^5MAPVOTE FINISHED^7: ", ftos(mappos), "\n");
 
 	if(cvar("sv_eventlog"))
 	{
