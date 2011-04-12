@@ -779,8 +779,8 @@ void dom_cp_placeholder()
 void dom_delayedinit()
 {
 	// if no teams are found, spawn defaults, if custom teams are set, use them
-	if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
-		dom_spawnteams();
+	//if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
+	dom_spawnteams();
 
 	local float i, j, n;
 	i = 0;
