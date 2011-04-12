@@ -2639,7 +2639,7 @@ void Sbar_Draw (void)
     if(rev)
     {
         local vector revpos;
-        revpos_y = vid_height / 2 + sbar_fontsize_y * 2;
+        revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
         
