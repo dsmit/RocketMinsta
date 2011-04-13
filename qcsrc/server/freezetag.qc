@@ -216,7 +216,10 @@ void freezetag_Freeze(entity attacker)
     DEPENDON(g_freezetag)
 	if(self.freezetag_frozen)
 		return;
-		
+	
+	self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+	
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
 	RemoveGrapplingHook(self);
@@ -268,6 +271,10 @@ void freezetag_Freeze(entity attacker)
 void freezetag_Unfreeze(entity attacker)
 {
     DEPENDON(g_freezetag)
+    
+    self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+    
 	self.freezetag_frozen = 0;
 	self.freezetag_revive_progress = 0;
 

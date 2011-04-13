@@ -119,3 +119,15 @@ string GetTeamScoreString(float tm, float shortString);
  * Returns the beginning of a sorted chain of the non-spectators.
  */
 entity PlayerScore_Sort(.float field);
+
+.entity scorekeeper;
+entity teamscorekeepers[16];
+string scores_label[MAX_SCORE];
+float scores_flags[MAX_SCORE];
+string teamscores_label[MAX_TEAMSCORE];
+float teamscores_flags[MAX_TEAMSCORE];
+float teamscores_entities_count;
+var .float scores_primary;
+var .float teamscores_primary;
+float scores_flags_primary;
+float teamscores_flags_primary;

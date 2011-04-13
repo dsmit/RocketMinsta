@@ -223,11 +223,13 @@ void ScoreRules_nexball(float teams)
 
 // FreezeTag stuff
 #define SP_FREEZETAG_REVIVALS 4
+//#define SP_FREEZETAG_FROZENSTATUS 5
 void ScoreRules_freezetag()
 {
 	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
-	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revivals",		0);
+	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revivals",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_FROZENSTATUS,	"fstat",		0);
 	ScoreRules_basics_end();
 }
 

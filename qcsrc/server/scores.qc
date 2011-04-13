@@ -1,14 +1,3 @@
-.entity scorekeeper;
-entity teamscorekeepers[16];
-string scores_label[MAX_SCORE];
-float scores_flags[MAX_SCORE];
-string teamscores_label[MAX_TEAMSCORE];
-float teamscores_flags[MAX_TEAMSCORE];
-float teamscores_entities_count;
-var .float scores_primary;
-var .float teamscores_primary;
-float scores_flags_primary;
-float teamscores_flags_primary;
 
 vector ScoreField_Compare(entity t1, entity t2, .float field, float fieldflags, vector previous) // returns: cmp value, best prio
 {
