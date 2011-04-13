@@ -1,5 +1,6 @@
 
 #define DEPENDON(d) if(!(d)) return 0;
+entity uglyfreezetagworkaround;
 
 void update_playercount()
 {
@@ -60,6 +61,19 @@ void freezetag_EndRound()
     update_playercount();
 }
 
+void freezetag_UglyFreezetagWorkaround_Think()
+{
+	update_playercount();
+	
+	if (!redalive 	||
+		!bluealive	||
+		!yellowalive||
+		!pinkalive	 )
+		freezetag_CheckWinner();
+	
+	self.nextthink = time + 1;
+}
+
 void freezetag_Initialize()
 {
 	precache_model("models/ice/ice.md3");
@@ -73,6 +87,10 @@ void freezetag_Initialize()
     precache_sound("ctf/blue_capture.wav");
 	ScoreRules_freezetag();
 	update_playercount();
+	
+	uglyfreezetagworkaround = spawn();
+	uglyfreezetagworkaround.think = freezetag_UglyFreezetagWorkaround_Think;
+	uglyfreezetagworkaround.nextthink = time + 1;
 }
 
 void freezetag_CheckWinner()

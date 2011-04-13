@@ -5,3 +5,4 @@ entity frag_inflictor;
 entity frag_attacker;
 entity frag_target;
 float sys_frametime;
+void freezetag_CheckWinner();
