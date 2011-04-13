@@ -219,6 +219,7 @@ void freezetag_Freeze(entity attacker)
 		
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
+	RemoveGrapplingHook(self);
 
 	entity ice;
 	ice = spawn();
