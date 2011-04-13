@@ -1,0 +1,10 @@
+void vip_init();
+float vip_PlayerDies();
+void vip_AssignVIPs();
+void vip_ClearVIPs();
+float vip_RemovePlayer();
+void vip_ClearVIP_Common(entity);
+
+#define ISVIP(e) ((e) == redvip || (e) == bluevip)
+#define ISREDVIP(e) ((e) == redvip)
+#define ISBLUEVIP(e) ((e) == bluevip)

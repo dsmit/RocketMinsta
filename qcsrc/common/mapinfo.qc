@@ -533,6 +533,7 @@ float MapInfo_Type_FromString(string t)
 	else if(t == "cts")     return MAPINFO_TYPE_CTS;
 	else if(t == "all")     return MAPINFO_TYPE_ALL;
 	else if(t == "ft")		return MAPINFO_TYPE_CTF;
+    else if(t == "vip")     return MAPINFO_TYPE_CTF;
 	else if(t == "totaldom") return MAPINFO_TYPE_DOMINATION;
 	else                    return 0;
 }
@@ -849,7 +850,9 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 
 	if(pGametypeToSet)
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
-			error("Can't select the requested game type. Bailing out.");
+		{
+			error(strcat("Can't select the requested game type. Bailing out. pGametypeToSet = ", ftos(pGametypeToSet), "; MapInfo_Map_supportedGametypes = ", ftos(MapInfo_Map_supportedGametypes )));
+		}
 #endif
 	MapInfo_Cache_Store();
 	if(MapInfo_Map_supportedGametypes != 0)
@@ -951,6 +954,8 @@ float MapInfo_CurrentGametype()
 		return MAPINFO_TYPE_CTS;
 	else if(cvar("g_freezetag"))
 		return MAPINFO_TYPE_CTF;
+	else if(cvar("g_vip"))
+		return MAPINFO_TYPE_CTF;
 	else
 		return MAPINFO_TYPE_DEATHMATCH;
 }
@@ -1013,6 +1018,7 @@ void MapInfo_SwitchGameType(float t)
 	cvar_set("g_nexball",    (t == MAPINFO_TYPE_NEXBALL)         ? "1" : "0");
 	cvar_set("g_cts",        (t == MAPINFO_TYPE_CTS)             ? "1" : "0");
 	cvar_set("g_freezetag",  (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
+    cvar_set("g_vip",        (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
 }
 
 void MapInfo_SwitchGameType_String(string gtname)
@@ -1025,7 +1031,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
-		_is_key_hunt = 1;
+		cvar_set("g_vip", "0");
+        _is_key_hunt = 1;
 	}
 	else if(gtname == "ft")
 	{
@@ -1033,7 +1040,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_keyhunt", "0");
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
-		_is_key_hunt = 0;
+		cvar_set("g_vip", "0");
+        _is_key_hunt = 0;
 	}
 	else if(gtname == "ctf")
 	{
@@ -1041,6 +1049,7 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
+        cvar_set("g_vip", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "dom")
@@ -1049,6 +1058,7 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_freezetag", "0");
 		cvar_set("g_ctf", "0");
 		cvar_set("g_total_domination", "0");
+        cvar_set("g_vip", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "totaldom")
@@ -1058,8 +1068,18 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_ctf", "0");
 		cvar_set("g_total_domination", "1");
 		cvar_set("g_domination", "1");
+        cvar_set("g_vip", "0");
 		_is_key_hunt = 0;
 	}
+    else if(gtname == "vip")
+    {
+    	cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		cvar_set("g_domination", "0");
+		_is_key_hunt = 0;
+    }
 }
 
 void MapInfo_LoadMap(string s)
@@ -1068,7 +1088,7 @@ void MapInfo_LoadMap(string s)
 	if(!MapInfo_CheckMap(s))
 	{
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
-		MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
+		//MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
 	}
 	localcmd(strcat("\nsettemp_restore\nchangelevel ", s, "\n"));
 }
@@ -1104,7 +1124,7 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 		}
 		// t is now a supported mode!
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
-		MapInfo_SwitchGameType(t);
+		//MapInfo_SwitchGameType(t);
 	}
 	cvar_settemp_restore();
 	MapInfo_Get_ByName(s, 1, MapInfo_CurrentGametype());

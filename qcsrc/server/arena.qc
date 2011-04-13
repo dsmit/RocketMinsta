@@ -79,6 +79,9 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
+	
+	//if(g_vip)
+	//	vip_AssignVIPs();
 
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
@@ -93,7 +96,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination)
+			else if(g_freezetag || g_totaldomination || g_vip)
 			{
 				if(self.classname == "player")
 					PutClientInServer();
@@ -338,7 +341,7 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination)
+	if(g_freezetag || g_totaldomination || g_vip)
 	{
 		if((next_round && next_round < time))
 		{

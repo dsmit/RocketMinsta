@@ -84,8 +84,14 @@ void LogTeamchange(entity pl)
 	GameLogEcho(str);
 }
 
+void printcvar(string c)
+{
+	bprint(c, " = ", cvar_string(c), "\n");
+}
+
 void WriteGameCvars()
 {
+	bprint("WriteGameCvars()\n");
 	cvar_set("g_dm", ftos(g_dm));
 	cvar_set("g_tdm", ftos(g_tdm));
 	cvar_set("g_domination", ftos(g_domination));
@@ -101,6 +107,14 @@ void WriteGameCvars()
 	cvar_set("g_nexball", ftos(g_nexball));
 	cvar_set("g_cts", ftos(g_cts));
 	cvar_set("g_freezetag", ftos(g_freezetag));
+    cvar_set("g_vip", ftos(g_vip));
+    
+    printcvar("g_vip");
+    printcvar("g_freezetag");
+    printcvar("g_ctf");
+    printcvar("g_keyhunt");
+    printcvar("g_domination");
+    printcvar("g_total_domination");
 }
 
 void ReadGameCvars()
@@ -109,8 +123,12 @@ void ReadGameCvars()
 	float prev;
 	float i;
 
+	bprint("ReadGameCvars()\n");
+
 	found = 0;
 	prev = cvar("gamecfg");
+	
+	/*
 	for(i = 0; i < 2; ++i)
 	{
 		found += (g_dm = (!found && (prev != GAME_DEATHMATCH) && cvar("g_dm")));
@@ -128,6 +146,14 @@ void ReadGameCvars()
 		found += (g_nexball = (!found && (prev != GAME_NEXBALL) && cvar("g_nexball")));
 		found += (g_cts = (!found && (prev != GAME_CTS) && cvar("g_cts")));
 		found += (g_freezetag = (!found && (prev != GAME_FREEZETAG) && cvar("g_freezetag")));
+        found += (g_vip = (!found && (prev != GAME_VIP) && cvar("g_vip")));
+
+		printcvar("g_vip");
+		printcvar("g_freezetag");
+		printcvar("g_ctf");
+		printcvar("g_keyhunt");
+		printcvar("g_domination");
+		printcvar("g_total_domination");
 
 		if(g_total_domination)
 			g_domination = 1;
@@ -137,9 +163,105 @@ void ReadGameCvars()
 
 		prev = -1; // second attempt takes place WITHOUT prev set
 	}
+	
 
-	if(!found)
-		g_dm = 1;
+	// What the FUCK!?
+	if(g_vip)
+	{
+		g_ctf = 0;
+		g_freezetag = 0;
+		g_keyhunt = 0;
+		g_domination = 0;
+		g_total_domination = 0;
+	}
+	*/
+	
+	g_dm = cvar("g_dm");
+	g_tdm = cvar("g_tdm");
+	g_total_domination = cvar("g_total_domination");
+	g_domination = cvar("g_domination");
+	g_ctf = cvar("g_ctf");
+	g_runematch = cvar("g_runematch");
+	g_lms = cvar("g_lms");
+	g_arena = cvar("g_arena");
+	g_keyhunt = cvar("g_keyhunt");
+	g_assault = cvar("g_assault");
+	g_onslaught = cvar("g_onslaught");
+	g_race = cvar("g_race");
+	g_nexball = cvar("g_nexball");
+	g_cts = cvar("g_cts");
+	g_freezetag = cvar("g_freezetag");
+	g_vip = cvar("g_vip");
+
+	// What the FUCK!?
+	/*
+	if(g_vip)
+	{
+		g_ctf = 0;
+		g_freezetag = 0;
+		g_keyhunt = 0;
+		g_domination = 0;
+		g_total_domination = 0;
+		
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		cvar_set("g_domination", "0");
+	}
+	*/
+
+	if(g_total_domination)
+		g_domination = 1;
+
+	//since this sometimes tends to fuck up randomly...
+	found += g_dm;
+	found += g_tdm;
+	//found += g_total_domination;
+	found += g_domination;
+	found += g_ctf;
+	found += g_runematch;
+	found += g_lms;
+	found += g_arena;
+	found += g_keyhunt;
+	found += g_assault;
+	found += g_onslaught;
+	found += g_race;
+	found += g_nexball;
+	found += g_cts;
+	found += g_freezetag;
+	found += g_vip;
+	
+	if(found > 1 || found <= 0)
+	{
+		bprint("^6MORE THAN TWO OR LESS THAN ONE GAMETYPES APPLIED. Everything is totally screwed up, falling back to CTF\n");
+		g_dm = 0;
+		g_tdm = 0;
+		g_total_domination = 0;
+		g_domination = 0;
+		g_ctf = 1;
+		g_runematch = 0;
+		g_lms = 0;
+		g_arena = 0;
+		g_keyhunt = 0;
+		g_assault = 0;
+		g_onslaught = 0;
+		g_race = 0;
+		g_nexball = 0;
+		g_cts = 0;
+		g_freezetag = 0;
+		g_vip = 0;
+	}
+
+	printcvar("g_vip");
+    printcvar("g_freezetag");
+    printcvar("g_ctf");
+    printcvar("g_keyhunt");
+    printcvar("g_domination");
+    printcvar("g_total_domination");
+
+	//if(!found)
+	//	g_dm = 1;
 
 	if(g_dm && cvar("deathmatch_force_teamplay"))
 	{
@@ -380,6 +502,16 @@ void InitGameplayMode()
 		ActivateTeamplay();
 		nb_init();
 	}
+
+    if(g_vip)
+    {
+        game = GAME_VIP;
+        fraglimit_override = cvar("g_explosive_vip_point_limit");
+        leadlimit_override = cvar("g_explosive_vip_lead_limit");
+        timelimit_override = cvar("g_explosive_vip_time_limit");
+        ActivateTeamplay();
+        vip_init();
+    }
 
 	gamemode_name = GametypeFullNameFromType(game);
 

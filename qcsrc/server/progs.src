@@ -44,6 +44,8 @@ vote.qh
 
 freezetag.qh
 
+vip.qh
+
 scores_rules.qc
 
 miscfunctions.qc
@@ -61,6 +63,7 @@ arena.qc
 
 dodging.qc
 freezetag.qc
+vip.qc
 
 g_violence.qc
 g_damage.qc

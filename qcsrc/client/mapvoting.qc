@@ -53,6 +53,8 @@ string GameTypeVote_GameTypeName(string gtype)
 			return "Domination";
 		case "totaldom":
 			return "Total Domination";
+		case "vip":
+			return "VIP";
 	}
 	
 	return strcat(gtype, " (unknown gametype?!)");
@@ -72,6 +74,8 @@ string GameTypeVote_GameTypeDescription(string gtype)
 			return "Several control points are placed on the map.\nYou can capture a contol point by walking over it.\nOnce captured, a control point repeatedly gives you score until the limit is reached.";
 		case "totaldom":
 			return "A round based Domination spin-off.\nYou must overtake all of the control points on the map to win the round.";
+		case "vip":
+			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
 	}
 	
 	return "No description is available for this gametype";

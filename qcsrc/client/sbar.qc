@@ -469,7 +469,7 @@ string Sbar_DefaultColumnLayout()
 		//</akari>
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank ",
+		"+lms/lives +lms/rank +vip/vipkills ",
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",

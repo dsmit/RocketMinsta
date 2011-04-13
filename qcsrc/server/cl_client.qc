@@ -551,6 +551,7 @@ void PutObserverInServer (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+	vip_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -1522,6 +1523,7 @@ void ClientDisconnect (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+	vip_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)

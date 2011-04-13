@@ -430,6 +430,7 @@ string GametypeNameFromType(float g)
 	else if (g == GAME_NEXBALL) return "nexball";
 	else if (g == GAME_CTS) return "cts";
 	else if (g == GAME_FREEZETAG) return "ft";
+    else if (g == GAME_VIP) return "vip";
 	return "dm";
 }
 
@@ -450,6 +451,7 @@ string GametypeFullNameFromType(float g)
 	else if (g == GAME_NEXBALL) return "Nexball";
 	else if (g == GAME_CTS) return "CTS";
 	else if (g == GAME_FREEZETAG) return "Freeze Tag";
+    else if (g == GAME_VIP) return "VIP";
 	return "Unknown";
 }
 

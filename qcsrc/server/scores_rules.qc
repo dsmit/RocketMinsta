@@ -230,3 +230,13 @@ void ScoreRules_freezetag()
 	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revivals",		0);
 	ScoreRules_basics_end();
 }
+
+// VIP stuff
+#define SP_VIP_VIPKILLS 4
+void ScoreRules_vip()
+{
+	CheckAllowedTeams(world);
+	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreInfo_SetLabel_PlayerScore(SP_VIP_VIPKILLS,		"vipkills",		SFL_SORT_PRIO_SECONDARY);
+	ScoreRules_basics_end();
+}

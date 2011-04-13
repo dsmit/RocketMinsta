@@ -1,3 +1,4 @@
+
 float weaponstats_buffer;
 
 void WeaponStats_Init()
@@ -653,6 +654,9 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_inflictor = inflictor;
 		frag_target = self;
 		if(freezetag_PlayerDies())
+			return;
+		
+		if(vip_PlayerDies())
 			return;
 			
 		if(self == attacker)

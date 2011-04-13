@@ -175,7 +175,7 @@ void GiveFrags (entity attacker, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination)
+	else if(g_freezetag || g_totaldomination || g_vip)
 	{
 		f = 0;
 	}
@@ -477,6 +477,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					{
 						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
+						
+						if(g_vip)
+							PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
 					//</akari>
 					attacker.taunt_soundtime = time + 1;
