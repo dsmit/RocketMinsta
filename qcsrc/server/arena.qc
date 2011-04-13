@@ -80,8 +80,8 @@ void reset_map(float dorespawn)
 		}
 	}
 	
-	//if(g_vip)
-	//	vip_AssignVIPs();
+	if(g_vip)
+		vip_ClearVIPs_MaybeAssign();
 
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub

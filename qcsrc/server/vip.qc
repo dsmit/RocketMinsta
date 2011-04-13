@@ -308,7 +308,9 @@ void vip_MakePlayerVIP(entity pl)
 		}
 	}
 
-	local entity e;
+	local entity e, oldself;
+	oldself = self;
+	self = pl;
 	switch(pl.team)
 	{
 		case COLOR_TEAM1:
@@ -334,6 +336,7 @@ void vip_MakePlayerVIP(entity pl)
 			bprint(pl.netname, " ^7is screwed everything up\n");
 			break;
 	}
+	self = oldself;
 	
 	FOR_EACH_PLAYER(e) if(e.team == pl.team) if(e != pl)
 		centerprint_spec(e, strcat(pl.netname, "^7 is now your VIP!"));
@@ -428,6 +431,15 @@ void vip_AssignVIPs()
 	//bprint("vip_AssignVIPs()\n");
 	vip_AssignRedVIP();
 	vip_AssignBlueVIP();
+}
+
+void vip_ClearVIPs_MaybeAssign()
+{
+	vip_ClearVIPs();
+	
+	if(vip_started)
+		//vip_AssignVIPs();
+		defer(1, vip_AssignVIPs);
 }
 
 float vip_RedVIPDown()
