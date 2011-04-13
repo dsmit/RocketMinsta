@@ -65,10 +65,10 @@ void freezetag_UglyFreezetagWorkaround_Think()
 {
 	update_playercount();
 	
-	if (!redalive 	||
-		!bluealive	||
-		!yellowalive||
-		!pinkalive	 )
+	if ((!redalive 		&& redspawned 	)	||
+		(!bluealive		&& bluespawned	)	||
+		(!yellowalive	&& yellowspawned)	||
+		(!pinkalive	 	&& pinkalive	)	 )
 		freezetag_CheckWinner();
 	
 	self.nextthink = time + 1;
