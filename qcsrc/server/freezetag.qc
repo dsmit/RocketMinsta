@@ -98,7 +98,10 @@ void freezetag_CheckWinner()
     DEPENDON(g_freezetag)
     
     //bprint("freezetag_CheckWinner()\n");
-    
+   
+    if(intermission_running)
+        return;
+
 	if(time <= game_starttime) // game didn't even start yet! nobody can win in that case.
 		return;
 
