@@ -545,7 +545,31 @@ float freezetag_PlayerPhysics()
     DEPENDON(g_freezetag)
 	if(self.freezetag_frozen)
 	{
-		self.movement = '0 0 0';
+		local float s = cvar("g_explosive_freezetag_frozen_movespeed");
+		
+		if(s > 0)
+		{
+			self.movement_x = (
+				(self.movement_x > 0)?
+					bound( 0, self.movement_x, s)
+				:	bound(-s, self.movement_x, 0)
+			);
+			
+			self.movement_y = (
+				(self.movement_y > 0)?
+					bound( 0, self.movement_y, s)
+				:	bound(-s, self.movement_y, 0)
+			);
+			
+			self.movement_z = (
+				(self.movement_z > 0)?
+					bound( 0, self.movement_z, s)
+				:	bound(-s, self.movement_z, 0)
+			);
+		}
+		else
+			self.movement = '0 0 0';
+		
 		self.disableclientprediction = 1;
 	}
 	return 1;
