@@ -888,27 +888,27 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_NAME) {
 			tmp_x = sbar_fontsize_x*(sbar_size[i] - sbar_fixscoreboardcolumnwidth_iconlen - sbar_fixscoreboardcolumnwidth_marginlen) + sbar_fontsize_x;
 			
+			#ifdef RM_SUPPORT_MADOKA
+			local float tmp_font;
+			tmp_font = drawfont;
+			
+			if(pl.(scores[SP_MADOKASTATUS]))
+				drawfont = sbar_madokafont;
+			#endif
+			
 			if(gametype != GAME_FREEZETAG)
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 1, DRAWFLAG_NORMAL);
 			else
 			{
-				#ifdef RM_SUPPORT_MADOKA
-				local float tmp_font;
-				tmp_font = drawfont;
-				
-				if(pl.(scores[SP_MADOKASTATUS]))
-					drawfont = sbar_madokafont;
-				#endif
-				
 				if(pl.(scores[SP_FREEZETAG_FROZENSTATUS]))
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 0.5, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 1, DRAWFLAG_NORMAL);
-				
-				#ifdef RM_SUPPORT_MADOKA
-				drawfont = tmp_font;
-				#endif
 			}
+			
+			#ifdef RM_SUPPORT_MADOKA
+			drawfont = tmp_font;
+			#endif
 		} else {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
 			drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
