@@ -224,3 +224,7 @@ float obp_draw;
 
 float gametypevote;
 float gametypevote_longest;
+
+string mapvote_choosenmap;
+string mapvote_choosenmappic;
+void MapVote_RememberMap(string);

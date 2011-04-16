@@ -893,7 +893,10 @@ void GameCommand(string msg)
 		
 		local float i, tmp;
 		local string tmpvote;
-		for(i = 1; i < argc; ++i)
+		
+		MapVote_RememberMap(argv(1));
+		
+		for(i = 2; i < argc; ++i)
 		{
 			/*
 			tmp = strlen(GameTypeVote_GameTypeDescription(argv(i)));

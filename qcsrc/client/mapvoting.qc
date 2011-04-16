@@ -13,6 +13,13 @@ float mv_detail;
 float mv_timeout;
 float mv_maps_mask;
 
+void MapVote_RememberMap(string mname)
+{
+	mapvote_choosenmap 		= strzone(mname);
+	mapvote_choosenmappic 	= strzone(strcat("maps/", mname));
+	//print("mapvote_choosenmappic = ", mapvote_choosenmappic, "\n");
+}
+
 string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 {
 	string pre, post;
@@ -245,9 +252,42 @@ void MapVote_Draw()
 	ymax -= isize;
 	
 	local vector o;
-	//o_x += sbar_fontsize_x * 10;
+	
+	if(gametypevote)
+	{
+		// draws the picked map
+		
+		vector img_size;
+		img_size_y = isize;
+		img_size_x = isize / 0.75;
+		
+		o_x = min(
+			vid_conwidth * 0.5 + (sbar_fontsize_x * gametypevote_longest) * 0.25,
+			vid_conwidth - sbar_fontsize_x - img_size_x
+		);
+		
+		o_y = sbar_fontsize_y * 10;
+	
+		drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
+	
+		if(mapvote_choosenmappic == "")
+		{
+			drawfill(o, img_size, '.5 .5 .5', .7, DRAWFLAG_NORMAL);
+		}
+		else
+		{
+			drawpic(o, mapvote_choosenmappic, img_size, '1 1 1', 1, DRAWFLAG_NORMAL);
+		}
+		
+		o_y += img_size_y;
+		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize);
+		
+		drawstring(o, mapvote_choosenmap, sbar_fontsize, '1 1 1', 1, DRAWFLAG_NORMAL);
+	}
+	
 	o_x = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);
-	o_y += sbar_fontsize_y * 10;
+	o_y = sbar_fontsize_y * 10;
+	
 	for(i = 0; i < mv_num_maps; ++i)
 	{
 		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up

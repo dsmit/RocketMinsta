@@ -2092,6 +2092,7 @@ float mapvote_abstain;
 .float mapvote;
 
 float gametypevote;
+string choosenmap;
 
 void MapVote_AddVotable(string, float);
 void GameTypeVote_Start();
@@ -2372,6 +2373,7 @@ float MapVote_Finished(float mappos)
 	if(!gametypevote)
 	{
 		Map_Goto_SetStr(mapvote_maps[mappos]);
+		choosenmap = strzone(mapvote_maps[mappos]);
 		GameTypeVote_Start();
 		return FALSE;
 	}
@@ -2569,7 +2571,7 @@ void GameTypeVote_Tick()
 	FOR_EACH_REALCLIENT(e) if(e.classname != "") if(!e.gtv_aware)
 	{
 		e.gtv_aware = 1;
-		stuffcmd(e, strcat("cl_cmd gametypevote ", cvar_string("g_explosive_gametypevote_options"), "\n"));
+		stuffcmd(e, strcat("cl_cmd gametypevote ", choosenmap, " ", cvar_string("g_explosive_gametypevote_options"), "\n"));
 	}
 }
 
