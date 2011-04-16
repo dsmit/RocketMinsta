@@ -211,7 +211,8 @@ void freezetag_Ice_Think()
 {
 	setorigin(self, self.owner.origin - '0 0 16');
 	self.nextthink = time;
-    self.alpha = 0.6 * (1 - self.owner.freezetag_revive_progress);
+    //self.alpha = 0.6 * (1 - self.owner.freezetag_revive_progress);
+    self.alpha = 1 - self.owner.freezetag_revive_progress;
 }
 
 void freezetag_Freeze(entity attacker)
@@ -234,7 +235,8 @@ void freezetag_Freeze(entity attacker)
 	ice.think = freezetag_Ice_Think;
 	ice.nextthink = time;
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
-    ice.alpha = 0.6;
+    //ice.alpha = 0.6;
+    ice.effects |= EF_ADDITIVE;
 	setmodel(ice, "models/ice/ice.md3");
 
 	entity oldself;
