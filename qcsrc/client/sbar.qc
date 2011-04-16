@@ -892,10 +892,22 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 1, DRAWFLAG_NORMAL);
 			else
 			{
+				#ifdef RM_SUPPORT_MADOKA
+				local float tmp_font;
+				tmp_font = drawfont;
+				
+				if(pl.(scores[SP_MADOKASTATUS]))
+					drawfont = sbar_madokafont;
+				#endif
+				
 				if(pl.(scores[SP_FREEZETAG_FROZENSTATUS]))
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 0.5, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, 1, DRAWFLAG_NORMAL);
+				
+				#ifdef RM_SUPPORT_MADOKA
+				drawfont = tmp_font;
+				#endif
 			}
 		} else {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;

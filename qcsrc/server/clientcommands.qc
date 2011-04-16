@@ -239,6 +239,9 @@ void SV_ParseClientCommand(string s) {
 		return;
 	} else if(cmd == "madoka") {
 		self.madoka = stof(argv(1));
+		
+		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
+		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
 		return;
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
