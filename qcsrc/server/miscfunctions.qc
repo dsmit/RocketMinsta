@@ -2788,3 +2788,33 @@ void defer(float fdelay, void() func)
     e.think     = defer_think;
     e.nextthink = time + fdelay;
 }
+
+// universal endround for all supported gametypes
+void freezetag_EndRound();
+void vip_EndRound();
+void tdom_EndRound();
+
+void EndRound()
+{
+    if(g_freezetag)
+        freezetag_EndRound();
+else
+    if(g_vip)
+        vip_EndRound();
+else
+    if(g_totaldomination)
+        tdom_EndRound();
+else
+    if(g_keyhunt)
+        kh_FinishRound();
+else
+    bprint("EndRound() for an unsupported gametype!?\n");
+}
+
+float EndRound_Allowed()
+{
+    return( g_freezetag
+         || g_vip
+         || g_totaldomination
+         || g_keyhunt );
+}

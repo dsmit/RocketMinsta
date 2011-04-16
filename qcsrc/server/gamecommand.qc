@@ -1152,13 +1152,13 @@ void GameCommand(string command)
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "round aborted", "", 5);
 
-        if(!g_freezetag)
+        if(!EndRound_Allowed())
         {
-            bprint("Attempted to endround, but the gametype is not Freezetag!\n");
+            bprint("Attempted to endround, but the gametype doesn't support it!\n");
             return;
         }
 
-        freezetag_EndRound();
+        EndRound();
     }
 
 	if(argv(0) == "topic")

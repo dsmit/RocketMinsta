@@ -100,9 +100,9 @@ float RemapVote(string vote, string cmd, entity e)
 	}
     if(argv(0) == "endround")
     {
-        if(!g_freezetag)
+        if(!EndRound_Allowed())
         {
-            sprint(self, "endround is available only in Freezetag\n");
+            sprint(self, "endround is not available in current gametype\n");
             return FALSE;
         }
     }
