@@ -164,7 +164,7 @@ EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
         mkdir -pv "$NEXDATA/rm-custom"
-        cp -v rm-custom/* "$NEXDATA/rm-custom"
+        cp -rv rm-custom/* "$NEXDATA/rm-custom"
     fi
 }
 
