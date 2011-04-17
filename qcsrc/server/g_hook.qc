@@ -86,12 +86,6 @@ float LostMovetypeFollow(entity ent)
 .float hook_length;
 .float hook_switchweapon;
 
-//<akari>
-.entity hooker;
-.entity hooked_to;
-//entity nobody;
-//</akari>
-
 void RemoveGrapplingHook(entity pl)
 {
 	if(pl.hook == world)

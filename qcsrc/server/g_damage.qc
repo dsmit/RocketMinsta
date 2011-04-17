@@ -937,10 +937,14 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		{
 			damage = 0;
 			force = force * cvar("g_explosive_freezetag_frozen_force");
-			targ.freezetag_meltprogress = 0;
-			targ.freezetag_freezetime = time;
-			targ.freezetag_meltprogress = 0;
-			targ.freezetag_revive_progress = 0;
+			
+			if(targ.team != attacker.team || cvar("g_explosive_freezetag_melt_teamdamage"))
+			{
+				targ.freezetag_meltprogress = 0;
+				targ.freezetag_freezetime = time;
+				targ.freezetag_meltprogress = 0;
+				targ.freezetag_revive_progress = 0;
+			}
 			
 			if(deathtype == DEATH_HURTTRIGGER)
 			{

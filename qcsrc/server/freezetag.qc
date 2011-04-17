@@ -548,12 +548,16 @@ float freezetag_PlayerPreThink()
 	{
 		if(cvar("g_explosive_freezetag_melt"))
 		{
+			if(self.hooker.hooked_to == self)
+				return 1;
+			
 			if(self.freezetag_freezetime + cvar("g_explosive_freezetag_melt_delay") <= time)
 			{
 				self.freezetag_meltprogress = bound(0, self.freezetag_meltprogress + frametime * cvar("g_explosive_freezetag_melt_speed"), 1);
 				
 				if(self.freezetag_meltprogress >= 1)
 				{
+					self.freezetag_meltprogress = 0;
 					freezetag_Unfreeze(world);
 					bprint(self.netname, "^5's iceblock has melted\n");
 					centerprint_spec(self, "^5Your iceblock has melted");
