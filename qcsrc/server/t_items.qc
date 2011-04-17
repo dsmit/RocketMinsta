@@ -380,7 +380,7 @@ float Item_GiveTo(entity item, entity player)
 				pickedup = TRUE;
 				if(player.armorvalue < 100)
 					player.armorvalue = 100;
-				else
+				else if(player.armorvalue < item.max_armorvalue
 					player.armorvalue = min(item.max_armorvalue, player.armorvalue + cvar("g_explosive_armor_overflow"));
 			}
 			//</akari>
