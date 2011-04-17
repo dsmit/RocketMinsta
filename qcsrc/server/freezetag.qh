@@ -6,3 +6,6 @@ entity frag_attacker;
 entity frag_target;
 float sys_frametime;
 void freezetag_CheckWinner();
+.float freezetag_meltprogress;
+.float freezetag_freezetime;
+.float rev_finished;

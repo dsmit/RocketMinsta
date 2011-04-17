@@ -212,7 +212,14 @@ void freezetag_Ice_Think()
 	setorigin(self, self.owner.origin - '0 0 16');
 	self.nextthink = time;
     //self.alpha = 0.6 * (1 - self.owner.freezetag_revive_progress);
-    self.alpha = 1 - self.owner.freezetag_revive_progress;
+    
+    /*
+    self.alpha = 
+		(1 - self.owner.freezetag_revive_progress) *
+		(1 - self.owner.freezetag_meltprogress	 );
+	*/
+	
+	self.alpha = 1 - self.owner.freezetag_revive_progress;
 }
 
 void freezetag_Freeze(entity attacker)
@@ -226,6 +233,7 @@ void freezetag_Freeze(entity attacker)
 	
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
+	self.freezetag_freezetime = time;
 	RemoveGrapplingHook(self);
 
 	entity ice;
@@ -436,6 +444,9 @@ float freezetag_PlayerPreThink()
 	o = world;
 	n = 0;
     
+    if(self.classname != "player")
+		return 0;
+    
     if(!self.freezetag_frozen)
     {
         FOR_EACH_PLAYER(other) if(self != other)
@@ -456,6 +467,8 @@ float freezetag_PlayerPreThink()
         return 0;
     }
     
+    // frozen
+    
 	FOR_EACH_PLAYER(other) if(self != other)
 	{
 		if(other.freezetag_frozen == 0)
@@ -472,8 +485,9 @@ float freezetag_PlayerPreThink()
 		}
 	}
 
-	if(n && self.freezetag_frozen) // OK, there is at least one teammate reviving us
+	if(n) // OK, there is at least one teammate reviving us
 	{
+		self.rev_finished = 0;
 		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_freezetag_revive_speed"), 1);
         //bprint("revive debug: ", self.netname, "^7.freezetag_revive_progress = ", ftos(self.freezetag_revive_progress), "\n");
 
@@ -530,15 +544,43 @@ float freezetag_PlayerPreThink()
 			}
 		}
 	}
-	else if(!n && self.freezetag_frozen) // only if no teammate is nearby will we reset
+	else if(self.rev_finished)
+	{
+		if(cvar("g_explosive_freezetag_melt"))
+		{
+			if(self.freezetag_freezetime + cvar("g_explosive_freezetag_melt_delay") <= time)
+			{
+				self.freezetag_meltprogress = bound(0, self.freezetag_meltprogress + frametime * cvar("g_explosive_freezetag_melt_speed"), 1);
+				
+				if(self.freezetag_meltprogress >= 1)
+				{
+					freezetag_Unfreeze(world);
+					bprint(self.netname, "^5's iceblock has melted\n");
+					centerprint_spec(self, "^5Your iceblock has melted");
+					return;
+				}
+			}
+			
+			self.freezetag_revive_progress = self.freezetag_meltprogress;
+		}
+		else
+			self.freezetag_meltprogress = 0;
+	}
+	else // only if no teammate is nearby will we reset
 	{
 		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_freezetag_revive_clearspeed"), 1);
+		self.freezetag_meltprogress = self.freezetag_revive_progress;
+		
+		if(!self.freezetag_revive_progress)
+			self.rev_finished = 1;
 	}
+	
+	/*
 	else if(!n)
 	{
 		self.freezetag_revive_progress = 0; // thawing nobody
         //bprint("^1revive debug: reset ", self.netname, "^7.freezetag_revive_progress\n");
-	}
+	}*/
 
 	return 1;
 }
@@ -552,6 +594,9 @@ float freezetag_PlayerPhysics()
 		
 		if(s > 0)
 		{
+			if(cvar("g_explosive_freezetag_frozen_movespeed_dependonmelt"))
+				s *= self.freezetag_revive_progress;
+			
 			self.movement_x = (
 				(self.movement_x > 0)?
 					bound( 0, self.movement_x, s)
