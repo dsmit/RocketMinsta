@@ -171,6 +171,7 @@ float bigprint_oldfadetime;
 float bigprint_commentfadetime;
 float bigprint_commentappeartime;
 float bigprint_nofadein;
+float bigprint_oldappeartime;
 
 void bigprint(string, string, float);
 

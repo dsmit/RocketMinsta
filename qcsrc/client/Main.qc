@@ -1631,6 +1631,7 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 	//bigprint_oldcomment = strzone(comment);
 	
 	bigprint_oldfadetime = fadetime - 0.1;
+	bigprint_oldappeartime = time;
 }
 
 void bigprint(string bigstr, string comment, float staytime)

@@ -2682,7 +2682,7 @@ void Sbar_Draw (void)
 		if(bp_alpha > 0)
 		{
 			bp_pos = '0 1 0' * (vid_conheight/5);
-			bp_pos_y -= 24;
+			bp_pos_y -= 24 * (rm_simpleeffects? 1 : (1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 			
 			if(rm_simpleeffects)
