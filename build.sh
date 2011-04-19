@@ -136,7 +136,7 @@ function makedata-all
 
 function listcustom()
 {
-    find "$NEXDATA/rm-custom" -name "*.cfg" | while read cfg; do
+    find "$NEXDATA/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
         echo -e "\t\t$cfg : $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
     done
 }
