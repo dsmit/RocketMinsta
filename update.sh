@@ -25,6 +25,11 @@ if [ "$1" != "rebuild" ]; then
     fi
 fi
 
+if [ "$1" = "update-only" ]; then
+    echo "Not building the mod, update-only specified."
+    exit 0
+fi
+
 echo " -- Rebuilding the mod"
 ./build.sh || error "Build failed"
 
