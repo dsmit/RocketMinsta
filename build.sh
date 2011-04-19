@@ -168,6 +168,18 @@ EOF
     fi
 }
 
+function setup-repo
+{
+    ./setup-xonotic-repo.sh || error "setup-xonotic-repo failed, bailing out"
+    
+    if [ "$(readlink -f "$QCSOURCE")" = "$(readlink -f "qcsrc")" ]; then
+        echo "QCSOURCE points to $(readlink -f "qcsrc"), correcting to $(readlink -f "xonotic-git/qcsrc")"
+        QCSOURCE="$(readlink -f "xonotic-git/qcsrc")"
+        
+        [ -e "$QCSOURCE" ] || error "QCSOURCE doesn't exist, WTF?!"
+    fi
+}
+
 ################################################################################
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
@@ -213,6 +225,8 @@ if [ "$1" = "release" ]; then
     
     [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
     . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
+    
+    setup-repo
     
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
@@ -320,6 +334,8 @@ EOF
 
     exit
 fi
+
+setup-repo
 
 RELEASE_RMCUSTOM=1
 PREFIX="-$BRANCH"
