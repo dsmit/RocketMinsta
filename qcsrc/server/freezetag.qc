@@ -352,7 +352,7 @@ float freezetag_PlayerDies()
     if(warmup >= time)
     {
         //bprint("Not counting freeze: wamrup\n");
-        PutClientInServer();
+        update_playercount();
         return 0;
     }
     
