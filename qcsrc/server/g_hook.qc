@@ -271,6 +271,12 @@ void HookDamage_Think()
 		return;
 	}
 	
+	if(g_vip) if(vip_soulgem) if(!vip_started)
+	{
+		remove(self);
+		return;
+	}
+	
 	if(!teams_matter || self.hooker.team != self.hooker.hooked_to.team)
 	{
 		play2(self.hooker, "misc/hit.wav");

@@ -5,6 +5,17 @@ void vip_ClearVIPs();
 float vip_RemovePlayer();
 void vip_ClearVIP_Common(entity);
 void vip_ClearVIPs_MaybeAssign();
+void vip_ResetHealthArmor(entity);
+
+float vip_soulgem;
+entity vip_bluegem;
+entity vip_redgem;
+void vip_SpawnSoulGem(vector, float);
+void vip_RespawnSoulGems();
+void vip_SoulGem_StartRound();
+
+void vip_AssignCustomRedVIP(entity);
+void vip_AssignCustomBlueVIP(entity);
 
 #define ISVIP(e) ((e) == redvip || (e) == bluevip)
 #define ISREDVIP(e) ((e) == redvip)

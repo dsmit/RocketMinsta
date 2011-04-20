@@ -8,6 +8,167 @@ float vip_started;
 .float vip_maxhealth;
 .float vip_maxarmor;
 
+vector redgem_loc;
+vector bluegem_loc;
+
+void vip_ClearSoulGems()
+{
+	if(vip_redgem)
+	{
+		remove(vip_redgem.enemy);
+		remove(vip_redgem);
+	}
+	
+	if(vip_bluegem)
+	{
+		remove(vip_redgem.enemy);
+		remove(vip_bluegem);
+	}
+}
+
+void vip_RespawnSoulGems()
+{
+	if(!vip_soulgem)
+		return;
+	
+	vip_ClearSoulGems();
+	vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
+	vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
+}
+
+void vip_delayedinit()
+{
+	if(vip_soulgem)
+	{
+		if(!vip_redgem || !vip_bluegem)
+		{
+			bprint("^5Can't spawn soulgems on this map, falling back to random selection!\n");
+			vip_ClearSoulGems();
+			vip_soulgem = 0;
+		}
+	}
+	
+	if(inWarmupStage)
+		vip_AssignVIPs();
+	else
+		defer(time + cvar("g_start_delay"), vip_AssignVIPs);
+	
+	vip_started = !vip_soulgem;
+}
+
+vector vip_SoulGemColormod(float theteam)
+{
+	switch(theteam)
+	{
+		case COLOR_TEAM1:
+			return '1 .8 .8';
+		case COLOR_TEAM2:
+			return '.8 .8 1';
+		default:
+			return '.2 .2 .2';
+	}
+}
+
+vector vip_SoulGemColormod2(float theteam)
+{
+	switch(theteam)
+	{
+		case COLOR_TEAM1:
+			return '1 .4 .4';
+		case COLOR_TEAM2:
+			return '.4 .4 1';
+		default:
+			return '.1 .1 .1';
+	}
+}
+
+void vip_SoulGem_touch()
+{
+	if(other.classname != "player")
+		return;
+	
+	if(other.team != self.team)
+		return;
+	
+	switch(other.team)
+	{
+		case COLOR_TEAM1:
+			vip_AssignCustomRedVIP(other);
+			break;
+		case COLOR_TEAM2:
+			vip_AssignCustomBlueVIP(other);
+			break;
+	}
+	
+	if(redvip && bluevip)
+	{
+		local entity e;
+		FOR_EACH_PLAYER(e)
+		{
+			bigprint_clear_spec(e);
+			bigprint_spec(e, "^5Begin!", "", 1);
+		}
+		vip_started = 1;
+	}
+	
+	remove(self.enemy);
+	remove(self);
+}
+
+void vip_SpawnSoulGem(vector orig, float theteam)
+{
+	if(!vip_soulgem)
+		return;
+	
+	bprint("vip_SpawnSoulGem(", vtos(orig), ", ", ftos(theteam), ")\n");
+	
+	local entity e;
+	e = spawn();
+	e.classname = "vip_soulgem";
+	e.team = theteam;
+	e.movetype = MOVETYPE_TOSS;
+	e.touch = vip_SoulGem_touch;
+	e.solid = SOLID_TRIGGER;
+	e.flags = FL_ITEM;
+	setmodel(e, "models/runematch/rune.mdl");
+	setsize(e, '0 0 -35', '0 0 0');
+	
+	e.enemy = spawn();
+	e.enemy.enemy = e;
+	e.enemy.classname = "vip_soulgem_effect";
+	setmodel(e.enemy, "models/runematch/curse.mdl");
+	setorigin(e, orig + '0 0 37');
+	setattachment(e.enemy, e, "");
+
+	e.colormod = vip_SoulGemColormod(theteam);
+	e.enemy.colormod = vip_SoulGemColormod2(theteam);
+
+	e.alpha = e.enemy.alpha = 0.8;
+	e.effects = e.enemy.effects = (EF_ADDITIVE | EF_FULLBRIGHT);
+	
+	//MoveToRandomMapLocation(e, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 1024, 256);
+	
+	switch(theteam)
+	{
+		case COLOR_TEAM1:
+			if(vip_redgem)
+				remove(vip_redgem);
+			
+			redgem_loc = e.origin;
+			vip_redgem = e;
+			return;
+		case COLOR_TEAM2:
+			if(vip_bluegem)
+				remove(vip_bluegem);
+			
+			bluegem_loc = e.origin;
+			vip_bluegem = e;
+			return;
+		default:
+			error(strcat("Tried to spawn a Soul Gem for an invalid team ", ftos(theteam)));
+	}
+}
+
 void vip_init()
 {
     if(inWarmupStage)
@@ -18,13 +179,16 @@ void vip_init()
     precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");
     ScoreRules_vip();
-    
-	if(inWarmupStage)
-		vip_AssignVIPs();
-	else
-		defer(time + cvar("g_start_delay"), vip_AssignVIPs);
 	
-	vip_started = 1;
+	vip_soulgem = cvar("g_explosive_vip_soulgem");
+	
+	if(vip_soulgem)
+	{
+		precache_model("models/runematch/curse.mdl");
+		precache_model("models/runematch/rune.mdl");
+	}
+	precache_sound("kh/capture.wav");
+	InitializeEntity(world, vip_delayedinit, INITPRIO_GAMETYPE);
 }
 
 void vip_EndRound_Think()
@@ -67,14 +231,40 @@ void vip_EndRound_Think()
 
 void vip_EndRound()
 {
-    local entity e = spawn();
-    e.think = vip_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+	next_round = time + 5;
+	
+	if(!vip_soulgem)
+	{
+		local entity e = spawn();
+		e.think = vip_EndRound_Think;
+		e.nextthink = time + 1;
+		e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+	}
+	else
+		defer(5.1, vip_SoulGem_StartRound);
+    
     update_playercount();
     defer(5.1, vip_ClearVIPs);
     vip_started = 0;
+}
+
+void vip_SoulGem_StartRound()
+{
+	if(!redvip || !bluevip)
+	{
+		local entity e;
+		FOR_EACH_PLAYER(e)
+		{
+			bigprint_clear_spec(e);
+			
+			if(ISVIP(e))
+				bigprint_spec(e, "waiting for an enemy VIP", "", 5);
+			else
+				bigprint_spec(e, "waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
+		}
+		
+		defer(5, vip_SoulGem_StartRound);
+	}
 }
 
 entity vip_PickRedVIP()
@@ -263,7 +453,6 @@ void vip_MakePlayerVIP(entity pl)
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		pl.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(pl, "g_explosive_vip_health_dependonenemies");
-		pl.health = pl.vip_maxhealth;
 		
 		if(cvar("g_explosive_vip_regenerate_health"))
 		{
@@ -277,7 +466,6 @@ void vip_MakePlayerVIP(entity pl)
 	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor"))
 	{
 		pl.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(pl, "g_explosive_vip_armor_dependonenemies");
-		pl.armorvalue = pl.vip_maxarmor;
 		
 		if(cvar("g_explosive_vip_regenerate_armor"))
 		{
@@ -292,7 +480,6 @@ void vip_MakePlayerVIP(entity pl)
 	else // in minstagib, we will just give him a bunch of extralives
 	{
 		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
-		pl.armorvalue = pl.vip_maxarmor;
 		
 		if(pl.vip_maxarmor)
 			pl.vip_state_updater.use = vip_UpdateState_Extras;
@@ -307,6 +494,8 @@ void vip_MakePlayerVIP(entity pl)
 			pl.vip_armor_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_extra_delay");
 		}
 	}
+
+	vip_ResetHealthArmor(pl);
 
 	local entity e, oldself;
 	oldself = self;
@@ -340,19 +529,47 @@ void vip_MakePlayerVIP(entity pl)
 	
 	FOR_EACH_PLAYER(e) if(e.team == pl.team) if(e != pl)
 		centerprint_spec(e, strcat(pl.netname, "^7 is now your VIP!"));
+		
+	play2all("kh/capture.wav");
 }
 
-void vip_AssignRedVIP()
+void vip_ResetHealthArmor(entity vip)
 {
-	//bprint("vip_AssignRedVIP()\n");
-	
+	vip.health = vip.vip_maxhealth;
+	vip.armorvalue = vip.vip_maxarmor;
+}
+
+void vip_AssignCustomRedVIP(entity newvip)
+{
 	if(redvip)
 	{
 		bprint("^5VIP^7: tried to assign the ^1RED^7 vip, but there is already one!\n");
 		return;
 	}
 	
-	redvip = vip_PickRedVIP();
+	redvip = newvip;
+	
+	if(redvip)
+		vip_MakePlayerVIP(redvip);
+}
+
+void vip_AssignCustomBlueVIP(entity newvip)
+{
+	if(bluevip)
+	{
+		print("^5VIP^7: tried to assign the ^4BLUE^7 vip, but there is already one!\n");
+		return;
+	}
+	
+	bluevip = newvip;
+	
+	if(bluevip)
+		vip_MakePlayerVIP(bluevip);
+}
+
+void vip_AssignRedVIP()
+{
+	vip_AssignCustomRedVIP(vip_PickRedVIP());
 	
 	if(!redvip)
 	{
@@ -360,21 +577,11 @@ void vip_AssignRedVIP()
 		defer(1, vip_AssignRedVIP);
 		return;
 	}
-	
-	vip_MakePlayerVIP(redvip);
 }
 
 void vip_AssignBlueVIP()
 {
-	//bprint("vip_AssignBlueVIP()\n");
-	
-	if(bluevip)
-	{
-		print("^5VIP^7: tried to assign the ^4BLUE^7 vip, but there is already one!\n");
-		return;
-	}
-	
-	bluevip = vip_PickBlueVIP();
+	vip_AssignCustomBlueVIP(vip_PickBlueVIP());
 	
 	if(!bluevip)
 	{
@@ -382,8 +589,6 @@ void vip_AssignBlueVIP()
 		defer(1, vip_AssignBlueVIP);
 		return;
 	}
-	
-	vip_MakePlayerVIP(bluevip);
 }
 
 void vip_ClearVIP_Common(entity pl)
@@ -428,6 +633,12 @@ void vip_ClearVIPs()
 
 void vip_AssignVIPs()
 {
+	if(vip_soulgem)
+	{
+		vip_SoulGem_StartRound();
+		return;
+	}
+	
 	//bprint("vip_AssignVIPs()\n");
 	vip_AssignRedVIP();
 	vip_AssignBlueVIP();
@@ -489,6 +700,23 @@ float vip_PlayerDies()
 float vip_RemovePlayer()
 {
 	DEPENDON(g_vip)
+	
+	if(vip_soulgem)
+	{
+		if(!vip_started)
+		{
+			if(ISREDVIP(self))
+			{
+				vip_ClearRedVIP();
+				vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
+			}
+			else if(ISBLUEVIP(self))
+			{
+				vip_ClearBlueVIP();
+				vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
+			}
+		}
+	}
 	
 	if(!vip_started)
 		return;
