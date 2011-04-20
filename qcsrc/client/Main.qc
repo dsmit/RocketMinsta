@@ -411,10 +411,12 @@ void PostInit(void)
 		case 15:
 			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
 		case 16:
-			localcmd("seta rm_shownames 0; shownames 1\n");
+			localcmd("seta rm_shownames 1; shownames 1\n");
+		case 17:
+			localcmd("seta rm_shownames 0; shownames 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 17\n");
+		localcmd("seta rm_initialized 18\n");
 		RM_OUTDATED
 		break;
 	}
