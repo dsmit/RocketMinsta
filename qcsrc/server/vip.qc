@@ -11,19 +11,20 @@ float vip_started;
 vector redgem_loc;
 vector bluegem_loc;
 
+void vip_removegem(entity g)
+{
+	backtrace("vip_removegem()\n");
+	remove(g.enemy);
+	remove(g);
+}
+
 void vip_ClearSoulGems()
 {
 	if(vip_redgem)
-	{
-		remove(vip_redgem.enemy);
-		remove(vip_redgem);
-	}
+		vip_removegem(vip_redgem);
 	
 	if(vip_bluegem)
-	{
-		remove(vip_redgem.enemy);
-		remove(vip_bluegem);
-	}
+		vip_removegem(vip_bluegem);
 }
 
 void vip_RespawnSoulGems()
@@ -111,7 +112,12 @@ void vip_SoulGem_touch()
 		vip_started = 1;
 	}
 	
-	remove(self.enemy);
+	vip_removegem(self);
+}
+
+void WHAT_THE_FUCK_think()
+{
+	vip_SpawnSoulGem(self.origin, self.team);
 	remove(self);
 }
 
@@ -125,6 +131,7 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	local entity e;
 	e = spawn();
 	e.classname = "vip_soulgem";
+	e.target = "###item###";
 	e.team = theteam;
 	e.movetype = MOVETYPE_TOSS;
 	e.touch = vip_SoulGem_touch;
@@ -137,7 +144,8 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.enemy.enemy = e;
 	e.enemy.classname = "vip_soulgem_effect";
 	setmodel(e.enemy, "models/runematch/curse.mdl");
-	setorigin(e, orig + '0 0 37');
+	e.origin = orig;
+	setorigin(e, e.origin);
 	setattachment(e.enemy, e, "");
 
 	e.colormod = vip_SoulGemColormod(theteam);
@@ -152,17 +160,40 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	{
 		case COLOR_TEAM1:
 			if(vip_redgem)
-				remove(vip_redgem);
+				vip_removegem(vip_redgem);
 			
-			redgem_loc = e.origin;
+			if(redgem_loc == '0 0 0')
+				redgem_loc = e.origin;
+			
 			vip_redgem = e;
+			//bprint("vid_redgem is a ", vip_redgem.classname, " at ", vtos(vip_redgem.origin), "\n");
+			//bprint("vid_bluegem is a ", vip_bluegem.classname, " at ", vtos(vip_bluegem.origin), "\n");
+			//bprint("e is a ", e.classname, " at ", vtos(e.origin), "\n");
+			
+			/// HOLY FUCKING COCKS FROM HELL
+			/// THIS SHIT BLOWS MY MIIIIND
+			if(e.origin == '0 0 0')
+			{
+				//print("WTF?!?!?!??!?!?!??!\n");
+				vip_removegem(e);
+				
+				local entity WHAT_THE_FUCK = spawn();
+				WHAT_THE_FUCK.think = WHAT_THE_FUCK_think;
+				WHAT_THE_FUCK.team = theteam;
+				WHAT_THE_FUCK.origin = orig;
+				WHAT_THE_FUCK.nextthink = time + 0.01;
+			}
+			
 			return;
 		case COLOR_TEAM2:
 			if(vip_bluegem)
-				remove(vip_bluegem);
+				vip_removegem(vip_bluegem);
 			
-			bluegem_loc = e.origin;
+			if(bluegem_loc == '0 0 0')
+				bluegem_loc = e.origin;
 			vip_bluegem = e;
+			bprint("vid_redgem is a ", vip_redgem.classname, " at ", vtos(vip_redgem.origin), "\n");
+			bprint("vid_bluegem is a ", vip_bluegem.classname, " at ", vtos(vip_bluegem.origin), "\n");
 			return;
 		default:
 			error(strcat("Tried to spawn a Soul Gem for an invalid team ", ftos(theteam)));
@@ -709,11 +740,17 @@ float vip_RemovePlayer()
 			{
 				vip_ClearRedVIP();
 				vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
+				
+				if(!vip_redgem)
+					bprint("couldn't spawn the red gem, wtf?!\n");
 			}
 			else if(ISBLUEVIP(self))
 			{
 				vip_ClearBlueVIP();
 				vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
+				
+				if(!vip_bluegem)
+					bprint("couldn't spawn the blue gem, wtf?!\n");
 			}
 		}
 	}

@@ -852,7 +852,9 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
 		{
 			//error(strcat("Can't select the requested game type. Bailing out. pGametypeToSet = ", ftos(pGametypeToSet), "; MapInfo_Map_supportedGametypes = ", ftos(MapInfo_Map_supportedGametypes )));
+			#ifdef SVQC
 			bprint("^1Can't select the requested gametype, WTF?!\n");
+			#endif
 		}
 #endif
 	MapInfo_Cache_Store();
@@ -1117,9 +1119,11 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 		if(MapInfo_Map_supportedGametypes <= 0)
 		{
 			//error("Mapinfo system is not functional at all. BAILED OUT.\n");
+			#ifdef SVQC
 			bprint("^1EVERYTHING IS FUCKED UP\n");
 			bprint("^1EVERYTHING IS FUCKED UP\n");
 			bprint("^1EVERYTHING IS FUCKED UP\n");
+			#endif
 			return;
 		}
 
