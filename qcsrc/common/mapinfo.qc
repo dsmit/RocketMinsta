@@ -1115,7 +1115,13 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
 	{
 		if(MapInfo_Map_supportedGametypes <= 0)
-			error("Mapinfo system is not functional at all. BAILED OUT.\n");
+		{
+			//error("Mapinfo system is not functional at all. BAILED OUT.\n");
+			bprint("^1EVERYTHING IS FUCKED UP\n");
+			bprint("^1EVERYTHING IS FUCKED UP\n");
+			bprint("^1EVERYTHING IS FUCKED UP\n");
+			return;
+		}
 
 		t = 1;
 		while(!(MapInfo_Map_supportedGametypes & 1))
