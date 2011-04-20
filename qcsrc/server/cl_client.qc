@@ -548,6 +548,8 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 
+	remove(self.shownames);
+	self.shownames = world;
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
@@ -1009,6 +1011,18 @@ void PutClientInServer (void)
 
 	//if(g_ctf)
 	//	ctf_playerchanged();
+	
+	if(cvar("g_explosive_shownames"))
+	if(self.classname == "player")
+	if(self.shownames == world)
+	{
+		self.shownames = spawn();
+		self.shownames.owner = self;
+		self.shownames.think = shownames_think;
+		self.shownames.nextthink = time;
+		self.shownames.customizeentityforclient = shownames_customize;
+		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
+	}
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1480,6 +1494,16 @@ void ClientConnect (void)
 	
 	if(clienttype(self) == CLIENTTYPE_REAL)
 		defer(5, ServerTopic);
+	
+	if(cvar("g_explosive_shownames"))
+	{
+		self.shownames = spawn();
+		self.shownames.owner = self;
+		self.shownames.think = shownames_think;
+		self.shownames.nextthink = time;
+		self.shownames.customizeentityforclient = shownames_customize;
+		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
+	}
 }
 
 /*
@@ -1574,6 +1598,8 @@ void ClientDisconnect (void)
 
 	self.playerid = 0;
 	ReadyCount();
+
+	remove(self.shownames);
 
 	// free cvars
 	GetCvars(-1);

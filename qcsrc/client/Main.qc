@@ -410,9 +410,11 @@ void PostInit(void)
 			localcmd("seta rm_crosshealth 0; crosshealth 0\n");
 		case 15:
 			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
+		case 16:
+			localcmd("seta rm_shownames 0; shownames 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 16\n");
+		localcmd("seta rm_initialized 17\n");
 		RM_OUTDATED
 		break;
 	}
@@ -427,6 +429,7 @@ void PostInit(void)
 	rm_madoka = cvar("rm_madoka");
 	rm_crosshealth = cvar("rm_crosshealth");
 	rm_simpleeffects = cvar("rm_simpleeffects");
+	rm_shownames = cvar("rm_shownames");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -442,6 +445,7 @@ void PostInit(void)
 	registercmd("specmadoka");
 	registercmd("crosshealth");
 	registercmd("simpleeffects");
+	registercmd("shownames");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -539,20 +543,21 @@ float CSQC_ConsoleCommand(string strMessage)
 	else if(strCmd == "rmhelp")
 	{
 		print("^xFB0RocketMinsta configuration options. ^7To enable an option, type ^2optionname 1^7. To disable, ^2optionname 0^7.\n\n");
-		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
-		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
-		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
-		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
-		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
-		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
+		print("^2showspec^7: If enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
+		print("^2showdamage^7: If enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
+		print("^2teamlasers^7: If enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
+		print("^2nobigtext^7: If enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2hidebigcomments^7: If enabled, comments for bigprints will not be shown (disabled by default)\n");
+		print("^2legacyvote^7: If enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
 		print("^2crosshealth^7: If enabled, the crosshair color will depend on current health (disabled by default)\n");
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
-		print("^2simpleeffects^7: Enabled simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
+		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
+		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
-		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
-		print("^2specmadoka^7: if enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
+		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
 		#endif
 		return true;
 	}
@@ -566,7 +571,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "hidewatermark"		||
 		strCmd == "dontmesswithfonts"	||
 		strCmd == "crosshealth"			||
-		strCmd == "simpleeffects"		 )
+		strCmd == "simpleeffects"		||
+		strCmd == "shownames"			 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -579,6 +585,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_hidewatermark = cvar("rm_hidewatermark");
 		rm_crosshealth = cvar("rm_crosshealth");
 		rm_simpleeffects = cvar("rm_simpleeffects");
+		rm_shownames = cvar("rm_shownames");
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
@@ -1158,6 +1165,37 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
+void Ent_ShowNames()
+{
+    float sf;
+
+    // entity init, TODO can this be done only once somehow?
+    self.the_entnum = ReadByte(); // TODO: fixme to only send once somehow
+    self.draw2d = Draw_ShowNames;
+    //self.movetype = MOVETYPE_FLY; // movetype needed so we can traceline?
+    self.mins = '-20 -20 -24';
+    self.maxs = '20 20 45';
+
+    sf = ReadByte();
+
+    if(sf & 1)
+    {
+        self.origin_x = ReadShort();
+        self.origin_y = ReadShort();
+        self.origin_z = ReadShort();
+    }
+    if(sf & 2)
+    {
+        self.healthvalue = ReadByte();
+        self.armorvalue = ReadByte();
+    }
+
+    if(sf & 128) // same team
+        self.sameteam = TRUE;
+    else
+        self.sameteam = FALSE;
+}
+
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1214,6 +1252,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
+		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -1664,17 +1703,23 @@ void bigprint(string bigstr, string comment, float staytime)
 	
 	if(comment != "")
 	{
+		
+		if(substring(comment, 0, 1) == "\x01")
+		{
+			if(rm_shownames)
+				return;
+			
+			comment = substring(comment, 1, strlen(comment));
+			bigprint_nofadein = 1;
+		}
+		else
+			bigprint_nofadein = 0;
+		
 		bpc_draw = 1;
 		bigprint_nofadein = 0;
 		
 		if(bigprint_comment);
 			fstrunzone(bigprint_comment);
-		
-		if(substring(comment, 0, 1) == "\x01")
-		{
-			comment = substring(comment, 1, strlen(comment));
-			bigprint_nofadein = 1;
-		}
 		
 		bigprint_comment = strzone(comment);
 		bigprint_commentfadetime = time + staytime;

@@ -192,6 +192,7 @@ float rm_hidewatermark;
 float rm_madoka;
 float rm_crosshealth;
 float rm_simpleeffects;
+float rm_shownames;
 
 float vote_yescount;
 float vote_nocount;

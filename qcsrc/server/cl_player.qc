@@ -770,6 +770,59 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	}
 }
 
+// sendflags use: 1 = origin, 2 = health/armor, 0x80 = same team (includes health), 4 = entity out of range/culled
+float SendEntity_ShowNames(entity to, float sendflags)
+{
+    WriteByte(MSG_ENTITY, ENT_CLIENT_SHOWNAMES);
+    WriteByte(MSG_ENTITY, num_for_edict(self.owner));
+
+    sendflags = sendflags & 127;
+    if(teams_matter && self.owner.team == to.team)
+        sendflags |= 128;
+    else
+        sendflags &~= 2;
+    WriteByte(MSG_ENTITY, sendflags);
+    if(sendflags & 1)
+    {
+        WriteShort(MSG_ENTITY, rint(self.origin_x));
+        WriteShort(MSG_ENTITY, rint(self.origin_y));
+        WriteShort(MSG_ENTITY, rint(self.origin_z));
+    }
+    if(sendflags & 2)
+    {
+        WriteByte(MSG_ENTITY, self.health);
+        WriteByte(MSG_ENTITY, self.armorvalue);
+    }
+    return TRUE;
+}
+
+const vector SHOWNAMES_ORIGIN_OFFSET = '0 0 48';
+void shownames_think()
+{
+	if(self.origin - SHOWNAMES_ORIGIN_OFFSET != self.owner.origin)
+	{
+		setorigin(self, self.owner.origin + SHOWNAMES_ORIGIN_OFFSET);
+		self.SendFlags |= 1;
+	}
+	if(self.health != max(0, floor(self.owner.health)) || self.armorvalue != max(0, floor(self.owner.armorvalue)))
+	{
+		self.health = max(0, floor(self.owner.health));
+		self.armorvalue = max(0, floor(self.owner.armorvalue));
+		self.SendFlags |= 2;
+	}
+    self.nextthink = time;
+}
+
+float shownames_customize()
+{
+    if(self.owner != other) // no need to spam own coordinates
+    if(vlen(other.origin - self.origin) < autocvar_sv_shownames_cull_distance) // distance cull
+    if(self.owner.team == other.team || (self.owner.team != other.team && checkpvs(self.origin, other)))
+        return TRUE;
+
+    return FALSE;
+}
+
 float UpdateSelectedPlayer_countvalue(float v)
 {
 	return max(0, (v - 1.0) / 0.5);

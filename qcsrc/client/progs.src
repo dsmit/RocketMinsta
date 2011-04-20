@@ -43,6 +43,8 @@ wall.qc
 modeleffects.qc
 
 //vehicles/spiderbot.qc
+shownames.qh
+shownames.qc
 Main.qc
 View.qc
 interpolate.qc

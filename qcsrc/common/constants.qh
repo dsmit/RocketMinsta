@@ -93,6 +93,7 @@ const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
+const float ENT_CLIENT_SHOWNAMES = 23;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -527,3 +528,23 @@ float MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
 
 
+// xonotic compat
+
+#define autocvar_hud_shownames (rm_shownames)
+#define autocvar_sv_shownames_cull_distance 2500
+#define autocvar_hud_shownames_enemies 2
+#define autocvar_hud_shownames_height 15
+#define autocvar_hud_shownames_status 0
+#define autocvar_hud_panel_healtharmor_maxhealth 0
+#define autocvar_hud_panel_healtharmor_maxarmor 0
+#define autocvar_hud_shownames_aspect 8
+#define autocvar_hud_shownames_fontsize 10
+#define autocvar_hud_shownames_decolorize 1
+#define autocvar_hud_shownames_alpha 0.9
+#define autocvar_hud_shownames_resize 0
+#define autocvar_hud_shownames_mindistance 1000
+#define autocvar_hud_shownames_maxdistance 2500
+
+const vector eX = '1 0 0';
+const vector eY = '0 1 0';
+const vector eZ = '0 0 1';

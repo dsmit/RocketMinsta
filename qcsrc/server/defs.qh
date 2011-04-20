@@ -641,3 +641,5 @@ float keeptopic;
 
 .float totalpoints_stat, redpoints_stat, bluepoints_stat;
 
+.entity shownames;
+void shownames_think();
