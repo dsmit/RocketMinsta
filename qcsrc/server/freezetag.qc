@@ -266,14 +266,14 @@ void freezetag_Freeze(entity attacker)
 	{
 		// you froze your own dumb self
 		// counted as "suicide" already
-		PlayerScore_Add(self, SP_SCORE, -1);
+		PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
 	}
 	else if(attacker.classname == "player")
 	{
 		// got frozen by an enemy
 		// counted as "kill" and "death" already
-		PlayerScore_Add(self, SP_SCORE, -1);
-		PlayerScore_Add(attacker, SP_SCORE, +1);
+		PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
+		PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_freezetag_score_freeze"));
 	}
 	else
 	{
@@ -505,7 +505,7 @@ float freezetag_PlayerPreThink()
 						if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
 						{
 							PlayerScore_Add(other, SP_FREEZETAG_REVIVALS, +1);
-							PlayerScore_Add(other, SP_SCORE, +1);
+							PlayerScore_Add(other, SP_SCORE, cvar("g_explosive_freezetag_score_revival"));
                             other.health = max(other.health, 100);
 						}
 					}
