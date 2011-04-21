@@ -1718,7 +1718,6 @@ void bigprint(string bigstr, string comment, float staytime)
 			bigprint_nofadein = 0;
 		
 		bpc_draw = 1;
-		bigprint_nofadein = 0;
 		
 		if(bigprint_comment);
 			fstrunzone(bigprint_comment);
