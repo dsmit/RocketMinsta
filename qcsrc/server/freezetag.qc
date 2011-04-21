@@ -402,6 +402,9 @@ float freezetag_PlayerSpawn()
     
     freezetag_Unfreeze(world); // start by making sure that all ice blocks are removed
 
+	self.freezetag_revive_progress = 0;
+	self.freezetag_meltprogress = 0;
+
 	if(totalspawned == 1 && time > game_starttime) // only one player active on server, start a new match immediately
 	if(!next_round && warmup && (time < warmup - cvar("g_explosive_freezetag_warmup") || time > warmup)) // not awaiting next round
 	{
