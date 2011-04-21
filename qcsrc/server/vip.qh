@@ -17,6 +17,20 @@ void vip_SoulGem_StartRound();
 void vip_AssignCustomRedVIP(entity);
 void vip_AssignCustomBlueVIP(entity);
 
+entity redvip;
+entity bluevip;
+float vip_started;
+float vip_ended;
+.entity vip_health_regenerator;
+.entity vip_armor_regenerator;
+.entity vip_state_updater;
+.float vip_maxhealth;
+.float vip_maxarmor;
+.float gem_pickedup;
+
+vector redgem_loc;
+vector bluegem_loc;
+
 #define ISVIP(e) ((e) == redvip || (e) == bluevip)
 #define ISREDVIP(e) ((e) == redvip)
 #define ISBLUEVIP(e) ((e) == bluevip)

@@ -1,19 +1,6 @@
 
-entity redvip;
-entity bluevip;
-float vip_started;
-.entity vip_health_regenerator;
-.entity vip_armor_regenerator;
-.entity vip_state_updater;
-.float vip_maxhealth;
-.float vip_maxarmor;
-
-vector redgem_loc;
-vector bluegem_loc;
-
 void vip_removegem(entity g)
 {
-	backtrace("vip_removegem()\n");
 	remove(g.enemy);
 	remove(g);
 }
@@ -32,9 +19,12 @@ void vip_RespawnSoulGems()
 	if(!vip_soulgem)
 		return;
 	
-	vip_ClearSoulGems();
-	vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
-	vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
+	//vip_ClearSoulGems();
+	//vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
+	//vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
+	
+	vip_redgem.reset2();
+	vip_bluegem.reset2();
 }
 
 void vip_delayedinit()
@@ -88,6 +78,9 @@ void vip_SoulGem_touch()
 	if(other.classname != "player")
 		return;
 	
+	if(self.gem_pickedup)
+		return;
+	
 	if(other.team != self.team)
 		return;
 	
@@ -108,17 +101,39 @@ void vip_SoulGem_touch()
 		{
 			bigprint_clear_spec(e);
 			bigprint_spec(e, "^5Begin!", "", 1);
+			
+			local entity oldself;
+			oldself = self;
+			self = e;
+			PutClientInServer();
+			self = oldself;
+			
+			if(ISVIP(e))
+				vip_ResetHealthArmor(e);
 		}
 		vip_started = 1;
 	}
 	
-	vip_removegem(self);
+	//vip_removegem(self);
+	self.gem_pickedup = 1;
+	self.alpha = 0;
+	self.enemy.alpha = 0;
+	self.colormod = vip_SoulGemColormod(-self.team);
+	self.enemy.colormod = vip_SoulGemColormod2(-self.team);
 }
 
 void WHAT_THE_FUCK_think()
 {
 	vip_SpawnSoulGem(self.origin, self.team);
 	remove(self);
+}
+
+void vip_SoulGem_reset()
+{
+	self.gem_pickedup = 0;
+	self.alpha = self.enemy.alpha = 0.8;
+	self.colormod = vip_SoulGemColormod(self.team);
+	self.enemy.colormod = vip_SoulGemColormod2(self.team);
 }
 
 void vip_SpawnSoulGem(vector orig, float theteam)
@@ -137,6 +152,7 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.touch = vip_SoulGem_touch;
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
+	e.reset2 = vip_SoulGem_reset;
 	setmodel(e, "models/runematch/rune.mdl");
 	setsize(e, '0 0 -35', '0 0 0');
 	
@@ -172,9 +188,9 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 			
 			/// HOLY FUCKING COCKS FROM HELL
 			/// THIS SHIT BLOWS MY MIIIIND
-			if(e.origin == '0 0 0')
+			if(e.origin != redgem_loc)
 			{
-				//print("WTF?!?!?!??!?!?!??!\n");
+				bprint("^1WTF?!?!?!??!?!?!??!\n");
 				vip_removegem(e);
 				
 				local entity WHAT_THE_FUCK = spawn();
@@ -192,8 +208,21 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 			if(bluegem_loc == '0 0 0')
 				bluegem_loc = e.origin;
 			vip_bluegem = e;
-			bprint("vid_redgem is a ", vip_redgem.classname, " at ", vtos(vip_redgem.origin), "\n");
-			bprint("vid_bluegem is a ", vip_bluegem.classname, " at ", vtos(vip_bluegem.origin), "\n");
+			
+			/// HOLY FUCKING COCKS FROM HELL
+			/// THIS SHIT BLOWS MY MIIIIND
+			if(e.origin != bluegem_loc)
+			{
+				bprint("^4WTF?!?!?!??!?!?!??!\n");
+				vip_removegem(e);
+				
+				local entity WHAT_THE_FUCK = spawn();
+				WHAT_THE_FUCK.think = WHAT_THE_FUCK_think;
+				WHAT_THE_FUCK.team = theteam;
+				WHAT_THE_FUCK.origin = orig;
+				WHAT_THE_FUCK.nextthink = time + 0.01;
+			}
+
 			return;
 		default:
 			error(strcat("Tried to spawn a Soul Gem for an invalid team ", ftos(theteam)));
@@ -250,6 +279,9 @@ void vip_EndRound_Think()
             return;
         }
         
+        vip_started = 0;
+        vip_ended = 0;
+        
         local entity e;
         FOR_EACH_PLAYER(e)
         {
@@ -276,7 +308,8 @@ void vip_EndRound()
     
     update_playercount();
     defer(5.1, vip_ClearVIPs);
-    vip_started = 0;
+    //vip_started = 0;
+    vip_ended = 1;
 }
 
 void vip_SoulGem_StartRound()
@@ -286,6 +319,9 @@ void vip_SoulGem_StartRound()
 		local entity e;
 		FOR_EACH_PLAYER(e)
 		{
+			vip_started = 0;
+			vip_ended = 0;
+			
 			bigprint_clear_spec(e);
 			
 			if(ISVIP(e))
@@ -641,11 +677,17 @@ void vip_ClearVIP_Common(entity pl)
 
 void vip_ClearRedVIP()
 {
-	// yes, it HAS to be called two times
-	// not anymore it seems
-	//vip_ClearVIP_Common(redvip);
 	vip_ClearVIP_Common(redvip);
 	redvip = world;
+	
+	if(vip_soulgem)
+	{
+		local entity oldself;
+		oldself = self;
+		self = vip_redgem;
+		vip_redgem.reset2();
+		self = oldself;
+	}
 }
 
 void vip_ClearBlueVIP()
@@ -653,6 +695,15 @@ void vip_ClearBlueVIP()
 	//vip_ClearVIP_Common(bluevip);
 	vip_ClearVIP_Common(bluevip);
 	bluevip = world;
+	
+	if(vip_soulgem)
+	{
+		local entity oldself;
+		oldself = self;
+		self = vip_bluegem;
+		vip_bluegem.reset2();
+		self = oldself;
+	}
 }
 
 void vip_ClearVIPs()
@@ -710,8 +761,28 @@ float vip_PlayerDies()
 {
 	DEPENDON(g_vip)
 	
-	if(!vip_started)
+	if(vip_ended)
 		return;
+	
+	if(!vip_started)
+	{
+		if(ISREDVIP(frag_target))
+		{
+			vip_ClearRedVIP();
+			
+			if(!vip_soulgem)
+				vip_AssignRedVIP();
+		}
+		else if(ISBLUEVIP(frag_target))
+		{
+			vip_ClearBlueVIP();
+			
+			if(!vip_soulgem)
+				vip_AssignBlueVIP();
+		}
+		
+		return;
+	}
 	
 	if(!ISVIP(frag_target))
 		return 0;
@@ -732,40 +803,25 @@ float vip_RemovePlayer()
 {
 	DEPENDON(g_vip)
 	
-	if(vip_soulgem)
-	{
-		if(!vip_started)
-		{
-			if(ISREDVIP(self))
-			{
-				vip_ClearRedVIP();
-				vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
-				
-				if(!vip_redgem)
-					bprint("couldn't spawn the red gem, wtf?!\n");
-			}
-			else if(ISBLUEVIP(self))
-			{
-				vip_ClearBlueVIP();
-				vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
-				
-				if(!vip_bluegem)
-					bprint("couldn't spawn the blue gem, wtf?!\n");
-			}
-		}
-	}
-	
-	if(!vip_started)
+	if(vip_ended)
 		return;
 	
 	if(ISREDVIP(self))
 	{
 		vip_ClearRedVIP();
-		vip_RedVIPDown();
+		
+		if(vip_started)
+			vip_RedVIPDown();
+		else if(!vip_soulgem)
+			vip_AssignRedVIP();
 	}
 	else if(ISBLUEVIP(self))
 	{
 		vip_ClearBlueVIP();
-		vip_BlueVIPDown();
+		
+		if(vip_started)
+			vip_BlueVIPDown();
+		else if(!vip_soulgem)
+			vip_AssignBlueVIP();
 	}
 }

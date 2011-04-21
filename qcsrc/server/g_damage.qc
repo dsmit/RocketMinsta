@@ -855,7 +855,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			attacker.lms_traveled_distance = cvar("g_lms_campcheck_distance");
 		}
 
-		if(g_vip) if(vip_soulgem) if(!vip_started)
+		if(g_vip) if(vip_soulgem) if(!vip_started) if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;
 			
@@ -867,6 +867,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
 			
+			/*
 			if(deathtype == DEATH_HURTTRIGGER)
 			{
 				oldself = self;
@@ -877,6 +878,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if(ISVIP(targ))
 				vip_ResetHealthArmor(targ);
 			}
+			*/
 		}
 
 		if(targ.classname == "player")

@@ -83,7 +83,7 @@ void reset_map(float dorespawn)
 	if(g_vip)
 	{
 		vip_ClearVIPs_MaybeAssign();
-		vip_RespawnSoulGems();
+		//vip_RespawnSoulGems();
 	}
 
 	// Moving the player reset code here since the player-reset depends
