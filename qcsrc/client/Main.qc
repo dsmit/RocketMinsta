@@ -344,7 +344,7 @@ void SetMadokaFont(float v)
 			{
 				if(cvar("rm_specmadoka"))
 				{
-					SetMadokaFont(madokalockstate);
+					sbar_bigfont = (madokalockstate? sbar_madokafont : sbar_bigfont_real);
 					return;
 				}
 				/*else
