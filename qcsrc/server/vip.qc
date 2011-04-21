@@ -120,6 +120,9 @@ void vip_SoulGem_touch()
 	self.enemy.alpha = 0;
 	self.colormod = vip_SoulGemColormod(-self.team);
 	self.enemy.colormod = vip_SoulGemColormod2(-self.team);
+	
+	if(self.waypointsprite_attached)
+		WaypointSprite_Kill(self.waypointsprite_attached);
 }
 
 void WHAT_THE_FUCK_think()
@@ -134,6 +137,10 @@ void vip_SoulGem_reset()
 	self.alpha = self.enemy.alpha = 0.8;
 	self.colormod = vip_SoulGemColormod(self.team);
 	self.enemy.colormod = vip_SoulGemColormod2(self.team);
+	
+	// "run here" waypoint
+	if(!self.waypointsprite_attached)
+		WaypointSprite_Spawn("keycarrier-finish", 0, 0, self, '0 0 64', world, self.team, self, waypointsprite_attached, TRUE);
 }
 
 void vip_SpawnSoulGem(vector orig, float theteam)
@@ -169,6 +176,10 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 
 	e.alpha = e.enemy.alpha = 0.8;
 	e.effects = e.enemy.effects = (EF_ADDITIVE | EF_FULLBRIGHT);
+	
+	// "run here" waypoint
+	if(!e.waypointsprite_attached)
+		WaypointSprite_Spawn("keycarrier-finish", 0, 0, e, '0 0 64', world, e.team, e, waypointsprite_attached, TRUE);
 	
 	//MoveToRandomMapLocation(e, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 1024, 256);
 	

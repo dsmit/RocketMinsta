@@ -756,6 +756,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	if (gameover || targ.killcount == -666)
 		return;
+	
+	local float t_oldhealth = targ.health;
+	local float t_oldarmor = targ.armorvalue;
 
 	local entity oldself;
 	oldself = self;
@@ -1134,59 +1137,23 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	//<akari>
 	//Print damage to players
+	
+	local float olddamage;
+	olddamage = damage;
+	
+	damage = min(damage, t_oldhealth);
+	armordamage = min(armordamage, t_oldarmor);
+	
+	if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
+	{
+		PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
+		
+		//TODO: make it work for extralives
+		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
+	}
+	
 	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if(damage || armordamage)
 	{
-		//screw this all
-		/*
-		if(damage > 0) 
-		{
-			if(attacker.classname == "player")
-			{
-				if(targ.netname)
-					//centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3< ^7", ftos(rint(damage)), " ^3>\n^7", targ.netname));
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3^x550 ^7", ftos(rint(damage)), " ^x550^3\n^7", targ.netname));
-			}
-			
-			if(targ.classname == "player")
-			{
-				if(attacker.netname)
-				{
-					if(attacker == targ)
-						//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1>> ^7", ftos(rint(damage)), " ^1<<"));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^8^x500^1 ^7", ftos(rint(damage)), " ^1^x500^8\n"));
-					else
-						//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<\n^7", attacker.netname));
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n^7", attacker.netname));
-				}
-				else
-					//centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^1> ^7", ftos(rint(damage)), " ^1<"));
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^7", ftos(rint(damage)), " ^1^x500\n"));
-			}
-		}
-		
-		else if(armordamage > 0) 
-		{
-			if(attacker.classname == "player")
-			{
-				if(targ.netname)
-					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^3^x550 ^2(^7", ftos(rint(armordamage)), "^2) ^x550^3\n^7", targ.netname));
-			}
-			
-			if(targ.classname == "player")
-			{
-				if(attacker.netname)
-				{
-					if(attacker == targ)
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^8^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500^8\n"));
-					else
-						centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500\n^7", attacker.netname));
-				}
-				else
-					centerprint(targ, strcat(DAMAGE_CENTERPRINT_SPACER, DAMAGE_CENTERPRINT_SPACER, "^x500^1 ^2(^7", ftos(rint(armordamage)), "^2) ^1^x500\n"));
-			}
-		}
-		*/
-		
 		local string dmgstring, wpnstring;
 		
 		// To-do: generate prints client-side, send all the crap through a tempentity
@@ -1226,6 +1193,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
 		}
 	}
+	
+	damage = olddamage;
 	
 	//</akari>
 
