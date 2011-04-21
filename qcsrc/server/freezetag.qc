@@ -444,6 +444,9 @@ float freezetag_PlayerPreThink()
 	o = world;
 	n = 0;
     
+    if(warmup >= time || next_round >= time)
+		return 0;
+	
     if(self.classname != "player")
 		return 0;
     
