@@ -187,8 +187,14 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "rmcfgreport") {
 		print("^2Received rmcfgreport from ", self.netname, "^2: ", s, "\n");
 		
+		if(!self)
+			return;
+			
 		if(self.rmcfgreport)
 			strunzone(self.rmcfgreport);
+		
+		if(!self)
+			return;
 		
 		self.rmcfgreport = strzone(s);
 	} else if(cmd == "spyrmcfg") {
