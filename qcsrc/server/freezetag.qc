@@ -475,8 +475,6 @@ float freezetag_PlayerPreThink()
     
 	FOR_EACH_PLAYER(other) if(self != other)
 	{
-		oPrev = other;
-		
 		if(!other.freezetag_frozen)
 		{
 			if(other.team == self.team)
@@ -486,8 +484,14 @@ float freezetag_PlayerPreThink()
 					o = other;
 					break;
 				}
+				else
+					oPrev = other;
 			}
+			else
+				oPrev = other;
 		}
+		else
+			oPrev = other;
 	}
 
 	if(o) // OK, there is at least one teammate reviving us
