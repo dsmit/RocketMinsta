@@ -438,15 +438,13 @@ float freezetag_PlayerSpawn()
 
 float freezetag_PlayerPreThink()
 {
-	float n;
 	vector revive_extra_size;
     DEPENDON(g_freezetag)
 	revive_extra_size = '1 1 1' * cvar("g_explosive_freezetag_revive_extra_size");
 
 	entity o;
 	o = world;
-	n = 0;
-    
+
     if(warmup >= time || next_round >= time)
 		return 0;
 	
@@ -483,15 +481,14 @@ float freezetag_PlayerPreThink()
 			{
 				if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
 				{
-					if(!o)
-						o = other;
-					++n;
+					o = other;
+					break;
 				}
 			}
 		}
 	}
 
-	if(n) // OK, there is at least one teammate reviving us
+	if(o) // OK, there is at least one teammate reviving us
 	{
 		self.rev_finished = 0;
 		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_freezetag_revive_speed"), 1);
@@ -518,14 +515,18 @@ float freezetag_PlayerPreThink()
 				}
 			}
 
+			/*
 			if(n > 1)
 				centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "^5 et al\n"));
 			else
+			*/
 				centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "\n"));
 			centerprint_spec(o, strcat("^5You revived ^7", self.netname, "\n"));
+			/*
 			if(n > 1)
 				bprint("^7", o.netname, "^5 et al revived ^7", self.netname, "\n");
 			else
+			*/
 				bprint("^7", o.netname, "^5 revived ^7", self.netname, "\n");
 		}
 
