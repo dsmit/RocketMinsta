@@ -442,7 +442,7 @@ float freezetag_PlayerPreThink()
     DEPENDON(g_freezetag)
 	revive_extra_size = '1 1 1' * cvar("g_explosive_freezetag_revive_extra_size");
 
-	entity o;
+	entity o, oPrev;
 	o = world;
 
     if(warmup >= time || next_round >= time)
@@ -475,7 +475,9 @@ float freezetag_PlayerPreThink()
     
 	FOR_EACH_PLAYER(other) if(self != other)
 	{
-		if(other.freezetag_frozen == 0)
+		oPrev = other;
+		
+		if(!other.freezetag_frozen)
 		{
 			if(other.team == self.team)
 			{
@@ -499,7 +501,9 @@ float freezetag_PlayerPreThink()
 			freezetag_Unfreeze(self);
 
 			// EVERY team mate nearby gets a point (even if multiple!)
-			FOR_EACH_PLAYER(other) if(self != other)
+			//FOR_EACH_PLAYER(other) if(self != other)
+			
+			for(v = oPrev; (v = find(v, classname, STR_PLAYER)) != world; )
 			{
 				if(other.freezetag_frozen == 0)
 				{
