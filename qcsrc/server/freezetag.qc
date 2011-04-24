@@ -498,7 +498,6 @@ float freezetag_PlayerPreThink()
 	{
 		self.rev_finished = 0;
 		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_freezetag_revive_speed"), 1);
-        //bprint("revive debug: ", self.netname, "^7.freezetag_revive_progress = ", ftos(self.freezetag_revive_progress), "\n");
 
 		if(self.freezetag_revive_progress >= 1)
 		{
@@ -509,7 +508,7 @@ float freezetag_PlayerPreThink()
 			
 			for(v = oPrev; (v = find(v, classname, STR_PLAYER)) != world; ) if(self != other)
 			{
-				if(other.freezetag_frozen == 0)
+				if(!other.freezetag_frozen)
 				{
 					if(other.team == self.team)
 					{
@@ -523,37 +522,21 @@ float freezetag_PlayerPreThink()
 				}
 			}
 
-			/*
-			if(n > 1)
-				centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "^5 et al\n"));
-			else
-			*/
-				centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "\n"));
+			centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "\n"));
 			centerprint_spec(o, strcat("^5You revived ^7", self.netname, "\n"));
-			/*
-			if(n > 1)
-				bprint("^7", o.netname, "^5 et al revived ^7", self.netname, "\n");
-			else
-			*/
-				bprint("^7", o.netname, "^5 revived ^7", self.netname, "\n");
+			bprint("^7", o.netname, "^5 revived ^7", self.netname, "\n");
 		}
 
 		// now find EVERY teammate within reviving radius, set their revive_progress values correct
-		FOR_EACH_PLAYER(other) if(self != other)
+		for(v = oPrev; (v = find(v, classname, STR_PLAYER)) != world; ) if(self != other)
 		{
-            //bprint("revive debug: setting ", other.netname, "^7: check #1 passed\n");
-            
-			if(other.freezetag_frozen == 0)
+			if(!other.freezetag_frozen)
 			{
-                //bprint("revive debug: setting ", other.netname, "^7: check #2 passed\n");
 				if(other.team == self.team)
 				{
-                    //bprint("revive debug: setting ", other.netname, "^7: check #3 passed\n");
 					if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
                     {
-                        //bprint("revive debug: setting ", other.netname, "^7: check #4 passed\n");
 						other.freezetag_revive_progress = self.freezetag_revive_progress;
-                        //bprint("^5revive debug: ", other.netname, "^7.freezetag_revive_progress = ", ftos(self.freezetag_revive_progress), "\n");
                     }
 				}
 			}
@@ -593,13 +576,6 @@ float freezetag_PlayerPreThink()
 		if(!self.freezetag_revive_progress)
 			self.rev_finished = 1;
 	}
-	
-	/*
-	else if(!n)
-	{
-		self.freezetag_revive_progress = 0; // thawing nobody
-        //bprint("^1revive debug: reset ", self.netname, "^7.freezetag_revive_progress\n");
-	}*/
 
 	return 1;
 }
