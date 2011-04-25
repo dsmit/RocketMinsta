@@ -518,6 +518,10 @@ float freezetag_PlayerPreThink()
 			// EVERY team mate nearby gets a point (even if multiple!)
 			//FOR_EACH_PLAYER(other) if(self != other)
 			
+			local string names;
+			local float first;
+			first = TRUE;
+			
 			for(other = oPrev; (other = find(other, classname, STR_PLAYER)) != world; ) if(self != other)
 			{
 				if(!other.freezetag_frozen)
@@ -529,14 +533,25 @@ float freezetag_PlayerPreThink()
 							PlayerScore_Add(other, SP_FREEZETAG_REVIVALS, +1);
 							PlayerScore_Add(other, SP_SCORE, cvar("g_explosive_freezetag_score_revival"));
                             other.health = max(other.health, 100);
+                            centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
+                            
+                            if(first)
+                            {
+								names = other.netname;
+								first = FALSE;
+							}
+							else
+								names = strcat(names, "^7, ", other.netname);
 						}
 					}
 				}
 			}
 
-			centerprint_spec(self, strcat("^5You were revived by ^7", o.netname, "\n"));
-			centerprint_spec(o, strcat("^5You revived ^7", self.netname, "\n"));
-			bprint("^7", o.netname, "^5 revived ^7", self.netname, "\n");
+			centerprint_spec(self, strcat("^5You were revived by ^7", names, "\n"));
+			//centerprint_spec(o, strcat("^5You revived ^7", self.netname, "\n"));
+			bprint("^7", names, "^5 revived ^7", self.netname, "\n");
+			
+			return 1;
 		}
 
 		// now find EVERY teammate within reviving radius, set their revive_progress values correct
