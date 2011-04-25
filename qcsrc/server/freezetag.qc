@@ -436,6 +436,8 @@ float freezetag_PlayerSpawn()
 	return 1;
 }
 
+.float reviveupdatetime;
+
 float freezetag_PlayerPreThink()
 {
 	vector revive_extra_size;
@@ -451,6 +453,7 @@ float freezetag_PlayerPreThink()
     if(self.classname != "player")
 		return 0;
     
+    /*
     if(!self.freezetag_frozen)
     {
         FOR_EACH_PLAYER(other) if(self != other)
@@ -470,6 +473,15 @@ float freezetag_PlayerPreThink()
         self.freezetag_revive_progress = 0;
         return 0;
     }
+    */
+    
+    if(!self.freezetag_frozen)
+    {
+		if(time - self.reviveupdatetime >= 0.01)
+			self.freezetag_revive_progress = 0;
+		
+		return 0;
+	}
     
     // frozen
     
@@ -537,6 +549,7 @@ float freezetag_PlayerPreThink()
 					if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
                     {
 						other.freezetag_revive_progress = self.freezetag_revive_progress;
+						other.reviveupdatetime = time;
                     }
 				}
 			}
@@ -564,6 +577,7 @@ float freezetag_PlayerPreThink()
 			}
 			
 			self.freezetag_revive_progress = self.freezetag_meltprogress;
+			self.reviveupdatetime = time;
 		}
 		else
 			self.freezetag_meltprogress = 0;
