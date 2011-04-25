@@ -506,7 +506,7 @@ float freezetag_PlayerPreThink()
 			// EVERY team mate nearby gets a point (even if multiple!)
 			//FOR_EACH_PLAYER(other) if(self != other)
 			
-			for(v = oPrev; (v = find(v, classname, STR_PLAYER)) != world; ) if(self != other)
+			for(other = oPrev; (other = find(other, classname, STR_PLAYER)) != world; ) if(self != other)
 			{
 				if(!other.freezetag_frozen)
 				{
@@ -528,7 +528,7 @@ float freezetag_PlayerPreThink()
 		}
 
 		// now find EVERY teammate within reviving radius, set their revive_progress values correct
-		for(v = oPrev; (v = find(v, classname, STR_PLAYER)) != world; ) if(self != other)
+		for(other = oPrev; (other = find(other, classname, STR_PLAYER)) != world; ) if(self != other)
 		{
 			if(!other.freezetag_frozen)
 			{
