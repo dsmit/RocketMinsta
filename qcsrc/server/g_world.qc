@@ -2365,20 +2365,26 @@ float MapVote_Finished(float mappos)
 	FOR_EACH_REALCLIENT(other)
 		FixClientCvars(other);
 
-	//Map_Goto_SetStr(mapvote_maps[mappos]);
-	//Map_Goto();
-	//alreadychangedlevel = TRUE;
-	//return TRUE;
-	
-	if(!gametypevote)
+
+	if(!cvar("g_explosive_gametypevote"))
 	{
 		Map_Goto_SetStr(mapvote_maps[mappos]);
-		choosenmap = strzone(mapvote_maps[mappos]);
-		GameTypeVote_Start();
-		return FALSE;
+		Map_Goto();
+		alreadychangedlevel = TRUE;
+		return TRUE;
 	}
-	
-	return GameTypeVote_Finished(mappos);
+	else
+	{
+		if(!gametypevote)
+		{
+			Map_Goto_SetStr(mapvote_maps[mappos]);
+			choosenmap = strzone(mapvote_maps[mappos]);
+			GameTypeVote_Start();
+			return FALSE;
+		}
+		
+		return GameTypeVote_Finished(mappos);
+	}
 }
 void MapVote_CheckRules_1()
 {
