@@ -155,7 +155,7 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.classname = "vip_soulgem";
 	e.target = "###item###";
 	e.team = theteam;
-	e.movetype = MOVETYPE_TOSS;
+	e.movetype = MOVETYPE_NONE;
 	e.touch = vip_SoulGem_touch;
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
@@ -168,14 +168,27 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.enemy.classname = "vip_soulgem_effect";
 	setmodel(e.enemy, "models/runematch/curse.mdl");
 	e.origin = orig;
-	setorigin(e, e.origin);
+	//setorigin(e, e.origin);
+	e.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
+	setorigin (e, e.origin);
 	setattachment(e.enemy, e, "");
+
+	if (!move_out_of_solid(e))
+		bprint("\x01^!WARNING: ^7failed to move soulgem out of solid, expect weird shit and breakages\n");
+	
+	local entity oldself;
+	oldself = self;
+	self = e;
+	droptofloor();
+	self = oldself;
 
 	e.colormod = vip_SoulGemColormod(theteam);
 	e.enemy.colormod = vip_SoulGemColormod2(theteam);
 
 	e.alpha = e.enemy.alpha = 0.8;
 	e.effects = e.enemy.effects = (EF_ADDITIVE | EF_FULLBRIGHT);
+	
+	
 	
 	// "run here" waypoint
 	if(!e.waypointsprite_attached)
