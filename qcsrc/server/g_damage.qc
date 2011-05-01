@@ -899,6 +899,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			//<akari>
 			local float ex = cvar("g_balance_minstanex_explosive");
 			local float ex_armor = cvar("g_explosive_armor");
+			float armor_passthrough = cvar("g_explosive_armor_passthrough");
 			
 			if(ex)
 			if(targ.ignore_next && DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
@@ -919,10 +920,19 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				}
 				else
 				{
-					armordamage = min(100, targ.armorvalue);
+					if(!armor_passthrough || targ.armorvalue >= 100)
+					{
+						armordamage = min(100, targ.armorvalue);
+						targ.armorvalue -= armordamage;
+						damage = 0;
+					}
+					else if(armor_passthrough)
+					{
+						armordamage = targ.armorvalue;
+						damage = (100 - targ.armorvalue) * cvar("g_explosive_armor_factor");
+						targ.armorvalue = 0;
+					}
 					
-					targ.armorvalue -= armordamage;
-					damage = 0;
 					attacker.hitsound += 1;
 					targ.hitsound += 1;
 					targ.ignore_next = 1;
@@ -936,11 +946,23 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if not(DEATH_ISSPECIAL(deathtype))
 			if(targ != attacker)
 			{
-				armordamage = min(damage * cvar("g_explosive_armor_factor"), targ.armorvalue);
-				
-				targ.armorvalue -= armordamage;
+				armordamage = damage * cvar("g_explosive_armor_factor");
 				attacker.hitsound += 1;
-				damage = 0;
+				
+				if(armor_passthrough)
+				{
+					float rest;
+					rest = targ.armorvalue - armordamage;
+					
+					if(rest < 0)
+						damage = -rest;
+					else
+						damage = 0;
+				}
+				else
+					damage = 0;
+				
+				targ.armorvalue -= min(targ.armorvalue, armordamage);
 			}
 			
 			//</akari>
@@ -1152,48 +1174,62 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
 	}
 	
-	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if(damage || armordamage)
+	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0)
 	{
-		local string dmgstring, wpnstring;
+		float i;
 		
-		// To-do: generate prints client-side, send all the crap through a tempentity
-		
-		if(damage)
-			dmgstring = ftos(rint(damage));
-		else //armor damage
-			dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-		
-		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-			wpnstring = "^1splash";
-		else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-			wpnstring = "^xFB0laser";
-		else if(deathtype == DEATH_NOAMMO)
-			wpnstring = "^7hook";
-		else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
-			wpnstring = "^5insta";
-		else 
-			wpnstring = "^0unknown"; //??????????
-		
-		if(attacker.classname == "player") if(attacker != targ)
+		for(i = 0; i < 2; i++)
 		{
-			if(targ.netname)
-				centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-		}
-		
-		if(targ.classname == "player")
-		{
-			if(attacker.netname)
+			local string dmgstring, wpnstring;
+			
+			// To-do: generate prints client-side, send all the crap through a tempentity
+			
+			if(i) // damage
 			{
-				if(attacker == targ)
-					centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-				else
-					centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+				if(!damage)
+					continue;
+				
+				dmgstring = ftos(rint(damage));
 			}
-			else
-				centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
+			else //armor damage
+			{
+				if(!armordamage)
+					continue;
+				
+				dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
+			}
+			
+			if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+				wpnstring = "^1splash";
+			else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+				wpnstring = "^xFB0laser";
+			else if(deathtype == DEATH_NOAMMO)
+				wpnstring = "^7hook";
+			else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
+				wpnstring = "^5insta";
+			else 
+				wpnstring = "^0unknown"; //??????????
+			
+			if(attacker.classname == "player") if(attacker != targ)
+			{
+				if(targ.netname)
+					centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+			}
+			
+			if(targ.classname == "player")
+			{
+				if(attacker.netname)
+				{
+					if(attacker == targ)
+						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					else
+						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+				}
+				else
+					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
+			}
 		}
 	}
-	
 	damage = olddamage;
 	
 	//</akari>
