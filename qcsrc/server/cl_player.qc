@@ -656,7 +656,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		if(freezetag_PlayerDies())
 			return;
 		
-		if(vip_PlayerDies())
+		if(vip_PlayerDies(deathtype))
 			return;
 			
 		if(self == attacker)

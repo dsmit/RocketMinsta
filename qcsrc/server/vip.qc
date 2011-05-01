@@ -767,6 +767,8 @@ float vip_RedVIPDown()
 	bprint("^4Blue team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/blue_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
+	PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
+	PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
 	vip_EndRound();
 }
 
@@ -778,10 +780,13 @@ float vip_BlueVIPDown()
 	bprint("^1Red team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/red_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
+	TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
+	PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
+	PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
 	vip_EndRound();
 }
 
-float vip_PlayerDies()
+float vip_PlayerDies(float deathtype)
 {
 	DEPENDON(g_vip)
 	
@@ -814,7 +819,11 @@ float vip_PlayerDies()
 	if(frag_attacker) if(frag_attacker.classname == "player")
 	{
 		PlayerScore_Add(frag_attacker, SP_VIP_VIPKILLS, 1);
-		PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill"));
+		
+		if(DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_HURTTRIGGER)
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill_special"));
+		else
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill"));
 	}
 	
 	if(ISREDVIP(frag_target))
