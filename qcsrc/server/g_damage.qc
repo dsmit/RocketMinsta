@@ -1148,6 +1148,14 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	if (vlen(force))
 	{
 		self.velocity = self.velocity + self.damageforcescale * force;
+		
+		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+			self.velocity = self.velocity * cvar("g_explosive_splash_velocity_influence");
+		else if(DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+			self.velocity = self.velocity * cvar("g_explosive_laser_velocity_influence");
+		else
+			self.velocity = self.velocity * cvar("g_explosive_default_velocity_influence");
+		
 		self.flags &~= FL_ONGROUND;
 		UpdateCSQCProjectile(self);
 	}
