@@ -1504,6 +1504,8 @@ void ClientConnect (void)
 		self.shownames.customizeentityforclient = shownames_customize;
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
+	
+	SendSpeedRecord(self);
 }
 
 /*

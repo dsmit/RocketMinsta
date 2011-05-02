@@ -1260,6 +1260,12 @@ void Sbar_DrawScoreboard()
 	drawcolorcodedstring(pos + '0.5 0 0' * (sbwidth - sbar_fontsize_x * stringwidth(str, TRUE)), str, sbar_fontsize, 0.8, DRAWFLAG_NORMAL);
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
+
+	if(speedrecord_string)
+	{
+		pos_y = ymax + sbar_fontsize_y;
+		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, 0.8, DRAWFLAG_NORMAL);
+	}
 }
 
 string MakeRaceString(float cp, float mytime, float histime, float lapdelta, string hisname)

@@ -1170,4 +1170,9 @@ void SV_PlayerPhysics()
 
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
+	
+	float myvel = vlen(self.velocity);
+	if(myvel > highest_velocity)
+	if(self.classname == "player")
+		UpdateHighestVelocity(myvel, self);
 };

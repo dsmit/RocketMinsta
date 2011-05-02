@@ -702,9 +702,10 @@ void spawnfunc_worldspawn (void)
 	local entity ctfcheck = spawn();
 	ctfcheck.think = CTFCheck_Think;
 	ctfcheck.nextthink = time + 3;
+	
+	highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
+	highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
 }
-
-
 
 void spawnfunc_light (void)
 {
@@ -2745,7 +2746,11 @@ void SV_Shutdown()
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
 		if(!sv_cheats)
+		{
+			db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
+			db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
 			db_save(ServerProgsDB, "server.db");
+		}
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");
 		db_close(ServerProgsDB);

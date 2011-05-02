@@ -2818,3 +2818,29 @@ float EndRound_Allowed()
          || g_totaldomination
          || g_keyhunt );
 }
+
+void SendSpeedRecord(entity e)
+{
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_SPEEDRECORD);
+    WriteShort(MSG_ONE, highest_velocity);
+    WriteString(MSG_ONE, highest_velocity_name);
+}
+
+void UpdateHighestVelocity(float v, entity e)
+{
+    highest_velocity = v;
+    highest_velocity_entity = e;
+    
+    if(highest_velocity_name)
+        strunzone(highest_velocity_name);
+        
+    highest_velocity_name = strzone(e.netname);
+    
+    FOR_EACH_REALCLIENT(other)
+        SendSpeedRecord(other);
+}
