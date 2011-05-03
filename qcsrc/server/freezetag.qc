@@ -304,6 +304,8 @@ void freezetag_Unfreeze(entity attacker)
 	// remove waypoint
 	if(self.waypointsprite_attached)
 		WaypointSprite_Kill(self.waypointsprite_attached);
+	
+	self.disableclientprediction = 0;
 }
 
 .vector ft_oldorigin;
