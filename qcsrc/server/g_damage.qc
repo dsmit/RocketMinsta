@@ -1184,7 +1184,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
 	}
 	
-	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0)
+	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
 	{
 		float i;
 		
