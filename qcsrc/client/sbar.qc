@@ -2982,13 +2982,16 @@ void Sbar_Draw (void)
 			float a;
 			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
 
+			/*
 			if (teamplay)
 				color =  GetTeamRGB(myteam) * sbar_color_bg_team;
 			else {
 				color_x = 1;
 				color_y = 1;
 				color_z = 0;
-			}
+			}*/
+			
+			color = colormapPaletteColor(15, 0);
 
 			vector voteorigin; // = bottomright - '290 135 0';
 			
