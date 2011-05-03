@@ -1455,6 +1455,7 @@ void precache()
 	precache_sound (RM_SOUND_PHOENIX);
 	precache_sound (RM_SOUND_REBIRTH);
 	precache_sound (RM_SOUND_RECOVERY);
+    precache_sound (RM_SOUND_KILL);
     
     //</akari>
     

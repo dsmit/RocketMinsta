@@ -2642,15 +2642,25 @@ void EndFrame()
 		{
 			if(self.enemy.typehitsound)
 				play2(self, "misc/typehit.wav");
-			else if(self.enemy.hitsound && self.cvar_cl_hitsound)
-				play2(self, "misc/hit.wav");
+			else if(self.cvar_cl_hitsound)
+			{
+				if(self.enemy.killsound)
+					play2(self, RM_SOUND_KILL);
+				else if(self.enemy.hitsound)
+					play2(self, "misc/hit.wav");
+			}
 		}
 		else
 		{
 			if(self.typehitsound)
 				play2(self, "misc/typehit.wav");
-			else if(self.hitsound && self.cvar_cl_hitsound)
-				play2(self, "misc/hit.wav");
+			else if(self.cvar_cl_hitsound)
+			{
+				if(self.killsound)
+					play2(self, RM_SOUND_KILL);
+				else if(self.hitsound)
+					play2(self, "misc/hit.wav");
+			}
 		}
 	}
 	altime = time + frametime * (1 + cvar("g_antilag_nudge"));
@@ -2663,6 +2673,8 @@ void EndFrame()
 	{
 		self.hitsound = FALSE;
 		self.typehitsound = FALSE;
+		self.killsound = FALSE;
+		self.instakillsound = FALSE;
 		antilag_record(self, altime);
 	}
 }

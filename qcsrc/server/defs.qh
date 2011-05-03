@@ -647,3 +647,6 @@ void shownames_think();
 float highest_velocity;
 entity highest_velocity_entity;
 string highest_velocity_name;
+
+.float killsound;
+.float instakillsound;
