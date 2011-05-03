@@ -193,6 +193,7 @@ float rm_madoka;
 float rm_crosshealth;
 float rm_simpleeffects;
 float rm_shownames;
+float rm_visualscore;
 
 float vote_yescount;
 float vote_nocount;
@@ -232,3 +233,14 @@ string mapvote_choosenmappic;
 void MapVote_RememberMap(string);
 
 string speedrecord_string;
+
+void score_visual(float);
+
+#define MAX_SCORESTRINGS 10
+string score_strings[MAX_SCORESTRINGS];
+float score_strings_fadeout[MAX_SCORESTRINGS];
+float score_strings_appear[MAX_SCORESTRINGS];
+float score_strings_alphamod[MAX_SCORESTRINGS];
+vector score_strings_color[MAX_SCORESTRINGS];
+float score_strings_num;
+#define SCORECOLOR_MAXSCORE 100

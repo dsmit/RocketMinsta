@@ -2677,6 +2677,48 @@ void Sbar_Draw (void)
 			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
     }
 
+	local vector sv_pos;
+	sv_pos = bottomright;
+	sv_pos_y -= 72;
+
+	float sv_offset;
+
+	if(rm_visualscore)
+	for(i = score_strings_num - 1; i >= 0; --i)
+	{
+		local float a;
+		a = bound(0, 1 - 4 * (time - score_strings_fadeout[i]), 1);
+		if(!a)
+		{
+			//++sv_offset;
+			continue;
+		}
+		
+		a *= score_strings_alphamod[i];
+		
+		local string s;
+		s = score_strings[i];
+		local vector c;
+		c = score_strings_color[i];
+		
+		local vector mypos;
+		mypos = sv_pos;
+		mypos_y -= 24 * (score_strings_num - i - sv_offset);
+		
+		local float j;
+		for(j = 0; j < 2; ++j)
+		{
+			if(rm_simpleeffects) if(j)
+				break;
+			
+			local float a2 = (j? bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) : a);
+			
+			drawfont = sbar_bigfont_real; // bypass madoka, as many numeric characters are missing
+			drawstringright(mypos, s, '24 24 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
+			drawfont = sbar_font;
+		}
+	}
+
 	local float bp_alpha;
 	local vector bp_pos;
 

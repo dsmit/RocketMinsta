@@ -414,9 +414,11 @@ void PostInit(void)
 			localcmd("seta rm_shownames 1; shownames 1\n");
 		case 17:
 			localcmd("seta rm_shownames 0; shownames 0\n");
+		case 18:
+			localcmd("seta rm_visualscore 1; visualscore 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 18\n");
+		localcmd("seta rm_initialized 19\n");
 		RM_OUTDATED
 		break;
 	}
@@ -432,6 +434,7 @@ void PostInit(void)
 	rm_crosshealth = cvar("rm_crosshealth");
 	rm_simpleeffects = cvar("rm_simpleeffects");
 	rm_shownames = cvar("rm_shownames");
+	rm_visualscore = cvar("rm_visualscore");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -448,6 +451,7 @@ void PostInit(void)
 	registercmd("crosshealth");
 	registercmd("simpleeffects");
 	registercmd("shownames");
+	registercmd("visualscore");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -557,6 +561,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
 		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
 		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
+		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -574,7 +579,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "dontmesswithfonts"	||
 		strCmd == "crosshealth"			||
 		strCmd == "simpleeffects"		||
-		strCmd == "shownames"			 )
+		strCmd == "shownames"			||
+		strCmd == "visualscore"			 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -588,6 +594,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_crosshealth = cvar("rm_crosshealth");
 		rm_simpleeffects = cvar("rm_simpleeffects");
 		rm_shownames = cvar("rm_shownames");
+		rm_visualscore = cvar("rm_visualscore");
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
@@ -1037,6 +1044,9 @@ void Ent_ReadPlayerScore()
 	lf = ReadShort();
 #endif
 	float p;
+	
+	float oldscore = o.(scores[SP_SCORE]);
+	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
 		if(sf & p)
 		{
@@ -1045,6 +1055,16 @@ void Ent_ReadPlayerScore()
 			else
 				o.(scores[i]) = ReadChar();
 		}
+
+	float newscore = o.(scores[SP_SCORE]);
+	
+	if(self.sv_entnum == player_localentnum - 1 || self.sv_entnum == spectatee_status - 1)
+	{
+		if(oldscore != newscore)
+		{
+			score_visual(newscore - oldscore);
+		}
+	}
 
 	if(o.sort_prev)
 		Sbar_UpdatePlayerPos(o); // if not registered, we cannot do this yet!
@@ -1735,11 +1755,55 @@ void bigprint(string bigstr, string comment, float staytime)
 		
 		bpc_draw = 1;
 		
-		if(bigprint_comment);
+		if(bigprint_comment)
 			fstrunzone(bigprint_comment);
 		
 		bigprint_comment = strzone(comment);
 		bigprint_commentfadetime = time + staytime;
 		bigprint_commentappeartime = time;
 	}
+}
+
+void score_visual(float score)
+{
+	//centerprint(ftos(score));
+	
+	string s;
+	vector c;
+	
+	if(score < 0)
+	{
+		c = '1 0 0';
+		s = ftos(score);
+	}
+	else
+	{
+		c = '0 1 0';
+		c_z = c_x = max(0, 1 - score / SCORECOLOR_MAXSCORE);
+		s = strcat("+", ftos(score));
+	}
+	
+	if(score_strings_num >= MAX_SCORESTRINGS)
+	{
+		local float k2;
+		for(k2 = 0; k2 < MAX_SCORESTRINGS-1; ++k2)
+		{
+			if(score_strings[k2]) strunzone(score_strings[k2]);
+			score_strings[k2] = strzone(score_strings[k2+1]);
+			score_strings_fadeout[k2] = score_strings_fadeout[k2+1];
+			score_strings_color[k2] = score_strings_color[k2+1];
+			score_strings_appear[k2] = score_strings_appear[k2+1];
+			score_strings_alphamod[k2] = score_strings_alphamod[k2+1] * 0.8;
+		}
+		
+		strunzone(score_strings[k2]);
+		score_strings_num--;
+	}
+	
+	score_strings[score_strings_num] = strzone(s);
+	score_strings_fadeout[score_strings_num] = time + 2;
+	score_strings_color[score_strings_num] = c;
+	score_strings_alphamod[score_strings_num] = 1.0;
+	score_strings_appear[score_strings_num] = time;
+	++score_strings_num;
 }
