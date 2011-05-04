@@ -2650,6 +2650,23 @@ void GameTypeVote_Start()
 	for(j = 0; j < n; ++j)
 		MapVote_AddVotable(argv(j), 0);
 	
+	if(cvar("g_explosive_gametypevote_shuffle"))
+	{
+		for(j = 0; j < mapvote_count * 3; ++j)
+		{
+			local float idx1, idx2;
+			idx1 = min(mapvote_count-1, floor(random() * mapvote_count));
+			idx2 = min(mapvote_count-1, floor(random() * mapvote_count));
+			
+			string temp1, temp2;
+			temp1 = mapvote_maps[idx1];
+			temp2 = mapvote_maps[idx2];
+			
+			mapvote_maps[idx1] = temp2;
+			mapvote_maps[idx2] = temp1;
+		}
+	}
+	
 	gametypevote = 1;
 	MapVote_Spawn();
 }
