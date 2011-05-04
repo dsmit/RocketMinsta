@@ -244,7 +244,16 @@ void SV_ParseClientCommand(string s) {
 		sprint(self, "^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n");
 		return;
 	} else if(cmd == "madoka") {
+		if(!self)
+			return;
+		
 		self.madoka = stof(argv(1));
+		
+		if(!self)
+			return;
+		
+		if(!self.scorekeeper)
+			return;
 		
 		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
 		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;

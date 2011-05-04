@@ -319,8 +319,8 @@ float TrueAimCheck()
 
 void CSQC_common_hud(void);
 
-void CSQC_kh_hud(void);
-void CSQC_ctf_hud(void);
+void CSQC_kh_hud(vector);
+void CSQC_ctf_hud(vector);
 void PostInit(void);
 void CSQC_Demo_Camera();
 float Sbar_WouldDrawScoreboard ();

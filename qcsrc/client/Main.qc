@@ -416,9 +416,11 @@ void PostInit(void)
 			localcmd("seta rm_shownames 0; shownames 0\n");
 		case 18:
 			localcmd("seta rm_visualscore 1; visualscore 1\n");
+		case 19:
+			localcmd("seta rm_oldhud 0; oldhud 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 19\n");
+		localcmd("seta rm_initialized 20\n");
 		RM_OUTDATED
 		break;
 	}
@@ -435,6 +437,7 @@ void PostInit(void)
 	rm_simpleeffects = cvar("rm_simpleeffects");
 	rm_shownames = cvar("rm_shownames");
 	rm_visualscore = cvar("rm_visualscore");
+	rm_oldhud = cvar("rm_oldhud");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -452,6 +455,7 @@ void PostInit(void)
 	registercmd("simpleeffects");
 	registercmd("shownames");
 	registercmd("visualscore");
+	registercmd("oldhud");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -562,6 +566,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
 		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
+		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -580,7 +585,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "crosshealth"			||
 		strCmd == "simpleeffects"		||
 		strCmd == "shownames"			||
-		strCmd == "visualscore"			 )
+		strCmd == "visualscore"			||
+		strCmd == "oldhud"				 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -595,6 +601,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_simpleeffects = cvar("rm_simpleeffects");
 		rm_shownames = cvar("rm_shownames");
 		rm_visualscore = cvar("rm_visualscore");
+		rm_oldhud = cvar("rm_oldhud");
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
