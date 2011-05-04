@@ -3763,7 +3763,9 @@ void CSQC_kh_hud(vector hudpos)
 	else
 	{
 		for(tm = teams.sort_next; tm; tm = tm.sort_next)
-			numteams += 1;
+			if(tm.team != COLOR_SPECTATOR)
+				if(tm.team_size)
+					numteams += 1;
 		
 		hudpos_x += 51;
 		hudpos_y -= 3;
@@ -3771,11 +3773,9 @@ void CSQC_kh_hud(vector hudpos)
 		kh_size = '19 34 0';
 		kh_asize = '19 10 0';
 		
-		hudpos_x -= floor(kh_size_x * 0.5) * numteams;
-		
-		if(numteams < 4)
-			hudpos_x += 5;
-		
+		hudpos_x += 5;
+		hudpos_x -= 12 * numteams;
+
 		p = hudpos;
 		pa = p + '0 -10 0';
 	}
