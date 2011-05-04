@@ -3260,7 +3260,12 @@ void Sbar_Draw (void)
 			
 			// separator slice:
 			//		ammo | teamhud
-			next_sector = bottomright_x - 224;
+			
+			if(vid_conwidth < 800)
+				next_sector = bottomright_x - 224;
+			else
+				next_sector = bottom_x - 103/2;
+				
 			HUDLINE_SLICE({
 				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
 				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
@@ -3281,15 +3286,18 @@ void Sbar_Draw (void)
 			vector teamhud_pos = hud_sector_pos;
 
 			// teamhud | scores
+			next_sector = bottomright_x - 103 - 6;
 			HUDLINE_SLICE({
 				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-				hudline_x = 10;
+				//hudline_x = 10;
+				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
 			})
 
 			// scores
 			HUDLINE_SECTOR({
 				hud_sector_x = 103;
-				hud_sector_pos_x = hudline_pos_x + hudline_x;
+				//hud_sector_pos_x = hudline_pos_x + hudline_x;
+				hud_sector_pos_x = next_sector;
 				sector_mod = '0 0 0';
 			}, BG_DEFAULT)
 
