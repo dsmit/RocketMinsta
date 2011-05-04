@@ -405,6 +405,8 @@ void spawnfunc_worldspawn (void)
     registercvar("_sv_rm_lastgametype", "");
     registercvar("_sv_rm_maprow", "0");
 
+	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
+
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
@@ -705,8 +707,16 @@ void spawnfunc_worldspawn (void)
 	ctfcheck.think = CTFCheck_Think;
 	ctfcheck.nextthink = time + 3;
 	
-	highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
-	highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
+	if(g_explosive_speedaward_ownaccel)
+	{
+		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
+		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel")));
+	}
+	else
+	{
+		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
+		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
+	}
 	
 	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
 	{
@@ -2815,8 +2825,16 @@ void SV_Shutdown()
 		Ban_SaveBans();
 		if(!sv_cheats)
 		{
-			db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
-			db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
+			if(g_explosive_speedaward_ownaccel)
+			{
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel"), ftos(highest_velocity));
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel"), highest_velocity_name);
+			}
+			else
+			{
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
+			}
 			db_save(ServerProgsDB, "server.db");
 		}
 		if(cvar("developer"))
