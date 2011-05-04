@@ -819,7 +819,13 @@ void dom_delayedinit()
 		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
 	}
 	else
+	{
 		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		for(j = 0; j < n; ++j)
+			dom_removeall(argv(j));
+	}
 
 	ScoreRules_dom();
 };
