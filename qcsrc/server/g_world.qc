@@ -402,6 +402,8 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
     registercvar("g_vip", "0");
+    registercvar("_sv_rm_lastgametype", "");
+    registercvar("_sv_rm_maprow", "0");
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -705,6 +707,14 @@ void spawnfunc_worldspawn (void)
 	
 	highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
 	highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
+	
+	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
+	{
+		cvar_set("_sv_rm_lastgametype", GametypeNameFromType(game));
+		cvar_set("_sv_rm_maprow", "0");
+	}
+	
+	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
 }
 
 void spawnfunc_light (void)
@@ -2568,6 +2578,35 @@ void MapVote_Think()
 	MapVote_Tick();
 };
 
+string GameTypeVote_GetOptions()
+{
+	if not(cvar("g_explosive_gametypevote_maxmaps"))
+		return cvar_string("g_explosive_gametypevote_options");
+	
+	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
+		return cvar_string("g_explosive_gametypevote_options");
+	
+	local string result;
+	local float i, n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
+	local float first;
+	first = 1;
+	
+	for(i = 0; i < n; i++)
+	{
+		if(argv(i) == GametypeNameFromType(game))
+			continue;
+		
+		if(first)
+			result = argv(i);
+		else
+			result = strcat(result, " ", argv(i));
+		
+		first = 0;
+	}
+	
+	return result;
+}
+
 .float gtv_aware;
 void GameTypeVote_Tick()
 {
@@ -2578,7 +2617,7 @@ void GameTypeVote_Tick()
 	FOR_EACH_REALCLIENT(e) if(e.classname != "") if(!e.gtv_aware)
 	{
 		e.gtv_aware = 1;
-		stuffcmd(e, strcat("cl_cmd gametypevote ", choosenmap, " ", cvar_string("g_explosive_gametypevote_options"), "\n"));
+		stuffcmd(e, strcat("cl_cmd gametypevote ", choosenmap, " ", GameTypeVote_GetOptions(), "\n"));
 	}
 }
 
@@ -2606,7 +2645,7 @@ void GameTypeVote_Start()
 	mapvote_timeout = time + cvar("g_explosive_gametypevote_timeout");
 	mapvote_abstain = 0;
 	
-	local float n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
+	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
 	
 	for(j = 0; j < n; ++j)
 		MapVote_AddVotable(argv(j), 0);
