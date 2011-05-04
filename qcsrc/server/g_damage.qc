@@ -370,8 +370,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 		else if (attacker.classname == "player" || attacker.classname == "gib")
 		{
-			attacker.killsound = 1;
-			
 			if(teams_matter && attacker.team == targ.team)
 			{
 				if(sv_gentle) {
@@ -407,6 +405,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			}
 			else
 			{
+				attacker.killsound = 1;
+				
 				string blood_message, victim_message;
 				if (!checkrules_firstblood)
 				{
