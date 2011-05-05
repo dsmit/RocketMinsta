@@ -3400,6 +3400,7 @@ void Sbar_Draw (void)
 			else  	/// emulate the nexuiz layout
 			{
 				float centersector;
+				float low = vid_conwidth < 800;
 				
 				// pre-teamhud
 				HUDLINE_SLICE({
@@ -3428,8 +3429,17 @@ void Sbar_Draw (void)
 				// separator slice:
 				// 		teamhud | ammo
 				
-				centersector = bottom_x - 217/2;
-				next_sector = centersector - 103 - 10;
+				if(low)
+				{
+					next_sector = hud_sector_pos_x + 103 + 10;
+					centersector = next_sector + 103 + 10;
+				}
+				else
+				{
+					centersector = bottom_x - 217/2;
+					next_sector = centersector - 103 - 10;
+				}
+					
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
 					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
