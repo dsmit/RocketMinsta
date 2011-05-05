@@ -951,13 +951,13 @@ void GameCommand(string msg)
 	}
 	else if(cmd == "hudflash")
 	{
-		if(argc < 3)
+		if(argc < 4)
 		{
-			print("Usage: hudflash color time intensivity\n");
+			print("Usage: hudflash color time intensivity alpha\n");
 			return;
 		}
 		
-		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)));
+		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)), stof(argv(4)));
 	}
 	else
 	{
@@ -1825,10 +1825,11 @@ void score_visual(float score)
 	++score_strings_num;
 }
 
-void hudflash(vector color, float staytime, float intensivity)
+void hudflash(vector color, float staytime, float intensivity, float alph)
 {
 	hudflash_color = color;
 	hudflash_intensivity = intensivity;
+	hudflash_alpha = alph;
 	hudflash_appeartime = time;
 	hudflash_fadetime = time + staytime;
 	hudflash_enabled = TRUE;

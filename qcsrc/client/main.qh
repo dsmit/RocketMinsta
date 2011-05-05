@@ -250,5 +250,6 @@ vector hudflash_color;
 float hudflash_appeartime;
 float hudflash_fadetime;
 float hudflash_intensivity;
+float hudflash_alpha;
 float hudflash_enabled;
-void hudflash(vector color, float staytime, float intensivity);
+void hudflash(vector color, float staytime, float intensivity, float alph);

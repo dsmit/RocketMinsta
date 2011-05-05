@@ -2520,9 +2520,9 @@ float revsaved;
 
 vector hudflash_resultcolor;
 float hudflash_resultalpha;
-void HudFlash_Apply(vector basecolor, float basealpha, float additive)
+void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imod, float amod)
 {
-	local float a;
+	local float a, i;
 	local vector c;
 	
 	hudflash_resultalpha = basealpha;
@@ -2532,12 +2532,12 @@ void HudFlash_Apply(vector basecolor, float basealpha, float additive)
 		return;
 	
 	if(time < hudflash_fadetime)
-		a = 1 - bound(0, 1 - 10 * (time - hudflash_appeartime), 1);
+		a = 1 - bound(0, 1 - 11 * (time - hudflash_appeartime), 1);
 	else
 		a = 1; // cause fade
 	
 	if(a >= 1)
-		a = bound(0, 1 - 10 * (time - (hudflash_fadetime - 1)), 1);
+		a = bound(0, 1 - 11 * (time - (hudflash_fadetime - 1)), 1);
 	
 	if(!a)
 	{
@@ -2545,16 +2545,20 @@ void HudFlash_Apply(vector basecolor, float basealpha, float additive)
 		return;
 	}
 	
-	a *= hudflash_intensivity;
+	i = hudflash_intensivity * a;
+	i *= imod;
+	
+	a *= hudflash_alpha;
+	a *= amod;
 	a = min(a, 1.0);
 	
 	if(additive)
-		c = basecolor + hudflash_color * a;
+		c = basecolor + hudflash_color * i;
 	else
 	{
-		c_x = max(basecolor_x * (1 - a), hudflash_color_x * a);
-		c_y = max(basecolor_y * (1 - a), hudflash_color_y * a);
-		c_z = max(basecolor_z * (1 - a), hudflash_color_z * a);
+		c_x = max(basecolor_x * (1 - min(i, 1.0)), hudflash_color_x * i);
+		c_y = max(basecolor_y * (1 - min(i, 1.0)), hudflash_color_y * i);
+		c_z = max(basecolor_z * (1 - min(i, 1.0)), hudflash_color_z * i);
 	}
 	
 	hudflash_resultalpha = max(basealpha, a);
@@ -3176,19 +3180,19 @@ void Sbar_Draw (void)
 	vector sector_teamcolor = GetTeamRGB(myteam) * 0.2;
 
 	// hudflash slices
-	HudFlash_Apply(slice_basecolor, slice_basealpha, FALSE);
+	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, 1, 1);
 		slice_basecolor = hudflash_resultcolor;
 		slice_basealpha = hudflash_resultalpha;
 	
 	// hudflash sectors
 	#if 0
-	HudFlash_Apply(sector_basealpha, sector_basecolor, FALSE);
+	HudFlash_Apply(sector_basealpha, sector_basecolor, FALSE, 1, 1);
 		sector_basealpha = hudflash_resultalpha;
 		sector_basecolor = hudflash_resultcolor;
 	#endif
 	
 	// hudflash teamcolored sectors
-	HudFlash_Apply(sector_teamcolor, sector_basealpha, TRUE);
+	HudFlash_Apply(sector_teamcolor, sector_basealpha, TRUE, 2, 1);
 		sector_teamcolor = hudflash_resultcolor;
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
