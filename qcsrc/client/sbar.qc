@@ -3170,7 +3170,7 @@ void Sbar_Draw (void)
 	
 
 #define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
-#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 1, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha, DRAWFLAG_NORMAL);
+#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha, DRAWFLAG_NORMAL);
 #define BG_DEFAULT (sector_basecolor)
 #define BG_TEAM (sector_teamcolor)
 	//'0.2 0.2 0.2'

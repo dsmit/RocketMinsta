@@ -545,6 +545,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				{
 					UpdateFrags(attacker, ctf_score_value("score_kill"));
 					PlayerScore_Add(attacker, SP_CTF_FCKILLS, 1);
+					hudflash_teamcolor_default_spec(attacker);
 					GiveFrags(attacker, targ, 0); // for logging
 				}
 				else
@@ -1247,6 +1248,12 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				else
 					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
 			}
+			
+			//hudflash_default_spec(attacker, '1 1 -1');
+			//hudflash_default_spec(targ, '2 1 -1');
+			
+			//hudflash_spec(attacker, '1 1 -1', HF_DEFAULT_TIME * 1.5, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
 		}
 	}
 	damage = olddamage;

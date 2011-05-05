@@ -1588,8 +1588,6 @@ void Net_ReadHudFlash(float teamcolor)
 	local float a, i, t;
 	local vector c;
 	
-	print("Net_ReadHudFlash\n");
-	
 	//c = decompressShortVector(ReadShort());
 	
 	if(teamcolor)
@@ -1604,8 +1602,6 @@ void Net_ReadHudFlash(float teamcolor)
 	t = ReadCoord();
 	i = ReadCoord();
 	a = ReadCoord();
-	
-	print(vtos(c), "\n");
 	
 	hudflash(c, t, i, a);
 }
@@ -1862,11 +1858,6 @@ void score_visual(float score)
 
 void hudflash(vector color, float staytime, float intensivity, float alph)
 {
-	print("hudflash(", vtos(color), ", ");
-	print(ftos(staytime), ", ");
-	print(ftos(intensivity), ", ");
-	print(ftos(alph), ")\n");
-	
 	hudflash_color = color;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

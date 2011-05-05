@@ -2763,8 +2763,9 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
     }
 }
 
-#define HF_DEFAULT_TIME 1
-#define HF_DEFAULT_INT 0.3
+#define HF_DEFAULT_TIME 1.5
+//#define HF_DEFAULT_INT 0.3
+#define HF_DEFAULT_INT 0.5
 #define HF_DEFAULT_ALPHA 0.4
 
 void hudflash(entity e, vector color, float staytime, float intensivity, float alph)
