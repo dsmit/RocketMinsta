@@ -497,6 +497,7 @@ void kh_Key_Collect(entity key, entity player)  //a player picks up a dropped ke
 	key.kh_dropperteam = 0;
 	bprint(player.netname, "^7 picked up the ", key.netname, "\n");
 	centerprint_spec(player, strcat("You got the ", key.netname, "^7!"));
+	hudflash_teamcolor_default_spec(player);
 
 	kh_Key_AssignTo(key, player); // this also updates .kh_state
 }
@@ -692,9 +693,15 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 			bigstring = "^6pink^7scores!";
 			break;
 	}
-	FOR_EACH_REALCLIENT(e) bigprint(e, bigstring, 
-		strcat("all keys captured by ", names), 5
-	);
+	FOR_EACH_REALCLIENT(e) 
+	{	
+		bigprint(e, bigstring, 
+			strcat("all keys captured by ", names), 5
+		);
+		
+		if(e.team == teem)
+			hudflash_teamcolor_default_spec(e);
+	}
 
 	first = TRUE;
 	midpoint = '0 0 0';

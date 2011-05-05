@@ -763,7 +763,12 @@ float vip_RedVIPDown()
 {
 	local entity e;
 	FOR_EACH_PLAYER(e)
+	{
 		bigprint_spec(e, "^4blue^7scores!", "The enemy VIP is down", 5);
+		
+		if(e.team == COLOR_TEAM2)
+			hudflash_teamcolor_default_spec(e);
+	}
 	bprint("^4Blue team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/blue_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
@@ -776,7 +781,12 @@ float vip_BlueVIPDown()
 {
 	local entity e;
 	FOR_EACH_PLAYER(e)
+	{
 		bigprint_spec(e, "^1red^7scores!", "The enemy VIP is down", 5);
+		
+		if(e.team == COLOR_TEAM1)
+			hudflash_teamcolor_default_spec(e);
+	}
 	bprint("^1Red team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/red_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);

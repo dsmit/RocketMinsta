@@ -118,7 +118,12 @@ void tdom_checkwinner()
 	{
 		//bprint("^5Total domination: ^1RED WINS\n");
 		FOR_EACH_PLAYER(e)
+		{
 			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
+			
+			if(e.team == COLOR_TEAM1)
+				hudflash_teamcolor_default_spec(e);
+		}
 		bprint("^1Red team ^5wins the round since they have captured all of the control points\n");
 		play2all("ctf/red_capture.wav");
 		TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
@@ -129,7 +134,12 @@ void tdom_checkwinner()
 	{
 		//bprint("^5Total domination: ^4BLUE WINS\n");
 		FOR_EACH_PLAYER(e)
+		{
 			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
+				
+			if(e.team == COLOR_TEAM2)
+				hudflash_teamcolor_default_spec(e);
+		}
 		bprint("^4Blue team ^5wins the round since they have captured all of the control points\n");
 		play2all("ctf/blue_capture.wav");
 		TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
@@ -179,6 +189,7 @@ void dompoint_captured ()
 	
 	bprint(self.enemy.netname, " ^5has captured a control point for the ", teamname_full, "\n");
 	centerprint_spec(self.enemy, "^5You have captured a control point!");
+	hudflash_teamcolor_default_spec(self.enemy);
 	
 	if(self.enemy.playerid == self.enemy_playerid)
 		PlayerScore_Add(self.enemy, SP_DOM_TAKES, 1);
