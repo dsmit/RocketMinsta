@@ -420,9 +420,11 @@ void PostInit(void)
 			localcmd("seta rm_oldhud 0; oldhud 0\n");
 		case 20:
 			localcmd("seta rm_althud 0; althud 0\n");
+		case 21:
+			localcmd("seta rm_althud 1; althud 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 21\n");
+		localcmd("seta rm_initialized 22\n");
 		RM_OUTDATED
 		break;
 	}
