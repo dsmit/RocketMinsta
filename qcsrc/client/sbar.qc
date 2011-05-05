@@ -3312,6 +3312,8 @@ void Sbar_Draw (void)
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
 			
+			vector s_health;
+			
 			// pre-healtharmor
 			HUDLINE_SLICE({
 				hudline_x = 7;
@@ -3322,6 +3324,8 @@ void Sbar_Draw (void)
 				hud_sector_x = 217;
 				hud_sector_pos_x = 7;
 				sector_mod = '-1 0 0';
+				
+				s_health = hud_sector_pos;
 			}, BG_TEAM)
 
 			// healtharmor | ammo
@@ -3421,7 +3425,7 @@ void Sbar_Draw (void)
 			vector health_pos, armor_pos;
 
 			if(rm_oldhud)
-				{
+			{
 				if (sbar_hudselector == 0) { // old style layout with armor left of health
 					armor_pos = bottom - '96 28 0';
 					health_pos = bottom - '-14 28 0';
@@ -3432,9 +3436,12 @@ void Sbar_Draw (void)
 				}
 			}
 			else
-				{
-				health_pos = bottomleft - '-10 28 0';
-				armor_pos = bottomleft - '-122 28 0';
+			{
+				//health_pos = bottomleft - '-10 28 0';
+				//armor_pos = bottomleft - '-122 28 0';
+				
+				health_pos = s_health + '2 -1 0';
+				armor_pos = health_pos + '112 0 0';
 			}
 
 			// armor
@@ -3629,6 +3636,8 @@ void Sbar_Draw (void)
             CSQC_dom_hud(teamhud_pos);
 		else if(gametype == GAME_NEXBALL)
 			CSQC_nb_hud();
+		else if(gametype == GAME_VIP)
+			teamhud_enabled = 0;
 	}
 	
 	if(!rm_hidewatermark)
