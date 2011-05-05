@@ -1590,8 +1590,8 @@ void Sbar_Timer()
 	topright = '0 0 0';
 	topright_x = vid_conwidth;
 	
-	if(!rm_oldhud)
-		topright_y = vid_conheight - 60;
+	//if(!rm_oldhud)
+	//	topright_y = vid_conheight - 60;
 	
 	timelimit = getstatf(STAT_TIMELIMIT);
 	
