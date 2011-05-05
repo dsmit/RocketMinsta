@@ -2571,6 +2571,12 @@ void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imo
 	hudflash_resultcolor = c;
 }
 
+float th_state;
+float th_finalstate;
+float th_appeartime;
+float th_fadetime;
+float th_alpha;
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3172,10 +3178,13 @@ void Sbar_Draw (void)
 	Sbar_UpdatePlayerTeams();
 	
 #define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
-#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha, DRAWFLAG_NORMAL);
+#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
 #define BG_DEFAULT (sector_basecolor)
 #define BG_TEAM (sector_teamcolor)
 	//'0.2 0.2 0.2'
+
+	float sector_alphamod;
+	sector_alphamod = 1;
 
 	vector slice_basecolor = '0.5 0.5 0.5';
 	float slice_basealpha = 0.2;
@@ -3313,6 +3322,34 @@ void Sbar_Draw (void)
 			
 			vector s_health, teamhud_pos;
 			
+			if(teamhud_enabled != th_state)
+			{
+				if(teamhud_enabled)
+					th_appeartime = time;
+				else
+					th_fadetime = time;
+					
+				th_state = teamhud_enabled;
+			}
+			
+			if(th_state != th_finalstate)
+			{
+				if(th_state)
+				{
+					th_alpha = 1 - bound(0, 1 - 4 * (time - th_appeartime), 1);
+					
+					if(th_alpha >= 1)
+						th_finalstate = th_state;
+				}
+				else
+				{
+					th_alpha = bound(0, 1 - 4 * (time - th_fadetime), 1);
+					
+					if(!th_alpha)
+						th_finalstate = th_state;
+				}
+			}
+			
 			if(rm_althud)	/// RM hud layout
 			{
 				// pre-healtharmor
@@ -3357,7 +3394,7 @@ void Sbar_Draw (void)
 				
 				// teamhud
 				
-				if(teamhud_enabled)
+				if(th_alpha)
 				{
 					HUDLINE_SECTOR({
 						hud_sector_x = 103;
@@ -3365,9 +3402,12 @@ void Sbar_Draw (void)
 						//hud_sector_pos_y = bottom_y - 27 - 14;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
+						sector_alphamod = th_alpha;
 					}, BG_DEFAULT)
 				}
-				else
+				sector_alphamod = 1;
+				
+				if(!teamhud_enabled || teamhud_enabled != th_finalstate)
 				{
 					hud_sector_pos_x = next_sector;
 					hud_sector_x = -2;
@@ -3410,15 +3450,18 @@ void Sbar_Draw (void)
 				
 				// teamhud
 				
-				if(teamhud_enabled)
+				if(th_alpha)
 				{
 					HUDLINE_SECTOR({
 						hud_sector_x = 103;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
+						sector_alphamod = th_alpha;
 					}, BG_DEFAULT)
 				}
-				else
+				sector_alphamod = 1;
+				
+				if(!teamhud_enabled || teamhud_enabled != th_finalstate)
 				{
 					hud_sector_x = -2;
 					hud_sector_pos_x = next_sector;
