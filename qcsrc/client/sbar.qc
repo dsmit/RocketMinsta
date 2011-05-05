@@ -2520,6 +2520,9 @@ float revsaved;
 
 vector hudflash_resultcolor;
 float hudflash_resultalpha;
+
+float teamhud_enabled;
+
 void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imod, float amod)
 {
 	local float a, i;
@@ -3349,16 +3352,22 @@ void Sbar_Draw (void)
 			
 			// teamhud
 			
-			HUDLINE_SECTOR({
-				hud_sector_x = 103;
-				//hud_sector_y = 51;
-				//hud_sector_pos_y = bottom_y - 27 - 14;
+			if(teamhud_enabled)
+			{
+				HUDLINE_SECTOR({
+					hud_sector_x = 103;
+					//hud_sector_y = 51;
+					//hud_sector_pos_y = bottom_y - 27 - 14;
+					hud_sector_pos_x = next_sector;
+					sector_mod = '0 0 0';
+				}, BG_DEFAULT)
+			}
+			else
+			{
 				hud_sector_pos_x = next_sector;
-				sector_mod = '0 0 0';
-			}, BG_DEFAULT)
+				hud_sector_x = -2;
+			}
 			
-			//hud_sector_y = 21;
-			//hud_sector_pos_y = bottom_y - 27;
 			vector teamhud_pos = hud_sector_pos;
 
 			// teamhud | scores
@@ -3605,6 +3614,9 @@ void Sbar_Draw (void)
 			CSQC_Strength_Timer();
 		
 		// draw gametype specific icons
+		
+		teamhud_enabled = 1;
+		
 		if(gametype == GAME_KEYHUNT)
 			CSQC_kh_hud(teamhud_pos);
 		else if(gametype == GAME_CTF)
@@ -3782,17 +3794,31 @@ void CSQC_ctf_hud(vector hudpos)
 	
 	sz = '52 52 0';
 	
+	teamhud_enabled = 0;
+	
 	f = bound(0, redflag_statuschange_elapsedtime*2, 1);
 	if(red_icon_prevstatus && f < 1)
+	{
 		drawpic_expanding(redflag_pos, red_icon_prevstatus, sz, '1 1 1', sbar_alpha_fg * red_alpha_prevstatus, DRAWFLAG_NORMAL, f);
+		teamhud_enabled = 1;
+	}
 	if(red_icon)
+	{
 		drawpic(redflag_pos, red_icon, sz, '1 1 1', sbar_alpha_fg * red_alpha * f, DRAWFLAG_NORMAL);
+		teamhud_enabled = 1;
+	}
 
 	f = bound(0, blueflag_statuschange_elapsedtime*2, 1);
 	if(blue_icon_prevstatus && f < 1)
+	{
 		drawpic_expanding(blueflag_pos, blue_icon_prevstatus, sz, '1 1 1', sbar_alpha_fg * blue_alpha_prevstatus, DRAWFLAG_NORMAL, f);
+		teamhud_enabled = 1;
+	}
 	if(blue_icon)
+	{
 		drawpic(blueflag_pos, blue_icon, sz, '1 1 1', sbar_alpha_fg * blue_alpha * f, DRAWFLAG_NORMAL);
+		teamhud_enabled = 1;
+	}
 }
 
 // Keyhunt HUD
@@ -3880,6 +3906,7 @@ void CSQC_kh_hud(vector hudpos)
 	else
 		kh_runheretime = 0;
 
+	teamhud_enabled = 0;
 	for(i = 0; i < 4; ++i)
 	{
 		key = floor(kh_keys / pow(32, i)) & 31;
@@ -3934,6 +3961,8 @@ void CSQC_kh_hud(vector hudpos)
 					drawpic (p, "gfx/hud/sb_kh_pink", kh_size, '1 1 1', a, DRAWFLAG_NORMAL);  // show 30% alpha key
 					break;
 			}
+			
+			teamhud_enabled = 1;
 		}
 		p_x += 24;
 		pa_x += 24;
@@ -4019,6 +4048,8 @@ void CSQC_ft_hud(vector hudpos)
 	redalive = getstati(STAT_REDALIVE);
 	bluealive = getstati(STAT_BLUEALIVE);
 	
+	teamhud_enabled = 1;
+	
 	if(rm_oldhud)
 	{
 		vector position;
@@ -4045,6 +4076,8 @@ void CSQC_dom_hud(vector hudpos)
 	redpoints = getstati(STAT_REDPOINTS);
 	bluepoints = getstati(STAT_BLUEPOINTS);
     totalpoints = getstati(STAT_TOTALPOINTS);
+	
+	teamhud_enabled = 1;
 	
 	if(rm_oldhud)
 	{
