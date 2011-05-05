@@ -195,6 +195,7 @@ float rm_simpleeffects;
 float rm_shownames;
 float rm_visualscore;
 float rm_oldhud;
+float rm_althud;
 
 float vote_yescount;
 float vote_nocount;

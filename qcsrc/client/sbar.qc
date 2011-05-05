@@ -3168,10 +3168,9 @@ void Sbar_Draw (void)
 			}
 		}
 	}
-
+	
 	Sbar_UpdatePlayerTeams();
 	
-
 #define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
 #define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha, DRAWFLAG_NORMAL);
 #define BG_DEFAULT (sector_basecolor)
@@ -3312,89 +3311,175 @@ void Sbar_Draw (void)
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
 			
-			vector s_health;
+			vector s_health, teamhud_pos;
 			
-			// pre-healtharmor
-			HUDLINE_SLICE({
-				hudline_x = 7;
-			})
-
-			// healtharmor
-			HUDLINE_SECTOR({ 
-				hud_sector_x = 217;
-				hud_sector_pos_x = 7;
-				sector_mod = '-1 0 0';
-				
-				s_health = hud_sector_pos;
-			}, BG_TEAM)
-
-			// healtharmor | ammo
-			HUDLINE_SLICE({
-				hudline_x = 10;
-				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 1;
-			})
-			
-			// ammo
-			HUDLINE_SECTOR({
-				ammosector_pos = hud_sector_pos_x = hudline_pos_x + 10;
-				hud_sector_x = 103;
-				sector_mod = '0 0 0';
-			}, BG_DEFAULT)
-			
-			// separator slice:
-			//		ammo | teamhud
-			
-			if(vid_conwidth < 800)
-				next_sector = bottomright_x - 224;
-			else
-				next_sector = bottom_x - 103/2;
-				
-			HUDLINE_SLICE({
-				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
-			})
-			
-			// teamhud
-			
-			if(teamhud_enabled)
+			if(rm_althud)	/// RM hud layout
 			{
+				// pre-healtharmor
+				HUDLINE_SLICE({
+					hudline_x = 7;
+				})
+
+				// healtharmor
+				HUDLINE_SECTOR({ 
+					hud_sector_x = 217;
+					hud_sector_pos_x = 7;
+					sector_mod = '-1 0 0';
+					
+					s_health = hud_sector_pos;
+				}, BG_TEAM)
+
+				// healtharmor | ammo
+				HUDLINE_SLICE({
+					hudline_x = 10;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 1;
+				})
+				
+				// ammo
+				HUDLINE_SECTOR({
+					ammosector_pos = hud_sector_pos_x = hudline_pos_x + 10;
+					hud_sector_x = 103;
+					sector_mod = '0 0 0';
+				}, BG_DEFAULT)
+				
+				// separator slice:
+				//		ammo | teamhud
+				
+				if(vid_conwidth < 800)
+					next_sector = bottomright_x - 224;
+				else
+					next_sector = bottom_x - 103/2;
+					
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+				})
+				
+				// teamhud
+				
+				if(teamhud_enabled)
+				{
+					HUDLINE_SECTOR({
+						hud_sector_x = 103;
+						//hud_sector_y = 51;
+						//hud_sector_pos_y = bottom_y - 27 - 14;
+						hud_sector_pos_x = next_sector;
+						sector_mod = '0 0 0';
+					}, BG_DEFAULT)
+				}
+				else
+				{
+					hud_sector_pos_x = next_sector;
+					hud_sector_x = -2;
+				}
+				
+				teamhud_pos = hud_sector_pos;
+
+				// teamhud | scores
+				next_sector = bottomright_x - 103 - 6;
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					//hudline_x = 10;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+				})
+
+				// scores
 				HUDLINE_SECTOR({
 					hud_sector_x = 103;
-					//hud_sector_y = 51;
-					//hud_sector_pos_y = bottom_y - 27 - 14;
+					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
 				}, BG_DEFAULT)
+
+				// post-scores
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = topright_x;
+				})
 			}
-			else
+			else  	/// emulate the nexuiz layout
 			{
-				hud_sector_pos_x = next_sector;
-				hud_sector_x = -2;
+				float centersector;
+				
+				// pre-teamhud
+				HUDLINE_SLICE({
+					hudline_x = 7;
+					next_sector = hudline_x;
+				})
+				
+				// teamhud
+				
+				if(teamhud_enabled)
+				{
+					HUDLINE_SECTOR({
+						hud_sector_x = 103;
+						hud_sector_pos_x = next_sector;
+						sector_mod = '0 0 0';
+					}, BG_DEFAULT)
+				}
+				else
+				{
+					hud_sector_x = -2;
+					hud_sector_pos_x = next_sector;
+				}
+				
+				teamhud_pos = hud_sector_pos;
+				
+				// separator slice:
+				// 		teamhud | ammo
+				
+				centersector = bottom_x - 217/2;
+				next_sector = centersector - 103 - 10;
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+				})
+				
+				// ammo
+				HUDLINE_SECTOR({
+					ammosector_pos = hud_sector_pos_x = next_sector;
+					hud_sector_x = 103;
+					sector_mod = '0 0 0';
+				}, BG_DEFAULT)
+				
+				// ammo | health-armor
+				HUDLINE_SLICE({
+					hudline_x = 8;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+				})
+				
+				// health-armor
+				HUDLINE_SECTOR({ 
+					hud_sector_x = 217;
+					hud_sector_pos_x = centersector;
+					sector_mod = '-1 0 0';
+					
+					s_health = hud_sector_pos;
+				}, BG_TEAM)
+				
+				// separator slice:
+				// 		health-armor | scores
+				next_sector = bottomright_x - 103 - 6;
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					//hudline_x = 10;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+				})
+
+				// scores
+				HUDLINE_SECTOR({
+					hud_sector_x = 103;
+					//hud_sector_pos_x = hudline_pos_x + hudline_x;
+					hud_sector_pos_x = next_sector;
+					sector_mod = '0 0 0';
+				}, BG_DEFAULT)
+
+				// post-scores
+				HUDLINE_SLICE({
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = topright_x;
+				})
 			}
-			
-			vector teamhud_pos = hud_sector_pos;
-
-			// teamhud | scores
-			next_sector = bottomright_x - 103 - 6;
-			HUDLINE_SLICE({
-				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-				//hudline_x = 10;
-				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
-			})
-
-			// scores
-			HUDLINE_SECTOR({
-				hud_sector_x = 103;
-				//hud_sector_pos_x = hudline_pos_x + hudline_x;
-				hud_sector_pos_x = next_sector;
-				sector_mod = '0 0 0';
-			}, BG_DEFAULT)
-
-			// post-scores
-			HUDLINE_SLICE({
-				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-				hudline_x = topright_x;
-			})
 		}
 
 		if(rm_oldhud && sbar_hudselector == 2) // combined health and armor display
@@ -3785,8 +3870,16 @@ void CSQC_ctf_hud(vector hudpos)
 		}
 		else
 		{
-			redflag_pos = hudpos;
-			blueflag_pos = redflag_pos - '60 0 0';
+			if(rm_althud)
+			{
+				redflag_pos = hudpos;
+				blueflag_pos = redflag_pos - '60 0 0';
+			}
+			else
+			{
+				blueflag_pos = hudpos;
+				redflag_pos = blueflag_pos - '60 0 0';
+			}
 		}
 	} else {
 		if(rm_oldhud)
@@ -3796,8 +3889,16 @@ void CSQC_ctf_hud(vector hudpos)
 		}
 		else
 		{
-			blueflag_pos = hudpos;
-			redflag_pos = blueflag_pos - '60 0 0';
+			if(rm_althud)
+			{
+				blueflag_pos = hudpos;
+				redflag_pos = blueflag_pos - '60 0 0';
+			}
+			else
+			{
+				redflag_pos = hudpos;
+				blueflag_pos = redflag_pos - '60 0 0';
+			}
 		}
 	}
 	

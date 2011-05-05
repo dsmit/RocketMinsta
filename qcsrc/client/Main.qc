@@ -168,6 +168,8 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
+	
+	rm_althud = 1;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
