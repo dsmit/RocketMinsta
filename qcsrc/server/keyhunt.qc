@@ -1007,6 +1007,7 @@ float kh_HandleFrags(entity attacker, entity targ, float f)  // adds to the play
 		{
 			kh_Scores_Event(attacker, targ.kh_next, "carrierfrag", cvar("g_balance_keyhunt_score_carrierfrag")-1, 0);
 			PlayerScore_Add(attacker, SP_KH_KCKILLS, 1);
+			hudflash_teamcolor_default_spec(attacker);
 			// the frag gets added later
 		}
 	}
