@@ -3439,7 +3439,7 @@ void Sbar_Draw (void)
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
-				}, BG_DEFAULT)
+				}, BG_TEAM)
 
 				// post-scores
 				HUDLINE_SLICE({
