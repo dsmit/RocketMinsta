@@ -517,6 +517,8 @@ void FlagTouch()
 		RegenFlag (other.flagcarried);
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
+		
+		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
 	if (other.team == COLOR_TEAM1 || other.team == COLOR_TEAM2) // only red and blue team can steal flags
@@ -559,6 +561,9 @@ void FlagTouch()
 		WaypointSprite_AttachCarrier("flagcarrier", other);
 		WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
 		WaypointSprite_Ping(self.sprite);
+
+		//hudflash_default(other, '1 1 -1');
+		hudflash_teamcolor_default_spec(other);
 
 		return;
 	}
@@ -604,6 +609,8 @@ void FlagTouch()
 			LogCTF("return", self.team, other);
 			sound (other, CHAN_AUTO, self.noise1, VOL_BASE, ATTN_NONE);
 			ReturnFlag(self);
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + cvar("g_balance_ctf_delay_collect")))
 		{
@@ -643,6 +650,8 @@ void FlagTouch()
 			self.takedamage = DAMAGE_NO;
 			WaypointSprite_AttachCarrier("flagcarrier", other);
 			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 	}
 };

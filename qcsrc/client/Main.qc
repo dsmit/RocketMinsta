@@ -1583,6 +1583,33 @@ void Net_ReadSpeedRecord()
 	//print("Speed record: ", speedrecord_name, "^7 (", ftos(speedrecord), ")\n");
 }
 
+void Net_ReadHudFlash(float teamcolor)
+{
+	local float a, i, t;
+	local vector c;
+	
+	print("Net_ReadHudFlash\n");
+	
+	//c = decompressShortVector(ReadShort());
+	
+	if(teamcolor)
+		c = GetTeamRGB(myteam);
+	else
+	{
+		c_x = ReadCoord();
+		c_y = ReadCoord();
+		c_z = ReadCoord();
+	}
+	
+	t = ReadCoord();
+	i = ReadCoord();
+	a = ReadCoord();
+	
+	print(vtos(c), "\n");
+	
+	hudflash(c, t, i, a);
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1655,6 +1682,14 @@ float CSQC_Parse_TempEntity()
             break;
         case TE_CSQC_SPEEDRECORD:
 			Net_ReadSpeedRecord();
+			bHandled = true;
+			break;
+		case TE_CSQC_HUDFLASH:
+			Net_ReadHudFlash(FALSE);
+			bHandled = true;
+			break;
+		case TE_CSQC_HUDFLASH_TEAMCOLOR:
+			Net_ReadHudFlash(TRUE);
 			bHandled = true;
 			break;
 		default:
@@ -1827,6 +1862,11 @@ void score_visual(float score)
 
 void hudflash(vector color, float staytime, float intensivity, float alph)
 {
+	print("hudflash(", vtos(color), ", ");
+	print(ftos(staytime), ", ");
+	print(ftos(intensivity), ", ");
+	print(ftos(alph), ")\n");
+	
 	hudflash_color = color;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

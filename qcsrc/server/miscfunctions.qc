@@ -2763,6 +2763,86 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
     }
 }
 
+#define HF_DEFAULT_TIME 1
+#define HF_DEFAULT_INT 0.3
+#define HF_DEFAULT_ALPHA 0.4
+
+void hudflash(entity e, vector color, float staytime, float intensivity, float alph)
+{
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
+    //WriteShort(MSG_ONE, compressShortVector(color));
+    
+    WriteCoord(MSG_ONE, color_x);
+    WriteCoord(MSG_ONE, color_y);
+    WriteCoord(MSG_ONE, color_z);
+    
+    WriteCoord(MSG_ONE, staytime);
+    WriteCoord(MSG_ONE, intensivity);
+    WriteCoord(MSG_ONE, alph);
+}
+
+void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
+{
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH_TEAMCOLOR);
+    WriteCoord(MSG_ONE, staytime);
+    WriteCoord(MSG_ONE, intensivity);
+    WriteCoord(MSG_ONE, alph);
+}
+
+void hudflash_spec(entity pl, vector color, float staytime, float intensivity, float alph)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            hudflash(e, color, staytime, intensivity, alph);
+    }
+}
+
+void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            hudflash_teamcolor(e, staytime, intensivity, alph);
+    }
+}
+
+void hudflash_default(entity e, vector color)
+{
+    hudflash(e, color, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_default_spec(entity e, vector color)
+{
+    hudflash_spec(e, color, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_teamcolor_default(entity e)
+{
+    hudflash_teamcolor(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_teamcolor_default_spec(entity e)
+{
+    hudflash_teamcolor_spec(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
 void defer_think()
 {
     entity oself;

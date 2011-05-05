@@ -2531,6 +2531,9 @@ void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imo
 	if(!hudflash_enabled)
 		return;
 	
+	if(time < hudflash_appeartime)
+		return;	//weird
+	
 	if(time < hudflash_fadetime)
 		a = 1 - bound(0, 1 - 11 * (time - hudflash_appeartime), 1);
 	else
