@@ -2635,19 +2635,29 @@ void Sbar_Draw (void)
 
 	o2_y += sbar_fontsize_y * 1.5;
 
-	#ifdef RM_SUPPORT_MADOKA
-	//print("spectatee_status == ", ftos(spectatee_status), "; player_localentnum == ", ftos(player_localentnum), "\n");
-	
-	if(spectatee_status == -1 || !spectatee_status)
-	if(madoka_locked)   //release madoka. Perhaps should be done elsewhere?
-	{
-		//print("releasing madoka\n");
-		madoka_locked = 0;
-		//loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
-		SetMadokaFont(MDKF_AUTO);
-	}
-	#endif
 
+	if(spectatee_status == -1 || !spectatee_status)
+	{
+		//release madoka and HUD locks. Perhaps should be done elsewhere?
+		
+		#ifdef RM_SUPPORT_MADOKA
+		if(madoka_locked)   
+		{
+			//print("releasing madoka\n");
+			madoka_locked = 0;
+			//loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+			SetMadokaFont(MDKF_AUTO);
+		}
+		#endif
+		
+		if(hudlocked)
+		{
+			hudlocked = 0;
+			rm_althud = rm_althud_option;
+			rm_oldhud = rm_oldhud_option;
+		}
+	}
+	
 	local float rev;
     rev = getstatf(STAT_REVIVE_PROGRESS);
 

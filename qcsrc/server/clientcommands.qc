@@ -258,6 +258,12 @@ void SV_ParseClientCommand(string s) {
 		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
 		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
 		return;
+	} else if(cmd == "hudinfo") {
+		if(!self)
+			return;
+		
+		self.hud_old = stof(argv(1));
+		self.hud_alt = stof(argv(2));
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));

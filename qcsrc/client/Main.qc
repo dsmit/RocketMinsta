@@ -168,8 +168,6 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
-	
-	rm_althud = 1;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -420,9 +418,11 @@ void PostInit(void)
 			localcmd("seta rm_visualscore 1; visualscore 1\n");
 		case 19:
 			localcmd("seta rm_oldhud 0; oldhud 0\n");
+		case 20:
+			localcmd("seta rm_althud 0; althud 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 20\n");
+		localcmd("seta rm_initialized 21\n");
 		RM_OUTDATED
 		break;
 	}
@@ -439,7 +439,10 @@ void PostInit(void)
 	rm_simpleeffects = cvar("rm_simpleeffects");
 	rm_shownames = cvar("rm_shownames");
 	rm_visualscore = cvar("rm_visualscore");
-	rm_oldhud = cvar("rm_oldhud");
+	rm_oldhud_option = cvar("rm_oldhud");
+	rm_althud_option = cvar("rm_althud");
+	rm_oldhud = rm_oldhud_option;
+	rm_althud = rm_althud_option;
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -458,6 +461,7 @@ void PostInit(void)
 	registercmd("shownames");
 	registercmd("visualscore");
 	registercmd("oldhud");
+	registercmd("althud");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -472,6 +476,7 @@ void PostInit(void)
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
+	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	postinit = true;
 }
@@ -569,6 +574,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
+		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -588,7 +594,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "simpleeffects"		||
 		strCmd == "shownames"			||
 		strCmd == "visualscore"			||
-		strCmd == "oldhud"				 )
+		strCmd == "oldhud"				||
+		strCmd == "althud"				 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -603,7 +610,22 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_simpleeffects = cvar("rm_simpleeffects");
 		rm_shownames = cvar("rm_shownames");
 		rm_visualscore = cvar("rm_visualscore");
-		rm_oldhud = cvar("rm_oldhud");
+		rm_oldhud_option = cvar("rm_oldhud");
+		rm_althud_option = cvar("rm_althud");
+		
+		if(strCmd == "oldhud" || strCmd == "althud")
+		{
+			if(hudlocked)
+				print("^1Won't change HUD while spectating\n");
+			else
+			{
+				rm_oldhud = rm_oldhud_option;
+				rm_althud = rm_althud_option;
+				
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+			}
+		}
+		
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
@@ -622,7 +644,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		if(madoka_locked && cvar("rm_specmadoka"))
 		{
-			print("^1Won't change madoka while spectating!\n");
+			print("^1Won't change madoka while spectating\n");
 			return true;
 		}
 		
@@ -744,7 +766,7 @@ void ShotOrg_Spawn()
 }
 
 #ifdef RM_SUPPORT_MADOKA
-.float oldspecmadoka
+.float oldspecmadoka;
 void TmpMadoka_Think()
 {
 	//if(!cvar("rm_madoka"))
@@ -890,6 +912,15 @@ void GameCommand(string msg)
 			SetMadokaFont(madokalockstate);
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
+	}
+	else if(cmd == "lockhud")
+	{
+		hudlocked = 1;
+		hudlocked_old = stof(argv(1));
+		hudlocked_alt = stof(argv(2));
+		
+		rm_althud = hudlocked_alt;
+		rm_oldhud = hudlocked_old;
 	}
 	else if(cmd == "madokaprint")
 	{

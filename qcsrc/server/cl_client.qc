@@ -2153,6 +2153,7 @@ void WriteSpectatorInfo(entity player)
 		#ifdef RM_SUPPORT_MADOKA
 		stuffcmd(spec, "cl_cmd lockmadoka ", ftos(player.madoka), "\n");
 		#endif
+		stuffcmd(spec, "cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n");
 		WriteSpectatorInfoOf(spec, player);
 	}
 }

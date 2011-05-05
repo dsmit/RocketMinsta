@@ -194,6 +194,9 @@ float rm_crosshealth;
 float rm_simpleeffects;
 float rm_shownames;
 float rm_visualscore;
+float rm_oldhud_option;
+float rm_althud_option;
+
 float rm_oldhud;
 float rm_althud;
 
@@ -254,3 +257,10 @@ float hudflash_intensivity;
 float hudflash_alpha;
 float hudflash_enabled;
 void hudflash(vector color, float staytime, float intensivity, float alph);
+
+float hudlocked;
+float hudlock_old;
+float hudlock_alt;
+
+#define hudlocked_old hudlock_old
+#define hudlocked_alt hudlock_alt
