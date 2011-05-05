@@ -2518,6 +2518,49 @@ float revalpha;
 float revfadetime;
 float revsaved;
 
+vector hudflash_resultcolor;
+float hudflash_resultalpha;
+void HudFlash_Apply(vector basecolor, float basealpha, float additive)
+{
+	local float a;
+	local vector c;
+	
+	hudflash_resultalpha = basealpha;
+	hudflash_resultcolor = basecolor;
+	
+	if(!hudflash_enabled)
+		return;
+	
+	if(time < hudflash_fadetime)
+		a = 1 - bound(0, 1 - 10 * (time - hudflash_appeartime), 1);
+	else
+		a = 1; // cause fade
+	
+	if(a >= 1)
+		a = bound(0, 1 - 10 * (time - (hudflash_fadetime - 1)), 1);
+	
+	if(!a)
+	{
+		hudflash_enabled = FALSE;
+		return;
+	}
+	
+	a *= hudflash_intensivity;
+	a = min(a, 1.0);
+	
+	if(additive)
+		c = basecolor + hudflash_color * a;
+	else
+	{
+		c_x = max(basecolor_x * (1 - a), hudflash_color_x * a);
+		c_y = max(basecolor_y * (1 - a), hudflash_color_y * a);
+		c_z = max(basecolor_z * (1 - a), hudflash_color_z * a);
+	}
+	
+	hudflash_resultalpha = max(basealpha, a);
+	hudflash_resultcolor = c;
+}
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3117,10 +3160,36 @@ void Sbar_Draw (void)
 	}
 
 	Sbar_UpdatePlayerTeams();
+	
 
-#define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, '0.5 0.5 0.5', 0.2, DRAWFLAG_NORMAL);
-#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 1, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), 0.5, DRAWFLAG_NORMAL);
-#define BG_DEFAULT '0.2 0.2 0.2'
+#define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
+#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 1, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha, DRAWFLAG_NORMAL);
+#define BG_DEFAULT (sector_basecolor)
+#define BG_TEAM (sector_teamcolor)
+	//'0.2 0.2 0.2'
+
+	vector slice_basecolor = '0.5 0.5 0.5';
+	float slice_basealpha = 0.2;
+	
+	vector sector_basecolor = '0.2 0.2 0.2';
+	float sector_basealpha = 0.5;
+	vector sector_teamcolor = GetTeamRGB(myteam) * 0.2;
+
+	// hudflash slices
+	HudFlash_Apply(slice_basecolor, slice_basealpha, FALSE);
+		slice_basecolor = hudflash_resultcolor;
+		slice_basealpha = hudflash_resultalpha;
+	
+	// hudflash sectors
+	#if 0
+	HudFlash_Apply(sector_basealpha, sector_basecolor, FALSE);
+		sector_basealpha = hudflash_resultalpha;
+		sector_basecolor = hudflash_resultcolor;
+	#endif
+	
+	// hudflash teamcolored sectors
+	HudFlash_Apply(sector_teamcolor, sector_basealpha, TRUE);
+		sector_teamcolor = hudflash_resultcolor;
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
 	float ammosector_pos, next_sector;
@@ -3243,7 +3312,7 @@ void Sbar_Draw (void)
 				hud_sector_x = 217;
 				hud_sector_pos_x = 7;
 				sector_mod = '-1 0 0';
-			}, GetTeamRGB(myteam) * 0.2)
+			}, BG_TEAM)
 
 			// healtharmor | ammo
 			HUDLINE_SLICE({

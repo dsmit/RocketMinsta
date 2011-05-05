@@ -949,6 +949,16 @@ void GameCommand(string msg)
 		gametypevote = 1;
 		//gametypevote_longest = 0;
 	}
+	else if(cmd == "hudflash")
+	{
+		if(argc < 3)
+		{
+			print("Usage: hudflash color time intensivity\n");
+			return;
+		}
+		
+		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)));
+	}
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
@@ -1813,4 +1823,13 @@ void score_visual(float score)
 	score_strings_alphamod[score_strings_num] = 1.0;
 	score_strings_appear[score_strings_num] = time;
 	++score_strings_num;
+}
+
+void hudflash(vector color, float staytime, float intensivity)
+{
+	hudflash_color = color;
+	hudflash_intensivity = intensivity;
+	hudflash_appeartime = time;
+	hudflash_fadetime = time + staytime;
+	hudflash_enabled = TRUE;
 }

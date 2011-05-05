@@ -245,3 +245,10 @@ float score_strings_alphamod[MAX_SCORESTRINGS];
 vector score_strings_color[MAX_SCORESTRINGS];
 float score_strings_num;
 #define SCORECOLOR_MAXSCORE 100
+
+vector hudflash_color;
+float hudflash_appeartime;
+float hudflash_fadetime;
+float hudflash_intensivity;
+float hudflash_enabled;
+void hudflash(vector color, float staytime, float intensivity);
