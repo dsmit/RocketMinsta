@@ -415,20 +415,18 @@ void vip_ResetVIPInfo()
 		WriteByte(MSG_ONE, COLOR_TEAM1 - 1);
 		WriteShort(MSG_ONE, 0);
 		WriteShort(MSG_ONE, 0);
-		WriteShort(MSG_ONE, 0);
-		WriteShort(MSG_ONE, 0);
+		WriteString(MSG_ONE, "");
 		
 		WriteByte(MSG_ONE, SVC_TEMPENTITY);
 		WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
 		WriteByte(MSG_ONE, COLOR_TEAM2 - 1);
 		WriteShort(MSG_ONE, 0);
 		WriteShort(MSG_ONE, 0);
-		WriteShort(MSG_ONE, 0);
-		WriteShort(MSG_ONE, 0);
+		WriteString(MSG_ONE, "");
 	}
 }
 
-void vip_SendVIPInfo()
+void vip_SendVIPInfo(float maxv, float v)
 {
 	//bprint("^6vip_SendHealthArmor for ", self.owner.netname, "\n");
 	
@@ -446,9 +444,8 @@ void vip_SendVIPInfo()
 			WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
 			WriteByte(MSG_ONE, self.owner.team - 1); // wtf?
 			WriteShort(MSG_ONE, self.owner.vip_maxhealth);
-			WriteShort(MSG_ONE, self.owner.vip_maxarmor);
 			WriteShort(MSG_ONE, self.owner.health);
-			WriteShort(MSG_ONE, self.owner.armorvalue);
+			WriteString(MSG_ONE, self.owner.netname);
 		}
 		
 		self.owner.vip_health_old = self.owner.health;
@@ -509,10 +506,11 @@ void vip_UpdateState_Health()
 {
 	if(self.owner.waypointsprite_attached)
 	{
-		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, self.owner.vip_maxhealth );
+		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, self.owner.vip_maxhealth);
 		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, self.owner.health);
 	}
 	
+	vip_SendVIPInfo(self.owner.vip_maxhealth, self.owner.health);
 	self.nextthink = 0.1;
 }
 
@@ -547,18 +545,21 @@ void vip_UpdateState()
 		return;
 	}
 	
-	vip_SendVIPInfo();
 	self.use();
 }
 
 void vip_UpdateState_Armor()
 {
+	local float maxv = self.owner.vip_maxhealth * cvar("g_explosive_armor_factor") + self.owner.vip_maxarmor;
+	local float v = self.owner.health * cvar("g_explosive_armor_factor") + self.owner.armorvalue;
+	
 	if(self.owner.waypointsprite_attached)
 	{
-		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, self.owner.vip_maxhealth * cvar("g_explosive_armor_factor") + self.owner.vip_maxarmor);
-		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, self.owner.health * cvar("g_explosive_armor_factor") + self.owner.armorvalue);
+		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, maxv);
+		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, v);
 	}
 	
+	vip_SendVIPInfo(maxv, v);
 	self.nextthink = 0.1;
 }
 
@@ -570,6 +571,7 @@ void vip_UpdateState_Extras()
 		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, self.owner.armorvalue);
 	}
 	
+	vip_SendVIPInfo(self.owner.vip_maxarmor, self.owner.armorvalue);
 	self.nextthink = 0.1;
 }
 

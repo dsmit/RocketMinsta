@@ -1647,16 +1647,20 @@ void Net_ReadVIPInfo(float team)
 	{
 		case COLOR_TEAM1:
 			vip_red_maxhealth = ReadShort();
-			vip_red_maxarmor = ReadShort();
 			vip_red_health = ReadShort();
-			vip_red_armor = ReadShort();
+			
+			if(vip_red_name)
+				strunzone(vip_red_name);
+			vip_red_name = strzone(ReadString());
 			return;
 		
 		case COLOR_TEAM2:
 			vip_blue_maxhealth = ReadShort();
-			vip_blue_maxarmor = ReadShort();
 			vip_blue_health = ReadShort();
-			vip_blue_armor = ReadShort();
+			
+			if(vip_blue_name)
+				strunzone(vip_blue_name);
+			vip_blue_name = strzone(ReadString());
 			return;
 	}
 	
