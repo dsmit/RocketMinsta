@@ -30,10 +30,6 @@ void vip_RespawnSoulGems()
 	if(!vip_soulgem)
 		return;
 	
-	//vip_ClearSoulGems();
-	//vip_SpawnSoulGem(redgem_loc, COLOR_TEAM1);
-	//vip_SpawnSoulGem(bluegem_loc, COLOR_TEAM2);
-	
 	vip_redgem.reset2();
 	vip_bluegem.reset2();
 }
@@ -125,7 +121,6 @@ void vip_SoulGem_touch()
 		vip_started = 1;
 	}
 	
-	//vip_removegem(self);
 	self.gem_pickedup = 1;
 	self.alpha = 0;
 	self.enemy.alpha = 0;
@@ -179,7 +174,6 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.enemy.classname = "vip_soulgem_effect";
 	setmodel(e.enemy, "models/runematch/curse.mdl");
 	e.origin = orig;
-	//setorigin(e, e.origin);
 	e.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
 	setorigin (e, e.origin);
 	setattachment(e.enemy, e, "");
@@ -217,9 +211,6 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 				redgem_loc = e.origin;
 			
 			vip_redgem = e;
-			//bprint("vid_redgem is a ", vip_redgem.classname, " at ", vtos(vip_redgem.origin), "\n");
-			//bprint("vid_bluegem is a ", vip_bluegem.classname, " at ", vtos(vip_bluegem.origin), "\n");
-			//bprint("e is a ", e.classname, " at ", vtos(e.origin), "\n");
 			
 			/// HOLY FUCKING COCKS FROM HELL
 			/// THIS SHIT BLOWS MY MIIIIND
@@ -343,7 +334,6 @@ void vip_EndRound()
     
     update_playercount();
     defer(5.1, vip_ClearVIPs);
-    //vip_started = 0;
     vip_ended = 1;
     vip_ResetVIPInfo();
 }
@@ -516,40 +506,6 @@ void vip_RegenerateExtra()
 	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extralives_delay");
 }
 
-void vip_FixVIPState()
-{
-	if(ISVIP(self.owner)) //nothing to fix
-		return;
-	
-	vip_ClearVIP_Common(self.owner);
-	
-	if(self.owner.waypointsprite_attached)
-	{
-		bprint("^1FAILED to fix ", self.owner.netname, "^1, what the FUCK is going on?!\n");
-		
-		local entity oldself;
-		oldself = self;
-		self = self.owner;
-		defer(0.1, vip_FixVIPState);
-		self = oldself;
-	}
-	
-	print("^2Hopefully fixed ", self.owner.netname, "\n");
-}
-
-void vip_UpdateState()
-{
-	if(!ISVIP(self.owner))
-	{
-		print("^1CALLED vip_UpdateState FOR A REGULAR PLAYER: ^7", self.owner.netname, ",^1, ATTEMPTING TO FIX VIP STATE!\n");
-		//vip_ClearVIP_Common(self.owner);
-		vip_FixVIPState();
-		return;
-	}
-	
-	self.use();
-}
-
 void vip_UpdateState_Health()
 {
 	vip_SendVIPInfo(self.vip_maxhealth, self.health);
@@ -570,28 +526,6 @@ void vip_UpdateState_Extras()
 
 void vip_MakePlayerVIP(entity pl)
 {
-	// start health/armor regeneration
-	
-	/*
-	if(pl.vip_health_regenerator)
-	{
-		print("vip_MakePlayerVIP on player with vip_health_regenerator: ", pl.netname, "\n");
-		remove(pl.vip_health_regenerator);
-	}
-	
-	if(pl.vip_armor_regenerator)
-	{
-		print("vip_MakePlayerVIP on player with vip_armor_regenerator: ", pl.netname, "\n");
-		remove(pl.vip_armor_regenerator);
-	}
-	
-	if(pl.vip_armor_regenerator)
-	{
-		print("vip_MakePlayerVIP on player with vip_state_updater: ", pl.netname, "\n");
-		remove(pl.vip_state_updater);
-	}
-	*/
-	
 	if(pl.waypointsprite_attached)
 	{
 		print("vip_MakePlayerVIP on player with waypointsprite_attached: ", pl.netname, "\n");
@@ -600,28 +534,13 @@ void vip_MakePlayerVIP(entity pl)
 	
 	// causes the state updater to re-send the VIP info no matter what
 	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
-	
-	/*
-	pl.vip_state_updater = spawn();
-	pl.vip_state_updater.classname = "vip_state_updater";
-	pl.vip_state_updater.owner = pl;
-	pl.vip_state_updater.nextthink = time + 0.1;
-	pl.vip_state_updater.think = vip_UpdateState;
-	*/
-	
+
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		pl.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(pl, "g_explosive_vip_health_dependonenemies");
 		
 		if(cvar("g_explosive_vip_regenerate_health"))
 		{
-			/*
-			pl.vip_health_regenerator = spawn();
-			pl.vip_health_regenerator.owner = pl;
-			pl.vip_health_regenerator.think = vip_RegenerateHealth;
-			pl.vip_health_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_health_delay");
-			*/
-			
 			pl.vip_regenhealth_f = vip_RegenerateHealth;
 			pl.vip_healthregentime = time;
 			pl.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
@@ -634,19 +553,11 @@ void vip_MakePlayerVIP(entity pl)
 		
 		if(cvar("g_explosive_vip_regenerate_armor"))
 		{
-			/*
-			pl.vip_armor_regenerator = spawn();
-			pl.vip_armor_regenerator.owner = pl;
-			pl.vip_armor_regenerator.think = vip_RegenerateArmor;
-			pl.vip_armor_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_health_delay");
-			*/
-			
 			pl.vip_regenarmor_f = vip_RegenerateArmor;
 			pl.vip_healthregentime = time;
 			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 		}
 		
-		//pl.vip_state_updater.use = vip_UpdateState_Armor;
 		pl.vip_updatestate_f = vip_UpdateState_Armor;
 	}
 	else // in minstagib, we will just give him a bunch of extralives
@@ -654,34 +565,18 @@ void vip_MakePlayerVIP(entity pl)
 		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
 		
 		if(pl.vip_maxarmor)
-			//pl.vip_state_updater.use = vip_UpdateState_Extras;
 			pl.vip_updatestate_f = vip_UpdateState_Extras;
 		else
-			//pl.vip_state_updater.use = vip_UpdateState_Health;
 			pl.vip_updatestate_f = vip_UpdateState_Health;
 		
 		if(cvar("g_explosive_vip_regenerate_extra"))
 		{
-			/*
-			pl.vip_armor_regenerator = spawn();
-			pl.vip_armor_regenerator.owner = pl;
-			pl.vip_armor_regenerator.think = vip_RegenerateExtra;
-			pl.vip_armor_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_extra_delay");
-			*/
-			
 			pl.vip_regenarmor_f = vip_RegenerateExtra;
 			pl.vip_healthregentime = time;
 			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
 		}
 	}
-
-	/*
-	if(!pl.vip_state_updater || pl.vip_state_updater.classname != "vip_state_updater")
-	{
-		bprint("^1vip_state_updater just B0RK3D on ", pl.netname, "^1!!!\n");
-	}
-	*/
-
+	
 	vip_ResetHealthArmor(pl);
 
 	local entity e, oldself;
@@ -795,23 +690,8 @@ void vip_AssignBlueVIP()
 
 void vip_ClearVIP_Common(entity pl)
 {
-	//bprint("vip_ClearVIP_Common() for ", pl.netname, "\n");
-	
-	/*
-	if(pl.vip_health_regenerator)
-		remove(pl.vip_health_regenerator);
-	
-	if(pl.vip_armor_regenerator)
-		remove(pl.vip_armor_regenerator);
-	*/
-	
 	if(pl.waypointsprite_attached)
 		WaypointSprite_Kill(pl.waypointsprite_attached);
-	
-	/*
-	if(pl.vip_state_updater)
-		remove(pl.vip_state_updater);
-	*/
 }
 
 void vip_ClearRedVIP()
@@ -831,7 +711,6 @@ void vip_ClearRedVIP()
 
 void vip_ClearBlueVIP()
 {
-	//vip_ClearVIP_Common(bluevip);
 	vip_ClearVIP_Common(bluevip);
 	bluevip = world;
 	
@@ -847,7 +726,6 @@ void vip_ClearBlueVIP()
 
 void vip_ClearVIPs()
 {
-	//bprint("vip_ClearVIPs()\n");
 	vip_ClearRedVIP();
 	vip_ClearBlueVIP();
 }
@@ -860,7 +738,6 @@ void vip_AssignVIPs()
 		return;
 	}
 	
-	//bprint("vip_AssignVIPs()\n");
 	vip_AssignRedVIP();
 	vip_AssignBlueVIP();
 }
@@ -870,7 +747,6 @@ void vip_ClearVIPs_MaybeAssign()
 	vip_ClearVIPs();
 	
 	if(vip_started)
-		//vip_AssignVIPs();
 		defer(1, vip_AssignVIPs);
 }
 
