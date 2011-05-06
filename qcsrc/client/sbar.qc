@@ -4327,7 +4327,7 @@ void CSQC_vip_hud(vector hudpos)
 	pbfill = pbsize - '0.9 0.9 0';
 	
 	// red vip
-	healthpercent = vip_red_health / vip_red_maxhealth;
+	healthpercent = min(vip_red_health / vip_red_maxhealth, 1);
 	drawstring(hudpos, textShortenToWidth(vip_red_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
@@ -4338,7 +4338,7 @@ void CSQC_vip_hud(vector hudpos)
 	pb_y = hudpos_y;
 	
 	// blue vip
-	healthpercent = vip_blue_health / vip_blue_maxhealth;
+	healthpercent = min(vip_blue_health / vip_blue_maxhealth, 1);
 	drawstring(hudpos, textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
