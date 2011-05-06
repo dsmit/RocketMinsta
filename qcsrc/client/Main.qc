@@ -1652,9 +1652,6 @@ void Net_ReadVIPInfo(float team)
 			if(vip_red_name)
 				strunzone(vip_red_name);
 			vip_red_name = strzone(strdecolorize(ReadString()));
-			
-			print("^1vip_red_maxhealth: ", ftos(vip_red_maxhealth), "\n");
-			print("^1vip_red_health: ", ftos(vip_red_health), "\n");
 			return;
 		
 		case COLOR_TEAM2:
@@ -1664,9 +1661,6 @@ void Net_ReadVIPInfo(float team)
 			if(vip_blue_name)
 				strunzone(vip_blue_name);
 			vip_blue_name = strzone(strdecolorize(ReadString()));
-			
-			print("^4vip_blue_maxhealth: ", ftos(vip_blue_maxhealth), "\n");
-			print("^4vip_blue_health: ", ftos(vip_blue_health), "\n");
 			return;
 	}
 	
