@@ -4307,7 +4307,7 @@ void CSQC_vip_hud(vector hudpos)
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
-	drawfill(pb + '0.5 0.5 0', pbfill - '0.17 0 0', (GetTeamRGB(COLOR_TEAM1) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_NORMAL);
+	drawfill(pb + '0.5 0.5 0', pbfill - '0.17 0 0', (GetTeamRGB(COLOR_TEAM1) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 	
 	hudpos_y += fs_x + 1; 
 	pb_y = hudpos_y;
@@ -4319,7 +4319,7 @@ void CSQC_vip_hud(vector hudpos)
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
 	pbfill = pbfill - '0.3 0.3 0';
-	drawfill(pb + '0.35 0.5 0', pbfill - '0.15 0 0', (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_NORMAL);
+	drawfill(pb + '0.35 0.5 0', pbfill - '0.15 0 0', (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 }
 
 
