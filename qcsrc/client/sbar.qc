@@ -30,6 +30,7 @@ void CSQC_ctf_hudreset();
 void CSQC_ctf_hud(vector);
 void CSQC_ft_hud(vector);
 void CSQC_dom_hud(vector);
+void CSQC_vip_hud(vector);
 void CSQC_nb_hud();
 void MapVote_Draw();
 void Sbar_FinaleOverlay()
@@ -3782,10 +3783,11 @@ void Sbar_Draw (void)
             CSQC_dom_hud(teamhud_pos);
         else if(gametype == GAME_TOTAL_DOMINATION)
             CSQC_dom_hud(teamhud_pos);
-		else if(gametype == GAME_NEXBALL)
-			CSQC_nb_hud();
+        // fuck this hud, not supported anyway
+		//else if(gametype == GAME_NEXBALL)
+		//	CSQC_nb_hud();
 		else if(gametype == GAME_VIP)
-			teamhud_enabled = 0;
+			CSQC_vip_hud(teamhud_pos);
 	}
 	
 	if(!rm_hidewatermark)
@@ -4269,6 +4271,20 @@ void CSQC_dom_hud(vector hudpos)
 		CSQC_hud_RedBlueStatCommon(hudpos, redpoints, bluepoints);
 }
 
+//VIP HUD
 
+void CSQC_vip_hud(vector hudpos)
+{
+	if(rm_oldhud)	// not supported yet
+		return;
+	
+	if(vip_red_health <= 0 || vip_blue_health <= 0)
+	{
+		teamhud_enabled = 0;
+		return;
+	}
+	
+	teamhud_enabled = 1;
+}
 
 

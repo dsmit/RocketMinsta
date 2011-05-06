@@ -1,3 +1,4 @@
+void vip_ResetVIPInfo();
 
 void vip_removegem(entity g)
 {
@@ -334,6 +335,7 @@ void vip_EndRound()
     defer(5.1, vip_ClearVIPs);
     //vip_started = 0;
     vip_ended = 1;
+    vip_ResetVIPInfo();
 }
 
 void vip_SoulGem_StartRound()
@@ -392,6 +394,68 @@ entity vip_PickBlueVIP()
 			}
 	
 	return my_player;
+}
+
+.float vip_maxarmor_old;
+.float vip_maxhealth_old;
+.float vip_health_old;
+.float vip_armor_old;
+
+void vip_
+
+void vip_ResetVIPInfo()
+{
+	local entity e;
+	FOR_EACH_REALCLIENT(e) if(e.classname != "")
+	{
+		msg_entity = e;
+		
+		WriteByte(MSG_ONE, SVC_TEMPENTITY);
+		WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
+		WriteByte(MSG_ONE, COLOR_TEAM1 - 1);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+		
+		WriteByte(MSG_ONE, SVC_TEMPENTITY);
+		WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
+		WriteByte(MSG_ONE, COLOR_TEAM2 - 1);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+		WriteShort(MSG_ONE, 0);
+	}
+}
+
+void vip_SendVIPInfo()
+{
+	//bprint("^6vip_SendHealthArmor for ", self.owner.netname, "\n");
+	
+	if (!vip_ended && vip_started)
+	if (self.owner.health 			!= self.owner.vip_health_old 	||
+		self.owner.armorvalue 		!= self.owner.vip_armor_old		||
+		self.owner.vip_maxarmor 	!= self.owner.vip_maxarmor_old	||
+		self.owner.vip_maxhealth	!= self.owner.vip_maxhealth_old	){
+		
+		local entity e;
+		FOR_EACH_REALCLIENT(e) if(e.classname != "")
+		{
+			msg_entity = e;
+			WriteByte(MSG_ONE, SVC_TEMPENTITY);
+			WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
+			WriteByte(MSG_ONE, self.owner.team - 1); // wtf?
+			WriteShort(MSG_ONE, self.owner.vip_maxhealth);
+			WriteShort(MSG_ONE, self.owner.vip_maxarmor);
+			WriteShort(MSG_ONE, self.owner.health);
+			WriteShort(MSG_ONE, self.owner.armorvalue);
+		}
+		
+		self.owner.vip_health_old = self.owner.health;
+		self.owner.vip_armor_old = self.owner.armorvalue;
+		self.owner.vip_maxhealth_old = self.owner.vip_maxhealth;
+		self.owner.vip_maxarmor_old = self.owner.vip_maxarmor;
+	}
 }
 
 float vip_EnemiesMultiplier(entity pl, string cvarname)
@@ -483,6 +547,7 @@ void vip_UpdateState()
 		return;
 	}
 	
+	vip_SendVIPInfo();
 	self.use();
 }
 
@@ -535,6 +600,9 @@ void vip_MakePlayerVIP(entity pl)
 		print("vip_MakePlayerVIP on player with waypointsprite_attached: ", pl.netname, "\n");
 		WaypointSprite_Kill(pl.waypointsprite_attached);
 	}
+	
+	// causes the state updater to re-send the VIP info no matter what
+	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
 	
 	pl.vip_state_updater = spawn();
 	pl.vip_state_updater.owner = pl;
@@ -613,7 +681,7 @@ void vip_MakePlayerVIP(entity pl)
 		
 		default:
 			bigprint_spec(pl, "you are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
-			bprint(pl.netname, " ^7is screwed everything up\n");
+			bprint(pl.netname, " ^7screwed everything up\n");
 			break;
 	}
 	self = oldself;
@@ -648,7 +716,7 @@ void vip_AssignCustomBlueVIP(entity newvip)
 {
 	if(bluevip)
 	{
-		print("^5VIP^7: tried to assign the ^4BLUE^7 vip, but there is already one!\n");
+		bprint("^5VIP^7: tried to assign the ^4BLUE^7 vip, but there is already one!\n");
 		return;
 	}
 	

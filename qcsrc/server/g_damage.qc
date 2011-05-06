@@ -1186,13 +1186,16 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	damage = min(damage, t_oldhealth);
 	armordamage = min(armordamage, t_oldarmor);
 	
+	if(attacker.classname == "player")
 	if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
 	{
 		PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
 		
 		//TODO: make it work for extralives
 		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
-		hudflash_teamcolor_default_spec(attacker);
+		
+		if(attacker != targ) if(damage || armordamage)
+			hudflash_teamcolor_default_spec(attacker);
 	}
 	
 	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)

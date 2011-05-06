@@ -264,3 +264,13 @@ float hudlock_alt;
 
 #define hudlocked_old hudlock_old
 #define hudlocked_alt hudlock_alt
+
+float vip_red_health;
+float vip_red_armor;
+float vip_red_maxhealth;
+float vip_red_maxarmor;
+
+float vip_blue_health;
+float vip_blue_armor;
+float vip_blue_maxhealth;
+float vip_blue_maxarmor;

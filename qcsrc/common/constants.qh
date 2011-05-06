@@ -63,6 +63,7 @@ const float TE_CSQC_CLEARBIGPRINT = 112;
 const float TE_CSQC_SPEEDRECORD = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
+const float TE_CSQC_VIPINFO = 116;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;

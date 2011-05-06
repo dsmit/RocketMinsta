@@ -1641,6 +1641,33 @@ void Net_ReadHudFlash(float teamcolor)
 	hudflash(c, t, i, a);
 }
 
+void Net_ReadVIPInfo(float team)
+{
+	switch(team)
+	{
+		case COLOR_TEAM1:
+			vip_red_maxhealth = ReadShort();
+			vip_red_maxarmor = ReadShort();
+			vip_red_health = ReadShort();
+			vip_red_armor = ReadShort();
+			return;
+		
+		case COLOR_TEAM2:
+			vip_blue_maxhealth = ReadShort();
+			vip_blue_maxarmor = ReadShort();
+			vip_blue_health = ReadShort();
+			vip_blue_armor = ReadShort();
+			return;
+	}
+	
+	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(team), "\n");
+	print("Dump: \n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1721,6 +1748,10 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
+			bHandled = true;
+			break;
+		case TE_CSQC_VIPINFO:
+			Net_ReadVIPInfo(ReadByte());
 			bHandled = true;
 			break;
 		default:
