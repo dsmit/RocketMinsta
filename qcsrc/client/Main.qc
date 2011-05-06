@@ -1643,8 +1643,6 @@ void Net_ReadHudFlash(float teamcolor)
 
 void Net_ReadVIPInfo(float team)
 {
-	print("Net_ReadVIPInfo\n");
-	
 	switch(team)
 	{
 		case COLOR_TEAM1:

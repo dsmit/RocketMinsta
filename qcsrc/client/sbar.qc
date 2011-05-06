@@ -2577,6 +2577,7 @@ float th_finalstate;
 float th_appeartime;
 float th_fadetime;
 float th_alpha;
+float teamhud_wide;
 
 void Sbar_Draw (void)
 {
@@ -3363,6 +3364,11 @@ void Sbar_Draw (void)
 			
 			if(rm_althud)	/// RM hud layout
 			{
+				// we_need_to_go_wider.jpg
+				teamhud_wide = 0;
+				if(gametype == GAME_VIP) if(vid_conwidth >= 800)
+					teamhud_wide = 1;
+				
 				// pre-healtharmor
 				HUDLINE_SLICE({
 					hudline_x = 7;
@@ -3395,6 +3401,13 @@ void Sbar_Draw (void)
 				
 				if(vid_conwidth < 800)
 					next_sector = bottomright_x - 224;
+				else if(teamhud_wide)
+				{
+					if(vid_conwidth <= 900)
+						next_sector = hud_sector_pos_x + hud_sector_x + 10;
+					else
+						next_sector = bottom_x - 206/2;
+				}
 				else
 					next_sector = bottom_x - 103/2;
 					
@@ -3408,7 +3421,10 @@ void Sbar_Draw (void)
 				if(th_alpha)
 				{
 					HUDLINE_SECTOR({
-						hud_sector_x = 103;
+						if(teamhud_wide)
+							hud_sector_x = 206;
+						else
+							hud_sector_x = 103;
 						//hud_sector_y = 51;
 						//hud_sector_pos_y = bottom_y - 27 - 14;
 						hud_sector_pos_x = next_sector;
@@ -3453,6 +3469,11 @@ void Sbar_Draw (void)
 				float centersector;
 				float low = vid_conwidth < 800;
 				
+				// we_need_to_go_wider.jpg
+				teamhud_wide = 0;
+				if(gametype == GAME_VIP) if(vid_conwidth >= 890)
+					teamhud_wide = 1;
+				
 				// pre-teamhud
 				HUDLINE_SLICE({
 					hudline_x = 7;
@@ -3464,7 +3485,10 @@ void Sbar_Draw (void)
 				if(th_alpha)
 				{
 					HUDLINE_SECTOR({
-						hud_sector_x = 103;
+						if(teamhud_wide)
+							hud_sector_x = 206;
+						else
+							hud_sector_x = 103;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
@@ -4285,7 +4309,8 @@ void CSQC_vip_hud(vector hudpos)
 	}
 	teamhud_enabled = 1;
 	
-	float hudwidth = 103;
+	float hudwidth = (teamhud_wide? 206 : 103);
+	float textwidth = (teamhud_wide? 11.5 : 5)
 	float hudstart, hudend;
 	float healthpercent;
 	hudstart = hudpos_x;
@@ -4303,7 +4328,7 @@ void CSQC_vip_hud(vector hudpos)
 	
 	// red vip
 	healthpercent = vip_red_health / vip_red_maxhealth;
-	drawstring(hudpos, textShortenToWidth(vip_red_name, 5, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
+	drawstring(hudpos, textShortenToWidth(vip_red_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
@@ -4314,7 +4339,7 @@ void CSQC_vip_hud(vector hudpos)
 	
 	// blue vip
 	healthpercent = vip_blue_health / vip_blue_maxhealth;
-	drawstring(hudpos, textShortenToWidth(vip_blue_name, 5, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
+	drawstring(hudpos, textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
