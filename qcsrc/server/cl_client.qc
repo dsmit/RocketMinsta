@@ -2480,6 +2480,7 @@ void PlayerPreThink (void)
 
 	freezetag_PlayerPreThink();
 	domination_PlayerPreThink();
+	vip_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")

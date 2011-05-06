@@ -1,5 +1,15 @@
 void vip_ResetVIPInfo();
 
+.void() vip_updatestate_f;
+.void() vip_regenhealth_f;
+.void() vip_regenarmor_f;
+
+.float vip_healthregentime;
+.float vip_armorregentime;
+
+.float vip_armorregen_next;
+.float vip_healthregen_next;
+
 void vip_removegem(entity g)
 {
 	remove(g.enemy);
@@ -401,8 +411,6 @@ entity vip_PickBlueVIP()
 .float vip_health_old;
 .float vip_armor_old;
 
-void vip_
-
 void vip_ResetVIPInfo()
 {
 	local entity e;
@@ -431,10 +439,16 @@ void vip_SendVIPInfo(float maxv, float v)
 	//bprint("^6vip_SendHealthArmor for ", self.owner.netname, "\n");
 	
 	if (!vip_ended && vip_started)
-	if (self.owner.health 			!= self.owner.vip_health_old 	||
-		self.owner.armorvalue 		!= self.owner.vip_armor_old		||
-		self.owner.vip_maxarmor 	!= self.owner.vip_maxarmor_old	||
-		self.owner.vip_maxhealth	!= self.owner.vip_maxhealth_old	){
+	if (self.health 		!= self.vip_health_old 		||
+		self.armorvalue 	!= self.vip_armor_old		||
+		self.vip_maxarmor 	!= self.vip_maxarmor_old	||
+		self.vip_maxhealth	!= self.vip_maxhealth_old	){
+		
+		if(self.waypointsprite_attached)
+		{
+			WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, maxv);
+			WaypointSprite_UpdateHealth(self.waypointsprite_attached, v);
+		}
 		
 		local entity e;
 		FOR_EACH_REALCLIENT(e) if(e.classname != "")
@@ -442,16 +456,16 @@ void vip_SendVIPInfo(float maxv, float v)
 			msg_entity = e;
 			WriteByte(MSG_ONE, SVC_TEMPENTITY);
 			WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
-			WriteByte(MSG_ONE, self.owner.team - 1); // wtf?
+			WriteByte(MSG_ONE, self.team - 1); // wtf?
 			WriteShort(MSG_ONE, maxv);
 			WriteShort(MSG_ONE, v);
-			WriteString(MSG_ONE, self.owner.netname);
+			WriteString(MSG_ONE, self.netname);
 		}
 		
-		self.owner.vip_health_old = self.owner.health;
-		self.owner.vip_armor_old = self.owner.armorvalue;
-		self.owner.vip_maxhealth_old = self.owner.vip_maxhealth;
-		self.owner.vip_maxarmor_old = self.owner.vip_maxarmor;
+		self.vip_health_old = self.health;
+		self.vip_armor_old = self.armorvalue;
+		self.vip_maxhealth_old = self.vip_maxhealth;
+		self.vip_maxarmor_old = self.vip_maxarmor;
 	}
 }
 
@@ -471,47 +485,35 @@ float vip_EnemiesMultiplier(entity pl, string cvarname)
 
 void vip_RegenerateHealth()
 {
-	self.owner.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self.owner, "g_explosive_vip_health_dependonenemies");
+	self.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self, "g_explosive_vip_health_dependonenemies");
 	
-	self.owner.health = min(self.owner.health + cvar("g_explosive_vip_regenerate_health_amount"),
-		self.owner.vip_maxhealth
+	self.health = min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
+		self.vip_maxhealth
 	);
 	
-	self.nextthink = time + cvar("g_explosive_vip_regenerate_health_delay");
+	self.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_health_delay");
 }
 
 void vip_RegenerateArmor()
 {
-	self.owner.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self.owner, "g_explosive_vip_armor_dependonenemies");
+	self.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self, "g_explosive_vip_armor_dependonenemies");
 	
-	self.owner.armorvalue = min(self.owner.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
-		self.owner.vip_maxarmor
+	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
+		self.vip_maxarmor
 	);
 	
-	self.nextthink = time + cvar("g_explosive_vip_regenerate_armor_delay");
+	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 }
 
 void vip_RegenerateExtra()
 {
-	self.owner.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self.owner, "g_explosive_vip_extralives_dependonenemies");
+	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
 	
-	self.owner.armorvalue = min(self.owner.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
+	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
 		self.owner.vip_maxarmor
 	);
 	
-	self.nextthink = time + cvar("g_explosive_vip_regenerate_extralives_delay");
-}
-
-void vip_UpdateState_Health()
-{
-	if(self.owner.waypointsprite_attached)
-	{
-		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, self.owner.vip_maxhealth);
-		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, self.owner.health);
-	}
-	
-	vip_SendVIPInfo(self.owner.vip_maxhealth, self.owner.health);
-	self.nextthink = 0.1;
+	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extralives_delay");
 }
 
 void vip_FixVIPState()
@@ -548,37 +550,29 @@ void vip_UpdateState()
 	self.use();
 }
 
+void vip_UpdateState_Health()
+{
+	vip_SendVIPInfo(self.vip_maxhealth, self.health);
+}
+
 void vip_UpdateState_Armor()
 {
-	local float maxv = self.owner.vip_maxhealth * cvar("g_explosive_armor_factor") + self.owner.vip_maxarmor;
-	local float v = self.owner.health * cvar("g_explosive_armor_factor") + self.owner.armorvalue;
-	
-	if(self.owner.waypointsprite_attached)
-	{
-		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, maxv);
-		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, v);
-	}
-	
-	vip_SendVIPInfo(maxv, v);
-	self.nextthink = 0.1;
+	vip_SendVIPInfo(
+		self.vip_maxhealth * cvar("g_explosive_armor_factor") + self.vip_maxarmor,
+		self.health * cvar("g_explosive_armor_factor") + self.armorvalue
+	);
 }
 
 void vip_UpdateState_Extras()
 {
-	if(self.owner.waypointsprite_attached)
-	{
-		WaypointSprite_UpdateMaxHealth(self.owner.waypointsprite_attached, self.owner.vip_maxarmor);
-		WaypointSprite_UpdateHealth(self.owner.waypointsprite_attached, self.owner.armorvalue);
-	}
-	
-	vip_SendVIPInfo(self.owner.vip_maxarmor, self.owner.armorvalue);
-	self.nextthink = 0.1;
+	vip_SendVIPInfo(self.vip_maxarmor, self.armorvalue);
 }
 
 void vip_MakePlayerVIP(entity pl)
 {
 	// start health/armor regeneration
 	
+	/*
 	if(pl.vip_health_regenerator)
 	{
 		print("vip_MakePlayerVIP on player with vip_health_regenerator: ", pl.netname, "\n");
@@ -596,6 +590,7 @@ void vip_MakePlayerVIP(entity pl)
 		print("vip_MakePlayerVIP on player with vip_state_updater: ", pl.netname, "\n");
 		remove(pl.vip_state_updater);
 	}
+	*/
 	
 	if(pl.waypointsprite_attached)
 	{
@@ -606,10 +601,13 @@ void vip_MakePlayerVIP(entity pl)
 	// causes the state updater to re-send the VIP info no matter what
 	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
 	
+	/*
 	pl.vip_state_updater = spawn();
+	pl.vip_state_updater.classname = "vip_state_updater";
 	pl.vip_state_updater.owner = pl;
 	pl.vip_state_updater.nextthink = time + 0.1;
 	pl.vip_state_updater.think = vip_UpdateState;
+	*/
 	
 	if(cvar("g_balance_minstanex_explosive"))
 	{
@@ -617,10 +615,16 @@ void vip_MakePlayerVIP(entity pl)
 		
 		if(cvar("g_explosive_vip_regenerate_health"))
 		{
+			/*
 			pl.vip_health_regenerator = spawn();
 			pl.vip_health_regenerator.owner = pl;
 			pl.vip_health_regenerator.think = vip_RegenerateHealth;
 			pl.vip_health_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_health_delay");
+			*/
+			
+			pl.vip_regenhealth_f = vip_RegenerateHealth;
+			pl.vip_healthregentime = time;
+			pl.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
 		}
 	}
 	
@@ -630,31 +634,53 @@ void vip_MakePlayerVIP(entity pl)
 		
 		if(cvar("g_explosive_vip_regenerate_armor"))
 		{
+			/*
 			pl.vip_armor_regenerator = spawn();
 			pl.vip_armor_regenerator.owner = pl;
 			pl.vip_armor_regenerator.think = vip_RegenerateArmor;
 			pl.vip_armor_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_health_delay");
+			*/
+			
+			pl.vip_regenarmor_f = vip_RegenerateArmor;
+			pl.vip_healthregentime = time;
+			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 		}
 		
-		pl.vip_state_updater.use = vip_UpdateState_Armor;
+		//pl.vip_state_updater.use = vip_UpdateState_Armor;
+		pl.vip_updatestate_f = vip_UpdateState_Armor;
 	}
 	else // in minstagib, we will just give him a bunch of extralives
 	{
 		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
 		
 		if(pl.vip_maxarmor)
-			pl.vip_state_updater.use = vip_UpdateState_Extras;
+			//pl.vip_state_updater.use = vip_UpdateState_Extras;
+			pl.vip_updatestate_f = vip_UpdateState_Extras;
 		else
-			pl.vip_state_updater.use = vip_UpdateState_Health;
+			//pl.vip_state_updater.use = vip_UpdateState_Health;
+			pl.vip_updatestate_f = vip_UpdateState_Health;
 		
 		if(cvar("g_explosive_vip_regenerate_extra"))
 		{
+			/*
 			pl.vip_armor_regenerator = spawn();
 			pl.vip_armor_regenerator.owner = pl;
 			pl.vip_armor_regenerator.think = vip_RegenerateExtra;
 			pl.vip_armor_regenerator.nextthink = time + cvar("g_explosive_vip_regenerate_extra_delay");
+			*/
+			
+			pl.vip_regenarmor_f = vip_RegenerateExtra;
+			pl.vip_healthregentime = time;
+			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
 		}
 	}
+
+	/*
+	if(!pl.vip_state_updater || pl.vip_state_updater.classname != "vip_state_updater")
+	{
+		bprint("^1vip_state_updater just B0RK3D on ", pl.netname, "^1!!!\n");
+	}
+	*/
 
 	vip_ResetHealthArmor(pl);
 
@@ -692,6 +718,21 @@ void vip_MakePlayerVIP(entity pl)
 		centerprint_spec(e, strcat(pl.netname, "^7 is now your VIP!"));
 		
 	play2all("kh/capture.wav");
+}
+
+void vip_PlayerPreThink()
+{
+	DEPENDON(g_vip)
+	if(!ISVIP(self))
+		return;
+	
+	self.vip_updatestate_f();
+	
+	if(time >= self.vip_armorregen_next)
+		self.vip_regenarmor_f();
+		
+	if(time >= self.vip_healthregen_next)
+		self.vip_regenhealth_f();
 }
 
 void vip_ResetHealthArmor(entity vip)
@@ -756,17 +797,21 @@ void vip_ClearVIP_Common(entity pl)
 {
 	//bprint("vip_ClearVIP_Common() for ", pl.netname, "\n");
 	
+	/*
 	if(pl.vip_health_regenerator)
 		remove(pl.vip_health_regenerator);
 	
 	if(pl.vip_armor_regenerator)
 		remove(pl.vip_armor_regenerator);
+	*/
 	
 	if(pl.waypointsprite_attached)
 		WaypointSprite_Kill(pl.waypointsprite_attached);
 	
+	/*
 	if(pl.vip_state_updater)
 		remove(pl.vip_state_updater);
+	*/
 }
 
 void vip_ClearRedVIP()
