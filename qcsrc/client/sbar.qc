@@ -3872,9 +3872,9 @@ void CSQC_ctf_hud(vector hudpos)
 	float red_alpha, red_alpha_prevstatus;
 	red_alpha = red_alpha_prevstatus = 1;
 	switch(redflag) {
-		case 1: red_icon = "gfx/hud/sb_flag_red_taken"; break;
-		case 2: red_icon = "gfx/hud/sb_flag_red_lost"; break;
-		case 3: red_icon = "gfx/hud/sb_flag_red_carrying"; red_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_taken" : "gfx/hud/rm_flag_red_taken"); break;
+		case 2: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_lost" : "gfx/hud/rm_flag_red_lost"); break;
+		case 3: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); red_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon = "gfx/hud/sb_flag_red_shielded";
@@ -3883,12 +3883,12 @@ void CSQC_ctf_hud(vector hudpos)
 			break;
 	}
 	switch(redflag_prevstatus) {
-		case 1: red_icon_prevstatus = "gfx/hud/sb_flag_red_taken"; break;
-		case 2: red_icon_prevstatus = "gfx/hud/sb_flag_red_lost"; break;
-		case 3: red_icon_prevstatus = "gfx/hud/sb_flag_red_carrying"; red_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_taken" : "gfx/hud/rm_flag_red_taken"); break;
+		case 2: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_lost" : "gfx/hud/rm_flag_red_lost"); break;
+		case 3: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); red_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if(redflag == 3)
-				red_icon_prevstatus = "gfx/hud/sb_flag_red_carrying"; // make it more visible
+				red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); // make it more visible
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon_prevstatus = "gfx/hud/sb_flag_red_shielded";
 			else
@@ -3900,9 +3900,9 @@ void CSQC_ctf_hud(vector hudpos)
 	float blue_alpha, blue_alpha_prevstatus;
 	blue_alpha = blue_alpha_prevstatus = 1;
 	switch(blueflag) {
-		case 1: blue_icon = "gfx/hud/sb_flag_blue_taken"; break;
-		case 2: blue_icon = "gfx/hud/sb_flag_blue_lost"; break;
-		case 3: blue_icon = "gfx/hud/sb_flag_blue_carrying"; blue_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_taken" : "gfx/hud/rm_flag_blue_taken"); break;
+		case 2: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_lost" : "gfx/hud/rm_flag_blue_lost"); break;
+		case 3: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); blue_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon = "gfx/hud/sb_flag_blue_shielded";
@@ -3911,12 +3911,12 @@ void CSQC_ctf_hud(vector hudpos)
 			break;
 	}
 	switch(blueflag_prevstatus) {
-		case 1: blue_icon_prevstatus = "gfx/hud/sb_flag_blue_taken"; break;
-		case 2: blue_icon_prevstatus = "gfx/hud/sb_flag_blue_lost"; break;
-		case 3: blue_icon_prevstatus = "gfx/hud/sb_flag_blue_carrying"; blue_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_taken" : "gfx/hud/rm_flag_blue_taken"); break;
+		case 2: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_lost" : "gfx/hud/rm_flag_blue_lost"); break;
+		case 3: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); blue_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if(blueflag == 3)
-				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_carrying"; // make it more visible
+				blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); // make it more visible
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_shielded";
 			else
@@ -3924,7 +3924,7 @@ void CSQC_ctf_hud(vector hudpos)
 			break;
 	}
 
-	hudpos_x += 52;
+	hudpos_x += 55;
 	hudpos_y -= 17;
 
 	if (myteam == COLOR_TEAM1) { // always draw own flag on left

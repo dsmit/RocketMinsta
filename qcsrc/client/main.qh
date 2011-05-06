@@ -199,6 +199,7 @@ float rm_althud_option;
 
 float rm_oldhud;
 float rm_althud;
+float rm_oldflags;
 
 float vote_yescount;
 float vote_nocount;
