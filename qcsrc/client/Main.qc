@@ -1643,6 +1643,8 @@ void Net_ReadHudFlash(float teamcolor)
 
 void Net_ReadVIPInfo(float team)
 {
+	print("Net_ReadVIPInfo\n");
+	
 	switch(team)
 	{
 		case COLOR_TEAM1:
@@ -1651,7 +1653,7 @@ void Net_ReadVIPInfo(float team)
 			
 			if(vip_red_name)
 				strunzone(vip_red_name);
-			vip_red_name = strzone(ReadString());
+			vip_red_name = strzone(strdecolorize(ReadString()));
 			return;
 		
 		case COLOR_TEAM2:
@@ -1660,7 +1662,7 @@ void Net_ReadVIPInfo(float team)
 			
 			if(vip_blue_name)
 				strunzone(vip_blue_name);
-			vip_blue_name = strzone(ReadString());
+			vip_blue_name = strzone(strdecolorize(ReadString()));
 			return;
 	}
 	

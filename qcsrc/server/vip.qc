@@ -443,8 +443,8 @@ void vip_SendVIPInfo(float maxv, float v)
 			WriteByte(MSG_ONE, SVC_TEMPENTITY);
 			WriteByte(MSG_ONE, TE_CSQC_VIPINFO);
 			WriteByte(MSG_ONE, self.owner.team - 1); // wtf?
-			WriteShort(MSG_ONE, self.owner.vip_maxhealth);
-			WriteShort(MSG_ONE, self.owner.health);
+			WriteShort(MSG_ONE, maxv);
+			WriteShort(MSG_ONE, v);
 			WriteString(MSG_ONE, self.owner.netname);
 		}
 		
