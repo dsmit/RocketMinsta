@@ -2991,6 +2991,14 @@ float CountAFKClients()
 {
     local entity e;
     local float r;
-    FOR_EACH_REALCLIENT(e) if(e.is_away) ++r;
+    r = 0;
+    FOR_EACH_REALCLIENT(e)
+    {
+        if(e.is_away)
+        {
+            ++r;
+            //bprint(e.netname, " ^7is away\n");
+        }
+    }
     return r;
 }
