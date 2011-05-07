@@ -621,13 +621,26 @@ void vip_PlayerPreThink()
 	if(!ISVIP(self))
 		return;
 	
-	self.vip_updatestate_f();
+	if(self.vip_updatestate_f)
+		self.vip_updatestate_f();
+	else
+		bprint("^1URGENT: ^7", self.netname, " has no vip_updatestate_f! Everything is fucked up!\n");
 	
 	if(time >= self.vip_armorregen_next)
-		self.vip_regenarmor_f();
+	{
+		if(self.vip_regenarmor_f)
+			self.vip_regenarmor_f();
+		else
+			bprint("^1URGENT: ^7", self.netname, " has no vip_regenarmor_f! Everything is fucked up!\n");
+	}
 		
 	if(time >= self.vip_healthregen_next)
-		self.vip_regenhealth_f();
+	{
+		if(self.vip_regenhealth_f)
+			self.vip_regenhealth_f();
+		else
+			bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
+	}
 }
 
 void vip_ResetHealthArmor(entity vip)
