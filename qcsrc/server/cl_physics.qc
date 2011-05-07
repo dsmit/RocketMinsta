@@ -525,6 +525,21 @@ void SV_PlayerPhysics()
 	float not_allowed_to_move;
 	string c;
 	
+	if(self.movement != '0 0 0')
+	{
+		self.parm_idlesince = time;
+		if(self.is_away)
+			UnmarkAway(self);
+	}
+	else if(!self.is_away)
+	{
+		local float a = cvar("g_explosive_autoaway");
+		
+		if(a)
+		if(time - self.parm_idlesince >= a * 60)
+			MarkAway(self, 0);
+	}
+	
 	if(g_race || g_cts)
 	{
 		// if record times matter

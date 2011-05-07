@@ -2926,3 +2926,71 @@ void UpdateHighestVelocity(float v, entity e)
     FOR_EACH_REALCLIENT(other)
         SendSpeedRecord(other);
 }
+
+.float is_away;
+
+void MarkAway(entity pl, float force)
+{
+    if(clienttype(pl) != CLIENTTYPE_REAL)
+        return;
+    
+    if(pl.is_away)
+        return;
+    
+    local float idlefor = floor((time - self.parm_idlesince) / 60);
+    
+    if(pl.classname == "player")
+        stuffcmd(pl, "cmd spectate\n");
+    
+    if(force)
+    {
+        bprint(pl.netname, " ^4is AFK\n");
+        centerprint(pl, "You have been set AFK");
+    }
+    else
+    {
+        bprint(pl.netname, " ^4is AFK (idle for ", ftos(idlefor), " minutes)\n");
+        centerprint(pl, strcat("You have been set AFK (idle for ", ftos(idlefor), " minutes)"));
+    }
+    
+    pl.is_away = 1;
+    
+    if(pl.scorekeeper)
+    {
+        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
+        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
+    }
+    else
+        bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+}
+
+void UnmarkAway(entity pl)
+{
+    if(clienttype(pl) != CLIENTTYPE_REAL)
+        return;
+    
+    if(!pl.is_away)
+        return;
+    
+    bprint(pl.netname, " ^4is back\n");
+    centerprint(pl, "You are no longer marked AFK");
+    pl.is_away = 0;
+    
+    if(pl.scorekeeper)
+    {
+        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
+        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
+    }
+    else
+        bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+    
+    pl.parm_idlesince = time;
+}
+
+float CountAFKClients()
+{
+    local entity e;
+    local float r;
+    FOR_EACH_REALCLIENT(e) ++r;
+    return r;
+}

@@ -704,6 +704,13 @@ string Sbar_GetField(entity pl, float field)
 		case SP_PL:
 			if not(pl.gotscores)
 				return "N/A";
+			
+			if(pl.(scores[SP_AWAYSTATUS]))
+			{
+				sbar_field_rgb = '1 1 1';
+				return "AFK";
+			}
+			
 			str = getplayerkey(pl.sv_entnum, "pl");
 			if(str == "0")
 				return "";
@@ -877,7 +884,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_SEPARATOR)
 			break;
 
-		if(is_spec && field != SP_NAME && field != SP_PING) {
+		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL) {
 			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}

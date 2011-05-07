@@ -248,9 +248,12 @@ float GameCommand_Vote(string s, entity e) {
 	float argc;
 	argc = tokenize_console(s);
 	if(argv(0) == "help") {
+		UnmarkAway(e);
 		print_to(e, "  vote COMMANDS ARGUMENTS. See 'vhelp' for more info.");
 		return TRUE;
 	} else if(argv(0) == "vote") {
+		UnmarkAway(e);
+		
 		if(argv(1) == "") {
 			print_to(e, "^1You have to supply a vote command. See 'vhelp' for more info.");
 		} else if(argv(1) == "help") {
@@ -723,6 +726,8 @@ void VoteCount() {
 		abstaincount = realplayerabstaincount;
 		playercount = realplayercount;
 	}
+	
+	abstaincount += CountAFKClients();
 
 	float votefactor, simplevotefactor;
 	votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);
@@ -732,7 +737,7 @@ void VoteCount() {
 	//VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
 	
 	local entity _e;
-	FOR_EACH_REALCLIENT(_e)
+	FOR_EACH_REALCLIENT(_e) if(_e.classname != "")
 	{
 		msg_entity = _e;
 		VoteDialog_Update(MSG_ONE, yescount, nocount, needed);

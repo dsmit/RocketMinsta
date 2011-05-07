@@ -2175,6 +2175,8 @@ float SpectateUpdate() {
 float SpectateNext() {
 	local entity oldenemy = self.enemy;
 	
+	UnmarkAway(self);
+	
 	other = find(self.enemy, classname, "player");
 	if (!other) {
 		other = find(other, classname, "player");

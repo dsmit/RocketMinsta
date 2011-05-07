@@ -419,12 +419,14 @@ void PostInit(void)
 		case 19:
 			localcmd("seta rm_oldhud 0; oldhud 0\n");
 		case 20:
-			localcmd("seta rm_althud 0; althud 0\n");
+			//localcmd("seta rm_althud 0; althud 0\n");
 		case 21:
 			localcmd("seta rm_althud 1; althud 1\n");
+		case 22:
+			localcmd("alias afk \"cmd afk\"\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 22\n");
+		localcmd("seta rm_initialized 23\n");
 		RM_OUTDATED
 		break;
 	}
@@ -581,6 +583,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
 		#endif
+		
+		print("\nIn addition, these commands are available:\n");
+		print("^5afk^7: Marks you as being away\n");
 		return true;
 	}
 	else if(

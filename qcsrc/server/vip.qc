@@ -763,8 +763,13 @@ float vip_RedVIPDown()
 	bprint("^4Blue team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/blue_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
-	PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
-	PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+	
+	if(bluevip && bluevip.classname == "player")
+	{
+		PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
+		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+	}
+	
 	vip_EndRound();
 }
 
@@ -781,8 +786,12 @@ float vip_BlueVIPDown()
 	bprint("^1Red team ^5wins the round since the enemy VIP is dead\n");
 	play2all("ctf/red_capture.wav");
 	TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
-	PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
-	PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+	
+	if(redvip && redvip.classname == "player")
+	{
+		PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
+		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+	}
 	vip_EndRound();
 }
 

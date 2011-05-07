@@ -361,6 +361,7 @@ void SV_ParseClientCommand(string s) {
 				centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
 			}
 		}
+		UnmarkAway(self);
 	} else if( cmd == "selectteam" ) {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -421,13 +422,16 @@ void SV_ParseClientCommand(string s) {
 			VoiceMessage(argv(1), substring(s, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
 		else
 			VoiceMessage(argv(1), "");
+		UnmarkAway(self);
 	} else if(cmd == "say") {
 		if(tokens >= 2)
 			Say(self, FALSE, world, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), 1);
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "say_team") {
 		if(tokens >= 2)
 			Say(self, TRUE, world, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), 1);
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "tell") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
@@ -441,6 +445,7 @@ void SV_ParseClientCommand(string s) {
 				trigger_magicear_processmessage_forallears(self, -1, world, substring(s, argv_start_index(ParseCommandPlayerSlotTarget_firsttoken), argv_end_index(-1) - argv_start_index(ParseCommandPlayerSlotTarget_firsttoken)));
 			sprint(self, "ERROR: usage: tell # playerid text...\n");
 		}
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "info") {
 		cmd = cvar_string(strcat("sv_info_", argv(1)));
@@ -473,6 +478,8 @@ void SV_ParseClientCommand(string s) {
 		Score_NicePrint(self);
 	} else if(cmd == "cvar_changes") {
 		sprint(self, cvar_changes);
+	} else if(cmd == "afk") {
+		MarkAway(self, 1);
 	} else if(cmd == "pointparticles") {
 		if((sv_cheats || self.maycheat) && tokens == 5)
 		{
@@ -825,6 +832,8 @@ void SV_ParseClientCommand(string s) {
 
 			if (timeoutStatus == 2) //when game is paused, no flood protection
 				self.nickspamcount = self.nickspamtime = 0;
+			
+			UnmarkAway(self);
 		}
 
 		clientcommand(self,s);
