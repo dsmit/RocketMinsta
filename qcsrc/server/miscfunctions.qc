@@ -2941,6 +2941,7 @@ void MarkAway(entity pl, float force)
     
     if(pl.classname == "player")
         stuffcmd(pl, "cmd spectate\n");
+    stuffcmd(pl, "set _cl_afkstate 1\n");
     
     if(force)
     {
@@ -2971,6 +2972,8 @@ void UnmarkAway(entity pl)
     
     if(!pl.is_away)
         return;
+    
+    stuffcmd(pl, "set _cl_afkstate 0\n");
     
     bprint(pl.netname, " ^4is back\n");
     centerprint(pl, "You are no longer marked AFK");
