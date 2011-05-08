@@ -3899,6 +3899,8 @@ void CSQC_ctf_hud(vector hudpos)
 	// ensure RMS == 1
 	float BLINK_FREQ = 5; // circle frequency, = 2*pi*frequency in hertz
 
+	rm_oldflags = rm_oldhud;
+
 	string red_icon, red_icon_prevstatus;
 	float red_alpha, red_alpha_prevstatus;
 	red_alpha = red_alpha_prevstatus = 1;
