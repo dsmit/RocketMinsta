@@ -423,14 +423,15 @@ void PostInit(void)
 		case 21:
 			localcmd("seta rm_althud 1; althud 1\n");
 		case 22:
-			localcmd("alias afk \"cmd afk\"\n");
+			//localcmd("alias afk \"cmd afk\"\n");
 		
 		//More to come here with each update
 		localcmd("seta rm_initialized 23\n");
 		RM_OUTDATED
 		break;
 	}
-
+	
+	localcmd("alias afk \"cmd afk\"\n");
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
