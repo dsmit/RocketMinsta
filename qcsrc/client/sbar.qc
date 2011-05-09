@@ -466,7 +466,7 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		//<akari>
-		"ping pl name | hfrags +ft/kills +ft/deaths +ft/suicides +ft/revivals ",
+		"ping pl cn name | hfrags +ft/kills +ft/deaths +ft/suicides +ft/revivals ",
 		//</akari>
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -559,6 +559,9 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "|") {
 			sbar_field[sbar_num_fields] = SP_SEPARATOR;
 			have_separator = 1;
+		} else if(str == "cn") {
+			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
+			scores_label[sbar_num_fields] = "cn";
 		} else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -691,6 +694,15 @@ string Sbar_GetField(entity pl, float field)
 	sbar_field_icon2_alpha = 1;
 	switch(field)
 	{
+		case SP_CN_CHAR0:
+			local float char0 = pl.(scores[SP_CN_CHAR0]);
+			local float char1 = pl.(scores[SP_CN_CHAR1]);
+			
+			if(!char0 || !char1)
+				return "";
+			
+			return strcat(chr2str(char0), chr2str(char1));
+		
 		case SP_PING:
 			if not(pl.gotscores)
 				return "\x8D\x8D\x8D"; // >>> sign
@@ -884,7 +896,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_SEPARATOR)
 			break;
 
-		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL) {
+		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_CN_CHAR0) {
 			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}
@@ -917,6 +929,13 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			#ifdef RM_SUPPORT_MADOKA
 			drawfont = tmp_font;
 			#endif
+		} else if(field == SP_CN_CHAR0) {
+			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
+			
+			local float scale = sbar_fontsize_x / 11;
+			
+			if(str != "")
+				drawpic(pos - tmp, strcat("gfx/flags/", str), '16 11 0' * scale, '1 1 1', 1, DRAWFLAG_NORMAL);
 		} else {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
 			drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);

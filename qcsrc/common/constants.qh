@@ -351,7 +351,7 @@ const float STAT_BLUEPOINTS = 112;
  */
  
 //<akari>
-#define MAX_SCORE 14
+#define MAX_SCORE 16
 //</akari>
 #define MAX_TEAMSCORE 2
 
@@ -366,6 +366,8 @@ const float STAT_BLUEPOINTS = 112;
 #define SP_FREEZETAG_FROZENSTATUS 11
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
+#define SP_CN_CHAR0 14
+#define SP_CN_CHAR1 15
 //</akari>
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
