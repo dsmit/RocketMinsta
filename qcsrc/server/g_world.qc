@@ -766,6 +766,7 @@ void spawnfunc_worldspawn (void)
 	
 	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
 	InfoMessages_Init();
+	IP2C_Init();
 }
 
 void spawnfunc_light (void)
@@ -2878,6 +2879,7 @@ void SV_Shutdown()
 			}
 			db_save(ServerProgsDB, "server.db");
 		}
+		IP2C_Shutdown();
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");
 		db_close(ServerProgsDB);

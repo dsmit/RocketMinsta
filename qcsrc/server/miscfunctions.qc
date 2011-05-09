@@ -2007,6 +2007,7 @@ float MAX_IPBAN_URIS = 16;
 float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
+float URI_GET_IP2C = 17;
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2022,6 +2023,10 @@ void URI_Get_Callback(float id, float status, string data)
     {
         // online ban list
         OnlineBanList_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_IP2C)
+    {
+        IP2C_URI_Get_Callback(id, status, data);
     }
     else
     {

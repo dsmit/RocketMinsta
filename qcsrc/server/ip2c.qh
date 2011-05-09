@@ -1,0 +1,8 @@
+void IP2C_Init();
+void IP2C_Shutdown();
+string IP2C_Lookup(string ip);
+void IP2C_SetCountry_Internal(entity player, string cn);
+void IP2C_SetCountry(entity player);
+void IP2C_URI_Get_Callback(float id, float status, string data);
+
+.string ip2c_country;

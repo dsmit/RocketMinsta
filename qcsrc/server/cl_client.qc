@@ -1506,6 +1506,7 @@ void ClientConnect (void)
 	}
 	
 	SendSpeedRecord(self);
+	IP2C_SetCountry(self);
 }
 
 /*
