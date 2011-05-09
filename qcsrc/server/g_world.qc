@@ -389,6 +389,45 @@ void CTFCheck_Think()
 	remove(self);
 }
 
+string InfoMessages_Pick()
+{
+	local float c = cvar("_g_explosive_infomessages_count");
+	local float r = floor(random() * c);
+	
+	if(!c) return "";
+	return cvar_string(strcat("_g_explosive_infomessages_", ftos(r)));
+}
+
+void InfoMessages_Think()
+{
+	if(!cvar("g_explosive_infomessages"))
+	{
+		remove(self);
+		return;
+	}
+
+	local string msg = InfoMessages_Pick();
+	local entity e;
+	FOR_EACH_REALCLIENT(e)
+		sprint(e, strcat("\x01^5 * ^7", msg, "\n"));
+	
+	self.nextthink = time + cvar("g_explosive_infomessages") * 60;
+}
+
+void InfoMessages_Init()
+{
+	if(!cvar("g_explosive_infomessages"))
+		return;
+	
+	print("Initializing the built-in infomessage system\n");
+	
+	local entity e;
+	e = spawn();
+	e.classname = "rm_info";
+	e.think = InfoMessages_Think;
+	e.nextthink = time + cvar("g_explosive_infomessages") * 60;
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -404,6 +443,7 @@ void spawnfunc_worldspawn (void)
     registercvar("g_vip", "0");
     registercvar("_sv_rm_lastgametype", "");
     registercvar("_sv_rm_maprow", "0");
+    registercvar("_g_explosive_infomessages_count", "0");
 
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
@@ -725,6 +765,7 @@ void spawnfunc_worldspawn (void)
 	}
 	
 	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
+	InfoMessages_Init();
 }
 
 void spawnfunc_light (void)

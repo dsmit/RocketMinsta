@@ -1181,6 +1181,15 @@ void GameCommand(string command)
 		return;
 	}
 
+	if(argv(0) == "addinfo")
+	{
+		float c = cvar("_g_explosive_infomessages_count");
+		string newvar = strcat("_g_explosive_infomessages_", ftos(c));
+		registercvar(newvar, "", 0);
+		cvar_set(newvar, argv(1));
+		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
+	}
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 
