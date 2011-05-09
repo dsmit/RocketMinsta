@@ -1188,6 +1188,7 @@ void GameCommand(string command)
 		registercvar(newvar, "", 0);
 		cvar_set(newvar, argv(1));
 		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
+		return;
 	}
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
