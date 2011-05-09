@@ -264,6 +264,14 @@ void SV_ParseClientCommand(string s) {
 		
 		self.hud_old = stof(argv(1));
 		self.hud_alt = stof(argv(2));
+	} else if(cmd == "fakeflag") {
+		if(!self)
+			return;
+		
+		if(strlen(argv(1)) != 2)
+			return;
+		
+		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));
