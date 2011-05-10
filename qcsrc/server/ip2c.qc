@@ -2,7 +2,7 @@ float IPCacheDB
 
 void IP2C_Log(string msg)
 {
-    bprint("IP2C: ", msg, "\n");
+    print("IP2C: ", msg, "\n");
 }
 
 void IP2C_Init()
