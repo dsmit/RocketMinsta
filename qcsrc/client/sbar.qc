@@ -855,6 +855,8 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 		str = textShortenToWidth(str, namesize, stringwidth_colors);
 		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, TRUE);
 	}
+	else if(field == SP_CN_CHAR0)
+		sbar_fixscoreboardcolumnwidth_len = stringwidth("XX", FALSE);
 	else
 		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, FALSE);
 	
@@ -901,11 +903,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			continue;
 		}
 		str = Sbar_GetField(pl, field);
-		
-		if(i == SP_CN_CHAR0)
-			str = Sbar_FixScoreboardColumnWidth(i, "XX");
-		else
-			str = Sbar_FixScoreboardColumnWidth(i, str);
+		str = Sbar_FixScoreboardColumnWidth(i, str);
 
 		pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 
