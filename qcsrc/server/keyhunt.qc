@@ -696,7 +696,7 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 	FOR_EACH_REALCLIENT(e) 
 	{	
 		bigprint(e, bigstring, 
-			strcat("all keys captured by ", names), 5
+			strcat("All keys captured by ", names), 5
 		);
 		
 		if(e.team == teem)
