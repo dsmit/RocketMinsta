@@ -168,6 +168,13 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
+	
+	// workaround a crash for nexuiz-svn users
+	if(cvar_string("g_nexuizversion") == "2.5svn")
+	{
+		print("^1Potentially bugged SVN engine detected!\n");
+		svn_workaround = 1;
+	}
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
