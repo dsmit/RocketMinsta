@@ -1113,8 +1113,11 @@ string MapInfo_ListAllowedMaps(float pRequiredFlags, float pForbiddenFlags)
 
 void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 {
+	print("^1MapInfo_LoadMapSettings\n");
+	
 	float t;
 	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
+	#ifdef WE_GIVE_A_SHIT_ABOUT_MAPINFO
 	{
 		if(MapInfo_Map_supportedGametypes <= 0)
 		{
@@ -1137,6 +1140,9 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
 		//MapInfo_SwitchGameType(t);
 	}
+	#else
+		print("Warning: _MapInfo_CheckMap failed\n");
+	#endif
 	cvar_settemp_restore();
 	MapInfo_Get_ByName(s, 1, MapInfo_CurrentGametype());
 }
