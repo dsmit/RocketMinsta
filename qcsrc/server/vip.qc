@@ -10,6 +10,8 @@ void vip_ResetVIPInfo();
 .float vip_armorregen_next;
 .float vip_healthregen_next;
 
+entity vip_sg_startroundentity;
+
 void vip_removegem(entity g)
 {
 	remove(g.enemy);
@@ -336,28 +338,42 @@ void vip_EndRound()
     defer(5.1, vip_ClearVIPs);
     vip_ended = 1;
     vip_ResetVIPInfo();
+    
+    if(vip_sg_startroundentity)
+		remove(vip_sg_startroundentity);
 }
 
-void vip_SoulGem_StartRound()
+void vip_SoulGem_StartRound_Think()
 {
 	if(!redvip || !bluevip)
 	{
+		vip_started = 0;
+		vip_ended = 0;
+		
 		local entity e;
 		FOR_EACH_PLAYER(e)
 		{
-			vip_started = 0;
-			vip_ended = 0;
-			
 			bigprint_clear_spec(e);
 			
-			if(ISVIP(e))
+			if((e.team == COLOR_TEAM1 && redvip) || (e.team == COLOR_TEAM2 && bluevip))
 				bigprint_spec(e, "waiting for an enemy VIP", "", 5);
 			else
 				bigprint_spec(e, "waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
 		}
 		
-		defer(5, vip_SoulGem_StartRound);
+		self.nextthink = time + 5;
 	}
+	else remove(self);
+}
+
+void vip_SoulGem_StartRound()
+{
+	if(vip_sg_startroundentity)
+		remove(vip_sg_startroundentity);
+	
+	vip_sg_startroundentity = spawn();
+	vip_sg_startroundentity.think = vip_SoulGem_StartRound_Think;
+	vip_sg_startroundentity.nextthink = time + 5;
 }
 
 entity vip_PickRedVIP()
