@@ -899,7 +899,6 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				return;
 			}
 			
-			//<akari>
 			local float ex = cvar("g_balance_minstanex_explosive");
 			local float ex_armor = cvar("g_explosive_armor");
 			float armor_passthrough = cvar("g_explosive_armor_passthrough");
@@ -968,17 +967,35 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				targ.armorvalue -= min(targ.armorvalue, armordamage);
 			}
 			
-			//</akari>
-		}
-		
-		if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-		{
-			if(targ == attacker)
+			if(ex)
 			{
-				damage = 0;
+				if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+				{
+					if(targ == attacker)
+					{
+						damage = 0;
+					}
+				}
+			}
+			else
+			{
+				if (DEATH_ISWEAPON(deathtype, WEP_LASER))
+				{
+					damage = 0;
+					if (targ != attacker)
+					{
+						if (targ.classname == "player")
+							bigprint_spec(attacker, "", "^1Secondary fire inflicts no damage!", 1);
+						damage = 0;
+						mirrordamage = 0;
+						force = '0 0 0';
+						// keep mirrorforce
+						attacker = targ;
+					}
+				}
 			}
 		}
-
+		
 		if not(DEATH_ISSPECIAL(deathtype))
 		{
 			damage *= g_weapondamagefactor;
