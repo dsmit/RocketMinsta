@@ -318,7 +318,7 @@ void GrapplingHookTouch (void)
 	}
 
 	//<akari>
-	if(other.classname == "player")
+	if(other.classname == "player") if(cvar("g_balance_minstanex_explosive"))
 	{
 		//sprint(self.owner, "\{0}Hooked ", other.netname, "\n");
 		self.owner.hooked_to = other;
