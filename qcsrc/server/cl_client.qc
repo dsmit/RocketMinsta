@@ -2127,7 +2127,8 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	WriteShort(MSG_ONE, count);
 	
 	FOR_EACH_SPECOF(of, spec, a)
-		WriteString(MSG_ONE, spec.netname);
+		//WriteString(MSG_ONE, spec.netname);
+		WriteByte(MSG_ONE, num_for_edict(spec));
 }
 
 void ResetSpectatorInfo(entity player)

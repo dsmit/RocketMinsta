@@ -1580,9 +1580,9 @@ void Net_ReadSpecInfo()
 
 	for(i = 0; i < num_spectators; ++i)
 	{
-		local string s = ReadString();
+		local float slot = ReadByte();
 		if(i < MAX_SPECTATORS)
-			spectatornames[i] = strzone(s);
+			spectatornames[i] = strzone(GetPlayerName(slot - 1));
 	}
 }
 
