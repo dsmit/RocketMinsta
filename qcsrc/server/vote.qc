@@ -252,6 +252,12 @@ float GameCommand_Vote(string s, entity e) {
 		print_to(e, "  vote COMMANDS ARGUMENTS. See 'vhelp' for more info.");
 		return TRUE;
 	} else if(argv(0) == "vote") {
+		if(e.classname == "")
+		{
+			sprint(e, "^1You must be connected to use vote commands\n");
+			return TRUE;
+		}
+		
 		UnmarkAway(e);
 		
 		if(argv(1) == "") {
