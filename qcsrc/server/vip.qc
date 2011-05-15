@@ -493,9 +493,9 @@ void vip_RegenerateHealth()
 {
 	self.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self, "g_explosive_vip_health_dependonenemies");
 	
-	self.health = min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
+	self.health = max(self.health, min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
 		self.vip_maxhealth
-	);
+	));
 	
 	self.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_health_delay");
 }
@@ -504,9 +504,9 @@ void vip_RegenerateArmor()
 {
 	self.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self, "g_explosive_vip_armor_dependonenemies");
 	
-	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
 		self.vip_maxarmor
-	);
+	));
 	
 	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
 }
@@ -515,9 +515,9 @@ void vip_RegenerateExtra()
 {
 	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
 	
-	self.armorvalue = min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
 		self.owner.vip_maxarmor
-	);
+	));
 	
 	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extralives_delay");
 }
