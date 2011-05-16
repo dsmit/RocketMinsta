@@ -3332,15 +3332,16 @@ void Sbar_Draw (void)
 		{
 			if (cvar("viewsize") <= 100 && vid_conwidth <= 1600) {
 				if (teamplay)
-					drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, GetTeamRGB(myteam) * sbar_color_bg_team, sbar_alpha_bg, DRAWFLAG_NORMAL); // hud color = myteam color
+					color =  GetTeamRGB(myteam) * sbar_color_bg_team; // hud color = myteam color
 				else {
 					// allow for custom HUD colors in non-teamgames
 					color_x = cvar("sbar_color_bg_r");
 					color_y = cvar("sbar_color_bg_g");
 					color_z = cvar("sbar_color_bg_b");
-
-					drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, color, sbar_alpha_bg, DRAWFLAG_NORMAL);
 				}
+				
+				HudFlash_Apply(color, sbar_alpha_bg, TRUE, 2, 1);
+				drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, hudflash_resultcolor, hudflash_resultalpha, DRAWFLAG_NORMAL);
 			}
 		}
 		else
