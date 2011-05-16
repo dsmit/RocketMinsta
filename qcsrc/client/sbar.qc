@@ -1807,8 +1807,8 @@ void centerprint(string strRealMessage)
 		return;
 	}
 	
-	float i, j, n, hcount, k, k2, k3, exptime, tmp2;
-	string s, strMessage, tmp;
+	float i, j, n, hcount, k, k2, exptime;
+	string s, strMessage;
 	float scrtime = cvar("scr_centertime");
 
 	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
@@ -2017,10 +2017,7 @@ void Sbar_DrawCenterPrint (void)
 		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
 
 		if(a <= 0)
-		{
 			continue;
-			strunzone(centerprint_messages[i]);
-		}
 
 		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (rm_simpleeffects? 1 : a)) * 0.5;
 		ts = centerprint_messages[i];
@@ -2490,7 +2487,6 @@ void Sbar_MorningRescue(void)
 	offset_y = 3 * cos(mrpos_y + 5 * time) - 5;
 	mrpos_x -= 513 * 0.5;
 	offset_x = 3 * cos(mrpos_x + 5 * time) + 5;
-	local vector mrsize;
 	drawpic (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
 	
 	local string mycolor;
@@ -2821,7 +2817,6 @@ void Sbar_Draw (void)
 		
 		a *= score_strings_alphamod[i];
 		
-		local string s;
 		s = score_strings[i];
 		local vector c;
 		c = score_strings_color[i];
@@ -2894,7 +2889,6 @@ void Sbar_Draw (void)
 						local string mycolor;
 						local string mychar;
 						local vector offset;
-						local float j;
 						
 						bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
 						for(j = 0; j < strlen(bigprint_string); ++j)
@@ -2971,8 +2965,6 @@ void Sbar_Draw (void)
 	if(spectatee_status != -1)
 	if(num_spectators)
 	{
-		local float i;
-		local string s;
 		local float limit;
 		if(spectatee_status)
 		{
@@ -3104,7 +3096,6 @@ void Sbar_Draw (void)
 		if(vote_alpha) {
 			//print("DRAWING VOTE, alpha = ", ftos(vote_alpha), "\n");
 			
-			float a;
 			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
 
 			/*
@@ -3225,11 +3216,11 @@ void Sbar_Draw (void)
 	float sector_alphamod;
 	sector_alphamod = 1;
 
-	vector slice_basecolor = '0.5 0.5 0.5';
-	float slice_basealpha = 0.2;
+	vector slice_basecolor; slice_basecolor = '0.5 0.5 0.5';
+	float slice_basealpha; slice_basealpha = 0.2;
 	
-	vector sector_basecolor = '0.2 0.2 0.2';
-	float sector_basealpha = 0.5;
+	vector sector_basecolor; sector_basecolor = '0.2 0.2 0.2';
+	float sector_basealpha; sector_basealpha = 0.5;
 	vector sector_teamcolor = GetTeamRGB(myteam) * 0.2;
 
 	// hudflash slices
@@ -3705,7 +3696,7 @@ void Sbar_Draw (void)
 		*/
 
 		// ammo
-		float a; // i will be the ammo type (already declared), a will contain how much ammo there is of type i
+		//float a; // i will be the ammo type (already declared), a will contain how much ammo there is of type i
 
 		for (i = 0; i < 4; ++i) {
 			a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
@@ -3878,11 +3869,6 @@ void CSQC_ctf_hud(vector hudpos)
 	bottomleft_x = 0;
 	bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;
-
-	vector bottomright
-	bottomright_x = vid_conwidth;
-	bottomright_x = bottomleft_x;
-	bottomright_z = 0;
 
 	float redflag, blueflag; // current status
 	float redflag_statuschange_elapsedtime, blueflag_statuschange_elapsedtime; // time since the status changed
@@ -4349,7 +4335,7 @@ void CSQC_vip_hud(vector hudpos)
 	teamhud_enabled = 1;
 	
 	float hudwidth = (teamhud_wide? 206 : 103);
-	float textwidth = (teamhud_wide? 11.5 : 5)
+	float textwidth = (teamhud_wide? 11.5 : 5);
 	float hudstart, hudend;
 	float healthpercent;
 	hudstart = hudpos_x;

@@ -384,7 +384,6 @@ void PostInit(void)
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
-	local float _printmsg;
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
@@ -534,7 +533,6 @@ float CSQC_ConsoleCommand(string strMessage)
 	// Acquire Command
 	local string strCmd;
 	strCmd = argv(0);
-	local float value;
 
 	if(strCmd == "+button4") { // zoom
 		// return false, because the message shall be sent to the server anyway (for demos/speccing)
@@ -1658,9 +1656,9 @@ void Net_ReadHudFlash(float teamcolor)
 	hudflash(c, t, i, a);
 }
 
-void Net_ReadVIPInfo(float team)
+void Net_ReadVIPInfo(float teem)
 {
-	switch(team)
+	switch(teem)
 	{
 		case COLOR_TEAM1:
 			vip_red_maxhealth = ReadShort();
@@ -1681,7 +1679,7 @@ void Net_ReadVIPInfo(float team)
 			return;
 	}
 	
-	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(team), "\n");
+	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(teem), "\n");
 	print("Dump: \n");
 	print("^5 -> ", ftos(ReadShort()), "\n");
 	print("^5 -> ", ftos(ReadShort()), "\n");
@@ -1828,7 +1826,7 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
-void bigprint_old(string bigstr, string comment, float fadetime)
+void bigprint_old(string bigstr, string comment, float fadeTime)
 {
 	if(is_tmpmadoka) return;
 	
@@ -1842,7 +1840,7 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 	bigprint_oldstring = strzone(bigstr);
 	//bigprint_oldcomment = strzone(comment);
 	
-	bigprint_oldfadetime = fadetime - 0.1;
+	bigprint_oldfadetime = fadeTime - 0.1;
 	bigprint_oldappeartime = time;
 }
 
@@ -1943,9 +1941,9 @@ void score_visual(float score)
 	++score_strings_num;
 }
 
-void hudflash(vector color, float staytime, float intensivity, float alph)
+void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
-	hudflash_color = color;
+	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;
 	hudflash_appeartime = time;

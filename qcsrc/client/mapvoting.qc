@@ -280,7 +280,7 @@ void MapVote_Draw()
 		}
 		
 		o_y += img_size_y;
-		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize);
+		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
 		
 		drawstring(o, mapvote_choosenmap, sbar_fontsize, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
