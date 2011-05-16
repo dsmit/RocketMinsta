@@ -240,7 +240,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	string	s, a;
 	float p, w;
 
-	//<akari>
 	local float maxrage = 5;
 	local float rage_timeout = 3;
 	
@@ -257,7 +256,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		
 		ragemeter = "^1";
 		
-		local float i = 2;
+		local float i;
+		i = 2;
 		while(i < maxrage)
 		{
 			if(attacker.rage == i)
@@ -272,7 +272,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		else
 			ragemeter = strcat(ragemeter, "^0");
 	}
-	//</akari>
 	
 	float _hfrag;
 	

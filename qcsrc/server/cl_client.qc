@@ -1299,9 +1299,9 @@ void ServerTopic()
 	local string servertopic = cvar_string("_sv_explosive_topic");
 	
 	if(servertopic) if(servertopic != "")
-		sprint(self, "\x01^2* ^3Current topic^7: ", servertopic, "\n"
+		sprint(self, strcat("\x01^2* ^3Current topic^7: ", servertopic, "\n"
 			   "\x01^2* ^7Topic set by ^3", ((topicby && topicby != "")? topicby : "<server>"),
-		"\n");
+		"\n"));
 }
 
 /*
@@ -2116,15 +2116,15 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
 	
 	local entity spec;
-	local float count;
+	local float specs;
 	local float a = cvar("g_explosive_anonspecs");
 	
-	FOR_EACH_SPECOF(of, spec, a) count++;
+	FOR_EACH_SPECOF(of, spec, a) specs++;
 	
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteShort(MSG_ONE, count);
+	WriteShort(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
 		//WriteString(MSG_ONE, spec.netname);
@@ -2153,9 +2153,9 @@ void WriteSpectatorInfo(entity player)
 	FOR_EACH_SPECOF(player, spec, 0)
 	{
 		#ifdef RM_SUPPORT_MADOKA
-		stuffcmd(spec, "cl_cmd lockmadoka ", ftos(player.madoka), "\n");
+		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
 		#endif
-		stuffcmd(spec, "cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n");
+		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n"));
 		WriteSpectatorInfoOf(spec, player);
 	}
 }

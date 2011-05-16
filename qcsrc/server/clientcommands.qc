@@ -241,7 +241,7 @@ void SV_ParseClientCommand(string s) {
 			return;
 		}
 		
-		sprint(self, "^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n");
+		sprint(self, strcat("^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n"));
 		return;
 	} else if(cmd == "madoka") {
 		if(!self)

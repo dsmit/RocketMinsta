@@ -341,10 +341,9 @@ void GrapplingHookTouch (void)
 	//self.owner.disableclientprediction = TRUE;
 }
 
-//<akari>
-string GetHitSound(entity attacker, entity target)
+string GetHitSound(entity attacker, entity targ)
 {
-	if(attacker == target)
+	if(attacker == targ)
 		//return GetHitSound_TEAM();
 		return hook_teamhitsound;
 	
@@ -355,7 +354,6 @@ string GetHitSound(entity attacker, entity target)
 	//return GetHitSound_ENEMY();
 	return hook_hitsound;
 }
-//</akari>
 
 void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {

@@ -36,7 +36,8 @@ void W_Explosive_Attack (float attacktype)
 	local entity gren;
 
 	local float expl_damage = cvar("g_explosive_splash_damage") / 2; //I'm not even sure why is this here?
-	local float expl_recoil = 4;
+	local float expl_recoil;
+	expl_recoil = 4;
 	
 	if(cvar("g_explosive_norecoil"))
 		expl_recoil = 0;

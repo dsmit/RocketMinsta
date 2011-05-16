@@ -51,7 +51,8 @@ void dom_recountpoints()
 void tdom_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
-
+	local entity e;
+	
     if(intermission_running)
     {
         remove(self);
@@ -63,7 +64,6 @@ void tdom_EndRound_Think()
         dom_recountpoints();
         if(timeleft <= 0)
         {
-            local entity e;
             FOR_EACH_PLAYER(e)
             {
                 bigprint_clear_spec(e);
@@ -74,7 +74,7 @@ void tdom_EndRound_Think()
             return;
         }
         
-        local entity e;
+        
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
@@ -379,7 +379,7 @@ void dompointtouch()
 
 float domination_PlayerPreThink()
 {
-	DEPENDON(g_domination)
+	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
 		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);

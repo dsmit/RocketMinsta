@@ -121,7 +121,7 @@ void ReadGameCvars()
 {
 	float found;
 	float prev;
-	float i;
+	//float i;
 
 	bprint("ReadGameCvars()\n");
 

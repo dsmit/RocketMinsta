@@ -1,5 +1,4 @@
 
-#define DEPENDON(d) if(!(d)) return 0;
 entity uglyfreezetagworkaround;
 
 void update_playercount()
@@ -13,7 +12,8 @@ void update_playercount()
 void freezetag_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
-    
+    local entity e;
+
     //bprint("next_round = ", ftos(next_round), "\n");
     //bprint("time = ", ftos(time), "\n");
     //bprint("timeleft = ", ftos(timeleft), "\n");
@@ -31,7 +31,6 @@ void freezetag_EndRound_Think()
     {
         if(timeleft <= 0)
         {
-            local entity e;
             FOR_EACH_PLAYER(e)
             {
                 bigprint_clear_spec(e);
@@ -41,7 +40,6 @@ void freezetag_EndRound_Think()
             return;
         }
         
-        local entity e;
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
@@ -246,8 +244,8 @@ void freezetag_Freeze(entity attacker)
 	ice.think = freezetag_Ice_Think;
 	ice.nextthink = time;
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
-    //ice.alpha = 0.6;
-    ice.effects |= EF_ADDITIVE;
+	//ice.alpha = 0.6;
+	ice.effects |= EF_ADDITIVE;
 	setmodel(ice, "models/ice/ice.md3");
 
 	entity oldself;
@@ -317,7 +315,7 @@ void freezetag_Unfreeze(entity attacker)
 .float ft_forcespawn;
 float freezetag_RemovePlayer()
 {
-    DEPENDON(g_freezetag)
+    DEPENDON_F(g_freezetag, 0)
 	if(self.freezetag_frozen == 0)
 	{
 		if(self.team == COLOR_TEAM1)
@@ -352,7 +350,7 @@ float freezetag_RemovePlayer()
 string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vector velo);
 float freezetag_PlayerDies()
 {
-    DEPENDON(g_freezetag)
+    DEPENDON_F(g_freezetag, 0)
     
     if(warmup >= time)
     {
@@ -401,7 +399,7 @@ float freezetag_PlayerDies()
 
 float freezetag_PlayerSpawn()
 {
-    DEPENDON(g_freezetag)
+    DEPENDON_F(g_freezetag, 0)
     
     //bprint("freezetag_PlayerSpawn() for ", self.netname, "\n");
     
@@ -446,7 +444,7 @@ float freezetag_PlayerSpawn()
 float freezetag_PlayerPreThink()
 {
 	vector revive_extra_size;
-    DEPENDON(g_freezetag)
+    DEPENDON_F(g_freezetag, 0)
 	revive_extra_size = '1 1 1' * cvar("g_explosive_freezetag_revive_extra_size");
 
 	entity o, oPrev;
@@ -592,7 +590,7 @@ float freezetag_PlayerPreThink()
 					freezetag_Unfreeze(world);
 					bprint(self.netname, "^5's iceblock has melted\n");
 					centerprint_spec(self, "^5Your iceblock has melted");
-					return;
+					return 1;
 				}
 			}
 			
@@ -616,7 +614,7 @@ float freezetag_PlayerPreThink()
 
 float freezetag_PlayerPhysics()
 {
-    DEPENDON(g_freezetag)
+    DEPENDON_F(g_freezetag, 0)
 	if(self.freezetag_frozen)
 	{
 		local float s = cvar("g_explosive_freezetag_frozen_movespeed");
