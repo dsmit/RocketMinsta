@@ -4329,8 +4329,18 @@ void CSQC_dom_hud(vector hudpos)
 
 void CSQC_vip_hud(vector hudpos)
 {
-	if(rm_oldhud)	// not supported yet
-		return;
+	if(rm_oldhud)
+	{
+		if(vid_conwidth < 560)
+		{
+			teamhud_enabled = 0;
+			return;
+		}
+		
+		hudpos = '0 0 0';
+		hudpos_y = vid_conheight - 21 - sbar_fontsize_y;
+		teamhud_wide = vid_conwidth >= 820;
+	}
 	
 	if(vip_red_health <= 0 || vip_blue_health <= 0)
 	{
