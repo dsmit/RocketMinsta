@@ -561,7 +561,6 @@ void Cmd_Sbar_SetFields(float argc)
 			have_separator = 1;
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
-			scores_label[sbar_num_fields] = "cn";
 		} else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
