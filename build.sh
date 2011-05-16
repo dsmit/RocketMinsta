@@ -146,7 +146,6 @@ function finalize-install
     cp -v "rocketminsta.cfg" "$NEXDATA"
 
     if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
         cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs
 $(for i in $BUILT_PKGINFOS; do
