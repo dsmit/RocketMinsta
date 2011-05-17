@@ -3413,7 +3413,7 @@ void Sbar_Draw (void)
 				HUDLINE_SECTOR({ 
 					hud_sector_x = 217;
 					hud_sector_pos_x = 7;
-					sector_mod = '-1 0 0';
+					sector_mod = '0 0 0'; //'-1 0 0';
 					
 					s_health = hud_sector_pos;
 				}, BG_TEAM)
@@ -3421,7 +3421,7 @@ void Sbar_Draw (void)
 				// healtharmor | ammo
 				HUDLINE_SLICE({
 					hudline_x = 10;
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 1;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
 				})
 				
 				// ammo
@@ -3575,7 +3575,7 @@ void Sbar_Draw (void)
 				HUDLINE_SECTOR({ 
 					hud_sector_x = 217;
 					hud_sector_pos_x = centersector;
-					sector_mod = '-1 0 0';
+					sector_mod = '0 0 0';
 					
 					s_health = hud_sector_pos;
 				}, BG_TEAM)
