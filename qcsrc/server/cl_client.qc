@@ -2444,6 +2444,7 @@ void PlayerPreThink (void)
 		if(self.cvar_g_nexuizversion)
 			if(time > self.version_nagtime)
 			{
+				if(self.cvar_g_nexuizversion != "2.5.2")
 				if(strstr(self.cvar_g_nexuizversion, "svn", 0) < 0)
 				{
 					if(strstr(cvar_string("g_nexuizversion"), "svn", 0) >= 0)
