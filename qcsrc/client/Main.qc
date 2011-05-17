@@ -170,7 +170,7 @@ void CSQC_Init(void)
 	}
 	
 	// workaround a crash for nexuiz-svn users
-	if(cvar_string("g_nexuizversion") == "2.5svn")
+	if(cvar_string("g_nexuizversion") == "2.5svn" || cvar_string("g_nexuizversion") == "2.5.3")
 	{
 		print("^1Potentially bugged SVN engine detected!\n");
 		svn_workaround = 1;
