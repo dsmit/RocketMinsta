@@ -1797,7 +1797,6 @@ vector centerprint_fontsize;
 string centerprint_msgs[CENTERPRINT_MAX_MSGS];
 float centerprint_msgexpires[CENTERPRINT_MAX_MSGS];
 float centerprint_msgnum;
-float centerprint_lastlines;
 
 void centerprint(string strRealMessage)
 {
