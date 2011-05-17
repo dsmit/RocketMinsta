@@ -2979,9 +2979,21 @@ void Sbar_Draw (void)
 		limit = min(num_spectators, MAX_SPECTATORS);
 		for(i = 0; i < limit; ++i)
 		{
-			//o = Sbar_DrawNoteLineA(o, spectatornames[i], 0.5);
 			float slot = spectatorlist[i];
+			
+			#ifdef RM_SUPPORT_MADOKA
+			local entity pl;
+			pl = playerslots[slot];
+			
+			if(pl.(scores[SP_MADOKASTATUS]))
+				drawfont = sbar_madokafont;
+			#endif
+			
 			o = Sbar_DrawNoteLineA(o, GetPlayerName(slot), 0.5);
+			
+			#ifdef RM_SUPPORT_MADOKA
+			drawfont = sbar_font;
+			#endif
 		}
 		
 		if(i != num_spectators)
