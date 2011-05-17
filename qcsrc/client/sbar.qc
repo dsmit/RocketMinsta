@@ -2978,7 +2978,11 @@ void Sbar_Draw (void)
 		
 		limit = min(num_spectators, MAX_SPECTATORS);
 		for(i = 0; i < limit; ++i)
-			o = Sbar_DrawNoteLineA(o, spectatornames[i], 0.5);
+		{
+			//o = Sbar_DrawNoteLineA(o, spectatornames[i], 0.5);
+			float slot = spectatorlist[i];
+			o = Sbar_DrawNoteLineA(o, GetPlayerName(slot), 0.5);
+		}
 		
 		if(i != num_spectators)
 			o = Sbar_DrawNoteLineA(o, strcat("^9(", ftos(num_spectators - MAX_SPECTATORS), " more)"), 0.5);

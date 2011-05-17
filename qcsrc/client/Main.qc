@@ -1569,18 +1569,14 @@ void Net_ReadMadokaPrint()
 
 void Net_ReadSpecInfo()
 {
-	local float i, limit;
-	limit = min(num_spectators, MAX_SPECTATORS);
-	for(i = 0; i < limit; ++i)
-		strunzone(spectatornames[i]);
-		
+	local float i;
 	num_spectators = ReadShort();
 
 	for(i = 0; i < num_spectators; ++i)
 	{
 		local float slot = ReadByte();
 		if(i < MAX_SPECTATORS)
-			spectatornames[i] = strzone(GetPlayerName(slot - 1));
+			spectatorlist[i] = slot - 1;
 	}
 }
 

@@ -177,7 +177,8 @@ void bigprint(string, string, float);
 float centerprint_init;
 
 #define MAX_SPECTATORS 7
-string spectatornames[MAX_SPECTATORS];
+//string spectatornames[MAX_SPECTATORS];
+float spectatorlist[MAX_SPECTATORS];
 float num_spectators;
 
 float rm_showspec;
