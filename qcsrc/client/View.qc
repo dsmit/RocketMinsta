@@ -734,6 +734,21 @@ void CSQC_UpdateView(float w, float h)
         }
     }
 
+	if(screenfade)
+	{
+		local vector position;
+		position_x = vid_conwidth;
+		position_y = vid_conheight;
+		
+		local float sf_a;
+		sf_a =  bound(0, 1 - 4 * (time - screenfade), 1);
+		
+		if(!sf_a)
+			screenfade = 0;
+		else
+			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
+	}
+
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");

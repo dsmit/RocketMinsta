@@ -275,3 +275,4 @@ float vip_blue_maxhealth;
 string vip_blue_name;
 
 float svn_workaround;
+float screenfade;

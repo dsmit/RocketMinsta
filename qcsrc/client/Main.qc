@@ -175,6 +175,8 @@ void CSQC_Init(void)
 		print("^1Potentially bugged SVN engine detected!\n");
 		svn_workaround = 1;
 	}
+	
+	screenfade = time + 2.8;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
