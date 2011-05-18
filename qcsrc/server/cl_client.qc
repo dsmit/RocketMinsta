@@ -2156,6 +2156,7 @@ void WriteSpectatorInfo(entity player)
 		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
 		#endif
 		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n"));
+		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
 		WriteSpectatorInfoOf(spec, player);
 	}
 }

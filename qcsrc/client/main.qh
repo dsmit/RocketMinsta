@@ -276,3 +276,5 @@ string vip_blue_name;
 
 float svn_workaround;
 float screenfade;
+
+float fovlock;

@@ -2680,6 +2680,9 @@ void Sbar_Draw (void)
 			rm_althud = rm_althud_option;
 			rm_oldhud = rm_oldhud_option;
 		}
+		
+		if(fovlock >= 0)
+			fovlock = -1;
 	}
 	
 	local float rev;

@@ -175,8 +175,6 @@ void CSQC_Init(void)
 		print("^1Potentially bugged SVN engine detected!\n");
 		svn_workaround = 1;
 	}
-	
-	screenfade = time + 2.8;
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -495,6 +493,8 @@ void PostInit(void)
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
 	
+	screenfade = time + 0.1;
+	fovlock = -1;
 	postinit = true;
 }
 
@@ -940,6 +940,10 @@ void GameCommand(string msg)
 		
 		rm_althud = hudlocked_alt;
 		rm_oldhud = hudlocked_old;
+	}
+	else if(cmd == "lockfov")
+	{
+		fovlock = stof(argv(1));
 	}
 	else if(cmd == "madokaprint")
 	{

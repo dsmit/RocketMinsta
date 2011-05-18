@@ -319,6 +319,8 @@ float TrueAimCheck()
 
 void CSQC_common_hud(void);
 
+float oldfov;
+
 void CSQC_kh_hud(vector);
 void CSQC_ctf_hud(vector);
 void PostInit(void);
@@ -401,6 +403,13 @@ void CSQC_UpdateView(float w, float h)
 	maptimeAnnouncer();
 
 	fov = cvar("fov");
+	
+	if(fov != oldfov)
+	{
+		localcmd("cmd fovreport ", ftos(fov), "\n");
+		oldfov = fov;
+	}
+	
 	if(button_zoom || fov <= 59.5)
 	{
 		if(!zoomscript_caught)
@@ -450,7 +459,10 @@ void CSQC_UpdateView(float w, float h)
 	vid_conheight = cvar("vid_conheight");
 	vid_pixelheight = cvar("vid_pixelheight");
 
-	R_SetView(VF_FOV, GetCurrentFov(fov));
+	if(fovlock > -1)
+		R_SetView(VF_FOV, GetCurrentFov(fovlock));
+	else
+		R_SetView(VF_FOV, GetCurrentFov(fov));
 
 	// Camera for demo playback
 	if(camera_active)
