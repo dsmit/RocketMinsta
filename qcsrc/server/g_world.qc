@@ -2161,7 +2161,6 @@ string choosenmap;
 
 void MapVote_AddVotable(string, float);
 void GameTypeVote_Start();
-void GameTypeVote_Tick();
 float GameTypeVote_Finished(float);
 
 void MapVote_ClearAllVotes()
@@ -2332,6 +2331,11 @@ float MapVote_SendEntity(entity to, float sf)
 		WriteByte(MSG_ENTITY, mapvote_abstain);
 		WriteByte(MSG_ENTITY, mapvote_detail);
 		WriteCoord(MSG_ENTITY, mapvote_timeout);
+		WriteByte(MSG_ENTITY, gametypevote);
+		
+		if(gametypevote)
+			WriteString(MSG_ENTITY, choosenmap);
+		
 		if(mapvote_count <= 8)
 			WriteByte(MSG_ENTITY, MapVote_GetMapMask());
 		else
@@ -2591,7 +2595,6 @@ void MapVote_Tick()
 	}
 
 	MapVote_CheckRules_1(); // just count
-	GameTypeVote_Tick();
 }
 void MapVote_Start()
 {
@@ -2659,20 +2662,6 @@ string GameTypeVote_GetOptions()
 	}
 	
 	return result;
-}
-
-.float gtv_aware;
-void GameTypeVote_Tick()
-{
-	if(!gametypevote)
-		return;
-	
-	local entity e;
-	FOR_EACH_REALCLIENT(e) if(e.classname != "") if(!e.gtv_aware)
-	{
-		e.gtv_aware = 1;
-		stuffcmd(e, strcat("cl_cmd gametypevote ", choosenmap, " ", GameTypeVote_GetOptions(), "\n"));
-	}
 }
 
 float GameTypeVote_Finished(float pos)

@@ -390,7 +390,7 @@ void MapVote_CheckPic(string pic, string pk3, float id)
 
 void MapVote_Init()
 {
-	float i, power;
+	float i, n, j, power, tmp;
 	string map, pk3, ssdir;
 
 	precache_sound ("misc/invshot.wav");
@@ -410,6 +410,14 @@ void MapVote_Init()
 
 	mv_ownvote = -1;
 	mv_timeout = ReadCoord();
+
+	gametypevote = ReadByte();
+	
+	if(gametypevote)
+	{
+		print("^5Now decide the GAMETYPE!\n");
+		MapVote_RememberMap(ReadString());
+	}
 
 	if(mv_num_maps <= 8)
 		mv_maps_mask = ReadByte();
@@ -436,6 +444,18 @@ void MapVote_Init()
 
 			//print(strcat("RECV: ", map, " in ", pk3, "\n"));
 			MapVote_CheckPic(map, pk3, i);
+			
+			if(gametypevote)
+			{
+				map = mv_maps[i];
+				n = tokenizebyseparator(GameTypeVote_GameTypeDescription(map), "\n");
+				for(j = 0; j < n; ++j)
+				{
+					tmp = strlen(argv(j));
+					if(tmp > gametypevote_longest)
+						gametypevote_longest = tmp;
+				}
+			}
 		}
 		else
 		{
@@ -448,6 +468,8 @@ void MapVote_Init()
 
 	// do we NEED this, or can we handle key presses directly in CSQC?
 	localcmd("\nin_bind 7 1 \"impulse 1\"; in_bind 7 2 \"impulse 2\"; in_bind 7 3 \"impulse 3\"; in_bind 7 4 \"impulse 4\"; in_bind 7 5 \"impulse 5\"; in_bind 7 6 \"impulse 6\"; in_bind 7 7 \"impulse 7\"; in_bind 7 8 \"impulse 8\"; in_bind 7 9 \"impulse 9\"; in_bind 7 0 \"impulse 10\"; in_bind 7 KP_1 \"impulse 1\"; in_bind 7 KP_2 \"impulse 2\"; in_bind 7 KP_3 \"impulse 3\"; in_bind 7 KP_4 \"impulse 4\"; in_bind 7 KP_5 \"impulse 5\"; in_bind 7 KP_6 \"impulse 6\"; in_bind 7 KP_7 \"impulse 7\"; in_bind 7 KP_8 \"impulse 8\"; in_bind 7 KP_9 \"impulse 9\"; in_bind 7 KP_0 \"impulse 10\"; in_bindmap 7 0\n");
+	
+	
 }
 
 void MapVote_UpdateMask()

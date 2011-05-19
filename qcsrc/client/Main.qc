@@ -971,45 +971,6 @@ void GameCommand(string msg)
 		
 		bigprint(argv(1), argv(2), stof(argv(3)));
 	}
-	else if(cmd == "gametypevote")
-	{
-		print("^5Now decide the GAMETYPE!\n");
-		
-		local float i, tmp;
-		local string tmpvote;
-		
-		MapVote_RememberMap(argv(1));
-		
-		for(i = 2; i < argc; ++i)
-		{
-			/*
-			tmp = strlen(GameTypeVote_GameTypeDescription(argv(i)));
-			if(tmp > gametypevote_longest)
-			{
-				gametypevote_longest = tmp;
-				print("Found longest: ", argv(i), "\n");
-			}
-			*/
-			
-			tmpvote = argv(i);
-			local float j, n = tokenizebyseparator(GameTypeVote_GameTypeDescription(tmpvote), "\n");
-			
-			for(j = 0; j < n; ++j)
-			{
-				tmp = strlen(argv(j));
-				if(tmp > gametypevote_longest)
-				{
-					gametypevote_longest = tmp;
-					//print("Found longest (", ftos(tmp), "): ", argv(j), "\n");
-				}
-			}
-			
-			tokenize_console(msg);
-		}
-		
-		gametypevote = 1;
-		//gametypevote_longest = 0;
-	}
 	else if(cmd == "hudflash")
 	{
 		if(argc < 4)
