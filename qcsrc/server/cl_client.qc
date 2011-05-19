@@ -2157,6 +2157,7 @@ void WriteSpectatorInfo(entity player)
 		#endif
 		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n"));
 		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
+		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
 		WriteSpectatorInfoOf(spec, player);
 	}
 }

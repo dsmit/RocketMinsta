@@ -278,6 +278,11 @@ void SV_ParseClientCommand(string s) {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
 		WriteSpectatorInfo(self);
+	} else if(cmd == "zoomreport") {
+		if(!self) return;
+		self.speczoom_speed = stof(argv(1));
+		self.speczoom_factor = stof(argv(2));
+		WriteSpectatorInfo(self);
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));

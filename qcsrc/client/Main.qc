@@ -945,6 +945,11 @@ void GameCommand(string msg)
 	{
 		fovlock = stof(argv(1));
 	}
+	else if(cmd == "speczoom")
+	{
+		speczoom_speed = stof(argv(1));
+		speczoom_factor = stof(argv(2));
+	}
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)

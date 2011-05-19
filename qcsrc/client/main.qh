@@ -278,3 +278,5 @@ float svn_workaround;
 float screenfade;
 
 float fovlock;
+float speczoom_speed;
+float speczoom_factor;
