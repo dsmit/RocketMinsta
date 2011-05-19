@@ -2146,6 +2146,7 @@ float mapvote_count;
 float mapvote_count_real;
 string mapvote_maps[MAPVOTE_COUNT];
 float mapvote_maps_suggested[MAPVOTE_COUNT];
+float mapvote_maps_availability[MAPVOTE_COUNT];
 string mapvote_suggestions[MAPVOTE_COUNT];
 float mapvote_suggestion_ptr;
 float mapvote_maxlen;
@@ -2255,7 +2256,10 @@ void MapVote_Init()
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
+		{
 			MapVote_AddVotable(GetNextMap(), FALSE);
+			mapvote_maps_availability[i] = GTV_AVAILABLE;
+		}
 	}
 
 	mapvote_count_real = mapvote_count;
@@ -2360,6 +2364,9 @@ float MapVote_SendEntity(entity to, float sf)
 					for(o = strstr(pakfile, "/", 0)+1; o > 0; o = strstr(pakfile, "/", 0)+1)
 						pakfile = substring(pakfile, o, 999);
 					WriteString(MSG_ENTITY, pakfile);
+					
+					if(gametypevote)
+						WriteByte(MSG_ENTITY, mapvote_maps_availability[i]);
 				}
 			}
 	}
@@ -2585,8 +2592,19 @@ void MapVote_Tick()
 		if(other.impulse >= 1 && other.impulse <= mapvote_count)
 			if(mapvote_maps[other.impulse - 1] != "")
 			{
-				other.mapvote = other.impulse;
-				MapVote_TouchVotes(other);
+				if(gametypevote)
+				{
+					if(mapvote_maps_availability[other.impulse - 1] == GTV_AVAILABLE)
+					{
+						other.mapvote = other.impulse;
+						MapVote_TouchVotes(other);
+					}
+				}
+				else
+				{
+					other.mapvote = other.impulse;
+					MapVote_TouchVotes(other);
+				}
 			}
 		other.impulse = 0;
 
@@ -2635,8 +2653,23 @@ void MapVote_Think()
 	MapVote_Tick();
 };
 
+float GameTypeVote_AvailabilityStatus(string gtname)
+{
+	if not(cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_AVAILABLE;
+	
+	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_AVAILABLE;
+	
+	if(gtname == GametypeNameFromType(game))
+		return GTV_OVERPLAYED;
+	
+	return GTV_AVAILABLE;
+}
+
 string GameTypeVote_GetOptions()
 {
+	#ifdef 0
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return cvar_string("g_explosive_gametypevote_options");
 	
@@ -2662,6 +2695,9 @@ string GameTypeVote_GetOptions()
 	}
 	
 	return result;
+	#else
+	return cvar_string("g_explosive_gametypevote_options");
+	#endif
 }
 
 float GameTypeVote_Finished(float pos)
@@ -2691,7 +2727,10 @@ void GameTypeVote_Start()
 	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
 	
 	for(j = 0; j < n; ++j)
+	{
 		MapVote_AddVotable(argv(j), 0);
+		mapvote_maps_availability[j] = GameTypeVote_AvailabilityStatus(argv(j));
+	}
 	
 	if(cvar("g_explosive_gametypevote_shuffle"))
 	{

@@ -6,6 +6,7 @@ string mv_pics[MAPVOTE_COUNT];
 string mv_pk3[MAPVOTE_COUNT];
 float mv_preview[MAPVOTE_COUNT];
 float mv_votes[MAPVOTE_COUNT];
+float mv_avail[MAPVOTE_COUNT];
 entity mv_pk3list;
 float mv_abstain;
 float mv_ownvote;
@@ -88,21 +89,46 @@ string GameTypeVote_GameTypeDescription(string gtype)
 	return "No description is available for this gametype";
 }
 
-#define drawGameTypeLine(s,c,sc) \
-drawstring(o, (s), sbar_fontsize * (sc), (c), 1, DRAWFLAG_NORMAL); \
+string GameTypeVote_DescriptionByID(float id)
+{
+	switch(mv_avail[id])
+	{
+		case GTV_AVAILABLE:
+			return GameTypeVote_GameTypeDescription(mv_maps[id]);
+		
+		case GTV_OVERPLAYED:
+			return "This gametype is currently overplayed.";
+		
+		case GTV_FORBIDDEN:
+			return "This gametype is forbidden on this map.";
+		
+		default:
+			return "wtf?";
+	}
+}
+
+#define drawGameTypeLine(s,c,sc,a) \
+drawstring(o, (s), sbar_fontsize * (sc), (c), a, DRAWFLAG_NORMAL); \
 o_y += sbar_fontsize_y * sc
 
 vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
 {
-	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2);
+	local string s;
+	s = GameTypeVote_DescriptionByID(id);
 	
-	local float i, n = tokenizebyseparator(GameTypeVote_GameTypeDescription(gtype), "\n");
+	local float a, i, n = tokenizebyseparator(s, "\n");
+	if(mv_avail[id] != GTV_AVAILABLE)
+		a = 0.5;
+	else
+		a = 1;
+	
+	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2, a);
 	for(i = 0; i < n; ++i)
 	{
-		drawGameTypeLine(argv(i), '1 1 1', 1);
+		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
 	
-	drawGameTypeLine("", '1 1 1', 1);
+	drawGameTypeLine("", '1 1 1', 1, 1);
 	return o;
 }
 
@@ -447,8 +473,10 @@ void MapVote_Init()
 			
 			if(gametypevote)
 			{
+				mv_avail[i] = ReadByte();
+				
 				map = mv_maps[i];
-				n = tokenizebyseparator(GameTypeVote_GameTypeDescription(map), "\n");
+				n = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
 				for(j = 0; j < n; ++j)
 				{
 					tmp = strlen(argv(j));
@@ -463,6 +491,7 @@ void MapVote_Init()
 			mv_pk3[i] = strzone("if-you-see-this-the-code-is-broken");
 			mv_pics[i] = strzone("if-you-see-this-the-code-is-broken");
 			mv_preview[i] = false;
+			mv_avail[i] = false;
 		}
 	}
 
