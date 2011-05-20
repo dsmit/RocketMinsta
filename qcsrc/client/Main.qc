@@ -1293,6 +1293,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 	self.enttype = t;
 	switch(t)
 	{
+		case ENT_CLIENT: break;
 		case ENT_CLIENT_ENTCS: Ent_ReadEntCS(); break;
 		case ENT_CLIENT_SCORES: Ent_ReadPlayerScore(); break;
 		case ENT_CLIENT_TEAMSCORES: Ent_ReadTeamScore(); break;
