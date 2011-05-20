@@ -121,6 +121,7 @@ void vip_SoulGem_touch()
 				vip_ResetHealthArmor(e);
 		}
 		vip_started = 1;
+		vip_ended = 0;
 	}
 	
 	self.gem_pickedup = 1;
