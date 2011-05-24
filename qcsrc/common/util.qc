@@ -505,6 +505,16 @@ string NormalizeGametypeName(string name)
 	}
 }
 
+float ListContains(string source, string key, string sep)
+{
+	local float i;
+	local float n = tokenizebyseparator(source, sep);
+	
+	for(i = 0; i < n; ++i)
+		if(argv(i) == key) return 1;
+	return 0;
+}
+
 string mmsss(float tenths)
 {
 	float minutes;
