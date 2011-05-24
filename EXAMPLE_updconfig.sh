@@ -12,5 +12,6 @@ RCON_PASSWORD="hackme"
 RCON_COMMANDS=(
     "say ^1The match will be interrupted due to an automatic update of the mod"
     "exec server.cfg"
+    "fs_rescan"
     "endmatch"
 )
