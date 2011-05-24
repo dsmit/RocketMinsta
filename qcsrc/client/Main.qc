@@ -430,9 +430,11 @@ void PostInit(void)
 			localcmd("seta rm_althud 1; althud 1\n");
 		case 22:
 			//localcmd("alias afk \"cmd afk\"\n");
+		case 23:
+			localcmd("seta rm_noflags 0; noflags 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 23\n");
+		localcmd("seta rm_initialized 24\n");
 		RM_OUTDATED
 		break;
 	}
@@ -454,6 +456,7 @@ void PostInit(void)
 	rm_althud_option = cvar("rm_althud");
 	rm_oldhud = rm_oldhud_option;
 	rm_althud = rm_althud_option;
+	rm_noflags = cvar("rm_noflags");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -473,6 +476,7 @@ void PostInit(void)
 	registercmd("visualscore");
 	registercmd("oldhud");
 	registercmd("althud");
+	registercmd("noflags");
 
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -591,6 +595,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
+		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -614,7 +619,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "shownames"			||
 		strCmd == "visualscore"			||
 		strCmd == "oldhud"				||
-		strCmd == "althud"				 )
+		strCmd == "althud"				||
+		strCmd == "noflags"				 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -631,6 +637,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_visualscore = cvar("rm_visualscore");
 		rm_oldhud_option = cvar("rm_oldhud");
 		rm_althud_option = cvar("rm_althud");
+		rm_noflags = cvar("rm_noflags");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
