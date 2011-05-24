@@ -196,8 +196,19 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else
 	{
-		RemapVote_vote = vote;
-		RemapVote_display = strzone(strcat("^1", vote));
+		local string s;
+		s = NormalizeGametypeName(argv(0));
+		
+		if(s != "")	// detected a gametype vote
+		{
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+		}
+		else
+		{
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote));
+		}
 	}
 
 	if(argv(0) == "topic")
