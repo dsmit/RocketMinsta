@@ -2604,7 +2604,7 @@ float th_fadetime;
 float th_alpha;
 float teamhud_wide;
 
-#define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
+#define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL); linedrawn = 1; }
 #define HUDLINE_SECTOR(code,bg,bbg) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, sector_basealpha, sector_alphamod, bg, bbg);
 //drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
 #define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
@@ -3300,6 +3300,8 @@ void Sbar_Draw (void)
 	bw_left = HUDSkin_GetBorderWidth(BORDER_LEFT);
 	bw_right = HUDSkin_GetBorderWidth(BORDER_RIGHT);
 
+	float linedrawn;
+
 	// hudflash slices
 	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, 1, 1);
 		slice_basecolor = hudflash_resultcolor;
@@ -3358,6 +3360,15 @@ void Sbar_Draw (void)
 			hud_sector_pos_y = bottom_y - 27;
 			
 			next_sector = bottomright_x - 103 - 6;
+			
+			if(hudskin_line_full)
+			{
+				HUDLINE_SLICE({
+					hudline_pos_x = 0;
+					hudline_x = topright_x;
+				})
+			}
+			
 			HUDLINE_SLICE({
 				hudline_pos_x = 0;
 				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
@@ -3463,6 +3474,14 @@ void Sbar_Draw (void)
 			
 			if(rm_althud)	/// RM hud layout
 			{
+				if(hudskin_line_full)
+				{
+					HUDLINE_SLICE({
+						hudline_pos_x = 0;
+						hudline_x = topright_x;
+					})
+				}
+				
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
 				if(gametype == GAME_VIP) if(vid_conwidth >= 800)
@@ -3567,6 +3586,14 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
+				
+				if(hudskin_line_full)
+				{
+					HUDLINE_SLICE({
+						hudline_pos_x = 0;
+						hudline_x = topright_x;
+					})
+				}
 				
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
