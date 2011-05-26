@@ -35,6 +35,8 @@ void HUDSkin_Unload()
     hudskin_flash_alphamod = 0;
     hudskin_flash_intmod = 0;
     hudskin_border_drawflag = DRAWFLAG_NORMAL;
+    hudskin_sector_padding_left = 0;
+    hudskin_sector_padding_right = 0;
     
     print("Unloaded HUD skin\n");
     
@@ -197,6 +199,11 @@ float HUDSkin_Eval(string cmd)
                 return FALSE;
             }
             
+            return TRUE;
+        
+        case "sector_padding":
+            hudskin_sector_padding_left = stof(argv(1));
+            hudskin_sector_padding_right = stof(argv(2));
             return TRUE;
         
         default:

@@ -16,3 +16,4 @@ line_alpha 0.1
 flash_alphamod 1
 flash_intmod 1
 border_drawmode additive
+sector_padding 2 2

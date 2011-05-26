@@ -22,6 +22,8 @@ float hudskin_line_alpha;
 float hudskin_flash_alphamod;
 float hudskin_flash_intmod;
 float hudskin_border_drawflag;
+float hudskin_sector_padding_left;
+float hudskin_sector_padding_right;
 string hudskin_name;
 
 void HUDSkin_Load(string);

@@ -2617,7 +2617,14 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	//sectorpos_x -= 2;
 	//sectorsize_x += 4;
 	
-	drawfill(sectorpos, sectorsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+	vector fillsize, fillpos;
+	fillpos = sectorpos;
+	fillsize = sectorsize;
+	fillpos_x += hudskin_sector_padding_left;
+	fillsize_x -= hudskin_sector_padding_left;
+	fillsize_x -= hudskin_sector_padding_right;
+	
+	drawfill(fillpos, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
 	
 	vector size_left, size_right,
 		   pos_left,  pos_right;
