@@ -246,7 +246,7 @@ float HUDSkin_Eval(string cmd)
     }
 }
 
-void HUDSkin_Load(string skin)
+float HUDSkin_Load(string skin)
 {
     HUDSkin_Unload();
     
@@ -256,8 +256,17 @@ void HUDSkin_Load(string skin)
     fh = fopen(strcat("gfx/hud/skins/", skin, "/skininfo"), FILE_READ);
     if(fh < 0)
     {
-        print("Failed to load skininfo for HUD skin '", skin, "'\n");
-        return;
+        if(skin == HUDSKIN_DEFAULT)
+        {
+            print("Failed to load skininfo for the default HUD skin '", skin, "', something is really screwed up\n");
+            return FALSE;
+        }
+        else
+        {
+            print("Failed to load skininfo for HUD skin '", skin, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
+            HUDSkin_Load(HUDSKIN_DEFAULT);
+            return;
+        }
     }
     
     while((s = fgets(fh)))
@@ -276,6 +285,8 @@ void HUDSkin_Load(string skin)
     print("Loaded HUD skin '", skin, "'\n");
     hudskin_name = strzone(skin);
     localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", hudskin_name, "\n");
+    
+    return TRUE;
 }
 
 float HUDSkin_GetBorderWidth(float border)

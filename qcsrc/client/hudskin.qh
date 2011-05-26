@@ -31,7 +31,7 @@ vector hudskin_sector_teamcolor_mod;
 vector hudskin_border_teamcolor_mod;
 string hudskin_name;
 
-void HUDSkin_Load(string);
+float HUDSkin_Load(string);
 void HUDSkin_Unload();
 float HUDSkin_Eval(string);
 float HUDSkin_GetBorderWidth(float);
@@ -43,3 +43,5 @@ float HUDSkin_GetBorderWidth(float);
 #define TC_ALWAYS 1
 #define TC_SOME 2
 #define TC_WTF -1
+
+#define HUDSKIN_DEFAULT "default"
