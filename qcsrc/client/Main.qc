@@ -432,9 +432,11 @@ void PostInit(void)
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
 			localcmd("seta rm_noflags 0; noflags 0\n");
+		case 24:
+			localcmd("seta rm_hudskin \"default\"\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 24\n");
+		localcmd("seta rm_initialized 25\n");
 		RM_OUTDATED
 		break;
 	}
@@ -477,7 +479,9 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
-
+	// -- //
+	registercmd("hudskin");
+	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
@@ -497,7 +501,7 @@ void PostInit(void)
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
 	
-	HUDSkin_Load("default");
+	HUDSkin_Load(cvar_string("rm_hudskin"));
 	
 	screenfade = time + 0.1;
 	fovlock = -1;
@@ -605,6 +609,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		print("\nIn addition, these commands are available:\n");
 		print("^5afk^7: Marks you as being away\n");
+		print("^5hudskin^7: Lists or switches HUD skins and displays other HUD-related information\n");
 		return true;
 	}
 	else if(
@@ -710,6 +715,44 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		SendRMCFGReport();
 		RMSETTINGREPORT
+		return true;
+	}
+	else if(strCmd == "hudskin")
+	{
+		if(argc < 2)
+		{
+			print("\n^xFB0The following HUD skins are available:\n");
+			
+			local float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+			local string tmpname, displayname;
+			globsize = search_getsize(hsglob);
+			
+			seed = floor(random() * globsize);
+			for(i = 0; i < globsize; ++i)
+			{
+				tmpname = search_getfilename(hsglob, i);
+				tmpname = substring(tmpname, strlen("gfx/hud/skins/"), strlen(tmpname));
+				tmpname = substring(tmpname, 0, strlen(tmpname) - strlen("/skininfo"));
+				
+				if(i == seed)
+					displayname = tmpname;
+					
+				print("^5    ", tmpname);
+				
+				if(tmpname == hudskin_name)
+					print(" ^8(current)\n");
+				else print("\n");
+			}
+			search_end(hsglob);
+			
+			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			
+			return true;
+		}
+		
+		HUDSkin_Load(argv(1));
+		cvar_set("rm_hudskin", hudskin_name);
 		return true;
 	}
 
