@@ -175,6 +175,9 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "spawn")
 	if(cmd != "begin")
 	if(cmd != "rmcfgreport")
+	if(cmd != "hudinfo")
+	if(cmd != "fovreport")
+	if(cmd != "zoomreport")
 	{
 		if(cmd_floodcheck())
 			return;

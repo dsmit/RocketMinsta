@@ -275,6 +275,7 @@ void HUDSkin_Load(string skin)
     
     print("Loaded HUD skin '", skin, "'\n");
     hudskin_name = strzone(skin);
+    localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", hudskin_name, "\n");
 }
 
 float HUDSkin_GetBorderWidth(float border)
