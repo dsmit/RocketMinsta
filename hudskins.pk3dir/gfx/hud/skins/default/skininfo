@@ -1,0 +1,12 @@
+border_simple 2
+sector_teamcolor some
+sector_teamcolor_brightness 0.2
+sector_color 0.2 0.2 0.2
+border_color 0 0 0
+sector_alpha 0.5
+border_alpha 0.8
+line_color 0.5 0.5 0.5
+line_alpha 0.2
+flash_alphamod 1
+flash_intmod 1
+border_drawmode normal

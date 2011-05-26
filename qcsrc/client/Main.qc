@@ -497,6 +497,8 @@ void PostInit(void)
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
 	
+	HUDSkin_Load("default");
+	
 	screenfade = time + 0.1;
 	fovlock = -1;
 	postinit = true;
@@ -987,6 +989,18 @@ void GameCommand(string msg)
 		}
 		
 		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)), stof(argv(4)));
+	}
+	else if(cmd == "hudskin")
+	{
+		HUDSkin_Load(argv(1));
+	}
+	else if(cmd == "hudskin_unload")
+	{
+		HUDSkin_Unload();
+	}
+	else if(cmd == "hudskin_eval")
+	{
+		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
 	else
 	{

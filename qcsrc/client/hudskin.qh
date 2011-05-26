@@ -1,0 +1,38 @@
+vector hudskin_size_border_left; // = '2 0 0';
+vector hudskin_size_border_right; // = '2 0 0';
+vector hudskin_offset_border_left;
+vector hudskin_offset_border_right;
+float hudskin_scale_border_left;
+float hudskin_scale_border_right;
+string hudskin_image_border_left; // = "hud/skins/default/border_left";
+string hudskin_image_border_right; // = "hud/skins/default/border_right";
+float hudskin_width_border_left;
+float hudskin_width_border_right;
+float hudskin_border_simple;
+float hudskin_border_teamcolor;
+float hudskin_sector_teamcolor;
+float hudskin_border_teamcolor_brightness;
+float hudskin_sector_teamcolor_brightness;
+vector hudskin_border_color;
+vector hudskin_sector_color;
+float hudskin_border_alpha;
+float hudskin_sector_alpha;
+vector hudskin_line_color;
+float hudskin_line_alpha;
+float hudskin_flash_alphamod;
+float hudskin_flash_intmod;
+float hudskin_border_drawflag;
+string hudskin_name;
+
+void HUDSkin_Load(string);
+void HUDSkin_Unload();
+float HUDSkin_Eval(string);
+float HUDSkin_GetBorderWidth(float);
+
+#define BORDER_LEFT 0
+#define BORDER_RIGHT 1
+
+#define TC_NEVER 0
+#define TC_ALWAYS 1
+#define TC_SOME 2
+#define TC_WTF -1
