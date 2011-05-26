@@ -37,6 +37,8 @@ void HUDSkin_Unload()
     hudskin_border_drawflag = DRAWFLAG_NORMAL;
     hudskin_sector_padding_left = 0;
     hudskin_sector_padding_right = 0;
+    hudskin_sector_teamcolor_mod = '0 0 0';
+    hudskin_border_teamcolor_mod = '0 0 0';
     
     print("Unloaded HUD skin\n");
     
@@ -206,6 +208,14 @@ float HUDSkin_Eval(string cmd)
             hudskin_sector_padding_right = stof(argv(2));
             return TRUE;
         
+        case "sector_teamcolor_mod":
+            hudskin_sector_teamcolor_mod = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "border_teamcolor_mod":
+            hudskin_border_teamcolor_mod = HUDSkin_ReadColor();
+            return TRUE;
+            
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
