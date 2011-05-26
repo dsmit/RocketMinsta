@@ -10,10 +10,10 @@ sector_teamcolor always
 sector_teamcolor_brightness 1
 border_teamcolor_brightness 1
 sector_alpha 0.2
-border_alpha 1
+border_alpha 0.7
 line_color 0.6 0.6 0.6
 line_alpha 0.1
 flash_alphamod 1
 flash_intmod 1
-border_drawmode additive
+border_drawmode normal
 sector_padding 2 2
