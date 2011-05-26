@@ -3602,8 +3602,8 @@ void Sbar_Draw (void)
 				
 				// pre-teamhud
 				HUDLINE_SLICE({
-					hudline_x = 7;
-					next_sector = hudline_x;
+					hudline_x = 7 - bw_left;
+					next_sector = hudline_x + bw_left;
 				})
 				
 				// teamhud
@@ -3624,7 +3624,7 @@ void Sbar_Draw (void)
 				
 				if(!teamhud_enabled || teamhud_enabled != th_finalstate)
 				{
-					hud_sector_x = -2;
+					hud_sector_x = -bw_left - bw_right;
 					hud_sector_pos_x = next_sector;
 				}
 				
@@ -3645,8 +3645,8 @@ void Sbar_Draw (void)
 				}
 					
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 				
 				// ammo
@@ -3658,8 +3658,8 @@ void Sbar_Draw (void)
 				
 				// ammo | health-armor
 				HUDLINE_SLICE({
-					hudline_x = 8;
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = 8 - bw_left;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 				
 				// health-armor
@@ -3675,9 +3675,9 @@ void Sbar_Draw (void)
 				// 		health-armor | scores
 				next_sector = bottomright_x - 103 - 6;
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					//hudline_x = 10;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 
 				// scores
@@ -3690,7 +3690,7 @@ void Sbar_Draw (void)
 
 				// post-scores
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					hudline_x = topright_x;
 				})
 			}
