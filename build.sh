@@ -95,6 +95,50 @@ function makedata
     BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
 }
 
+function buildqc
+{
+    qcdir="$QCSOURCE/$1"
+
+    # this is ugly, needs fixing
+    if [ "$1" = "server/" ]; then
+        progname="progs"
+    elif [ "$1" = "client/" ]; then
+        progname="csprogs"
+    else
+        error "$1 is unknown"
+    fi
+
+    local sum=""
+    if [ $CACHEQC != 0 ]; then
+        echo " -- Calculating sum of $1..."
+        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        
+        if [ -e "pkgcache/qccache/$progname.dat.$sum" ]; then
+            echo " -- Found a cached build of $1, using it"
+            
+            cp -v "pkgcache/qccache/$progname.dat.$sum" "$progname.dat" || error "Failed to copy progs??"
+            return
+        fi
+    fi
+
+    echo " -- Building $qcdir"
+    local olddir="$PWD"
+    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
+    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
+    
+    local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
+    local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
+    if [ "$(readlink -f "$compiled")" != "$olddir/$cname" ]; then
+        cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
+    fi
+    popd &>/dev/null
+    
+    if [ $CACHEQC != 0 ]; then
+        echo " -- Copying compilled progs to cache"
+        cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum" || error "WTF"
+    fi
+}
+
 function is-included
 {
     if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
@@ -199,7 +243,7 @@ fi
 
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
-    rm -vf pkgcache/*.pk3 || error "rm failed"
+    rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"
     exit
 fi
 

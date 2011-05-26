@@ -36,23 +36,6 @@ function getqcc
     echo "$qcc"
 }
 
-function buildqc
-{
-    qcdir="$QCSOURCE/$1"
-
-    echo " -- Building $qcdir" >&2
-    local olddir="$PWD"
-    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
-    
-    local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
-    local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
-    if [ "$(readlink -f "$compiled")" != "$olddir/$cname" ]; then
-        cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
-    fi
-    popd &>/dev/null
-}
-
 function rconopen
 {
     RCON_ADDRESS="$1"
