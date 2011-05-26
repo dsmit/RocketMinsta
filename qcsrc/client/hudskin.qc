@@ -37,6 +37,8 @@ void HUDSkin_Unload()
     hudskin_border_drawflag = DRAWFLAG_NORMAL;
     hudskin_sector_padding_left = 0;
     hudskin_sector_padding_right = 0;
+    hudskin_sector_padding_top = 0;
+    hudskin_sector_padding_bottom = 0;
     hudskin_sector_teamcolor_mod = '0 0 0';
     hudskin_border_teamcolor_mod = '0 0 0';
     
@@ -206,6 +208,8 @@ float HUDSkin_Eval(string cmd)
         case "sector_padding":
             hudskin_sector_padding_left = stof(argv(1));
             hudskin_sector_padding_right = stof(argv(2));
+            hudskin_sector_padding_top = stof(argv(3));
+            hudskin_sector_padding_bottom = stof(argv(4));
             return TRUE;
         
         case "sector_teamcolor_mod":

@@ -24,6 +24,8 @@ float hudskin_flash_intmod;
 float hudskin_border_drawflag;
 float hudskin_sector_padding_left;
 float hudskin_sector_padding_right;
+float hudskin_sector_padding_top;
+float hudskin_sector_padding_bottom;
 vector hudskin_sector_teamcolor_mod;
 vector hudskin_border_teamcolor_mod;
 string hudskin_name;
