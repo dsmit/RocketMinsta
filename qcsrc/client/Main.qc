@@ -655,7 +655,7 @@ float CSQC_ConsoleCommand(string strMessage)
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
 				
-				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 			}
 		}
 		
@@ -751,8 +751,19 @@ float CSQC_ConsoleCommand(string strMessage)
 			return true;
 		}
 		
-		HUDSkin_Load(argv(1));
-		cvar_set("rm_hudskin", hudskin_name);
+		if(!hudlocked)
+		{
+			HUDSkin_Load(argv(1));
+			cvar_set("rm_hudskin", hudskin_name);
+			SendRMCFGReport();
+			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+		}
+		else
+		{
+			print("^1Can't change the HUD skin while spectating a player, please join the game or become an observer and try again\n");
+			return true;
+		}
+		
 		return true;
 	}
 
@@ -992,6 +1003,9 @@ void GameCommand(string msg)
 		
 		rm_althud = hudlocked_alt;
 		rm_oldhud = hudlocked_old;
+		
+		if(argv(3) != hudskin_name)
+			HUDSkin_Load(argv(3));
 	}
 	else if(cmd == "lockfov")
 	{

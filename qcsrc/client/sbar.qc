@@ -2737,6 +2737,9 @@ void Sbar_Draw (void)
 			hudlocked = 0;
 			rm_althud = rm_althud_option;
 			rm_oldhud = rm_oldhud_option;
+			
+			if(hudskin_name != cvar_string("rm_hudskin"))
+				HUDSkin_Load(cvar_string("rm_hudskin"));
 		}
 		
 		if(fovlock >= 0)

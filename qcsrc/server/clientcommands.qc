@@ -265,6 +265,11 @@ void SV_ParseClientCommand(string s) {
 		
 		self.hud_old = stof(argv(1));
 		self.hud_alt = stof(argv(2));
+		
+		if(self.hudskin)
+			fstrunzone(self.hudskin);
+		self.hudskin = strzone(argv(3));
+		
 		WriteSpectatorInfo(self);
 	} else if(cmd == "fakeflag") {
 		if(!self)
