@@ -26,3 +26,5 @@ flash_sector_imod 1
 flash_sector_amod 0
 flash_border_imod 1
 flash_border_amod 1
+border_teamcolor_mod_blue 0 0.2 0
+border_teamcolor_mod_red 0 0.1 0.1

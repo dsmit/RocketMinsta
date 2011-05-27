@@ -3303,8 +3303,8 @@ void Sbar_Draw (void)
 	float sector_basealpha; sector_basealpha = hudskin_sector_alpha;
 	float sector_teamalpha = sector_basealpha;
 	float border_teamalpha = border_basealpha;
-	vector sector_teamcolor = (GetTeamRGB(myteam) + hudskin_sector_teamcolor_mod) * hudskin_sector_teamcolor_brightness;
-	vector border_teamcolor = (GetTeamRGB(myteam) + hudskin_border_teamcolor_mod) * hudskin_border_teamcolor_brightness;
+	vector sector_teamcolor = (GetTeamRGB(myteam) + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
+	vector border_teamcolor = (GetTeamRGB(myteam) + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
 
 	float bw_left, bw_right;
 	bw_left = HUDSkin_GetBorderWidth(BORDER_LEFT);

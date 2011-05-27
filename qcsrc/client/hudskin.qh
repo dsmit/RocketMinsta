@@ -28,7 +28,15 @@ float hudskin_sector_padding_top;
 float hudskin_sector_padding_bottom;
 float hudskin_line_full;
 vector hudskin_sector_teamcolor_mod;
+vector hudskin_sector_teamcolor_mod_red;
+vector hudskin_sector_teamcolor_mod_blue;
+vector hudskin_sector_teamcolor_mod_yellow
+vector hudskin_sector_teamcolor_mod_pink;
 vector hudskin_border_teamcolor_mod;
+vector hudskin_border_teamcolor_mod_red;
+vector hudskin_border_teamcolor_mod_blue;
+vector hudskin_border_teamcolor_mod_yellow;
+vector hudskin_border_teamcolor_mod_pink;
 float hudskin_flash_line_imod;
 float hudskin_flash_line_amod;
 float hudskin_flash_sector_imod;
@@ -41,6 +49,8 @@ float HUDSkin_Load(string);
 void HUDSkin_Unload();
 float HUDSkin_Eval(string);
 float HUDSkin_GetBorderWidth(float);
+vector HUDSkin_GetTeamColorMod_Sector(float);
+vector HUDSkin_GetTeamColorMod_Border(float);
 
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1

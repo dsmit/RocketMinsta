@@ -40,7 +40,15 @@ void HUDSkin_Unload()
     hudskin_sector_padding_top = 0;
     hudskin_sector_padding_bottom = 0;
     hudskin_sector_teamcolor_mod = '0 0 0';
+    hudskin_sector_teamcolor_mod_red = '0 0 0';
+    hudskin_sector_teamcolor_mod_blue = '0 0 0';
+    hudskin_sector_teamcolor_mod_yellow = '0 0 0';
+    hudskin_sector_teamcolor_mod_pink = '0 0 0';
     hudskin_border_teamcolor_mod = '0 0 0';
+    hudskin_border_teamcolor_mod_red = '0 0 0';
+    hudskin_border_teamcolor_mod_blue = '0 0 0';
+    hudskin_border_teamcolor_mod_yellow = '0 0 0';
+    hudskin_border_teamcolor_mod_pink = '0 0 0';
     hudskin_line_full = FALSE;
     hudskin_flash_line_imod = 0;
     hudskin_flash_line_amod = 0;
@@ -238,8 +246,40 @@ float HUDSkin_Eval(string cmd)
             hudskin_sector_teamcolor_mod = HUDSkin_ReadColor();
             return TRUE;
         
+        case "sector_teamcolor_mod_red":
+            hudskin_sector_teamcolor_mod_red = HUDSkin_ReadColor();
+            return TRUE;
+            
+        case "sector_teamcolor_mod_blue":
+            hudskin_sector_teamcolor_mod_blue = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "sector_teamcolor_mod_yellow":
+            hudskin_sector_teamcolor_mod_yellow = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "sector_teamcolor_mod_pink":
+            hudskin_sector_teamcolor_mod_pink = HUDSkin_ReadColor();
+            return TRUE;
+        
         case "border_teamcolor_mod":
             hudskin_border_teamcolor_mod = HUDSkin_ReadColor();
+            return TRUE;
+            
+        case "border_teamcolor_mod_red":
+            hudskin_border_teamcolor_mod_red = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "border_teamcolor_mod_blue":
+            hudskin_border_teamcolor_mod_blue = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "border_teamcolor_mod_yellow":
+            hudskin_border_teamcolor_mod_yellow = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "border_teamcolor_mod_pink":
+            hudskin_border_teamcolor_mod_pink = HUDSkin_ReadColor();
             return TRUE;
         
         case "line_full":
@@ -349,3 +389,28 @@ float HUDSkin_GetBorderWidth(float border)
         return hudskin_width_border_left;
     return hudskin_width_border_right;
 }
+
+vector HUDSkin_GetTeamColorMod_Sector(float color)
+{
+    switch(color)
+    {
+        default         : return '0 0 0';
+        case COLOR_TEAM1: return hudskin_sector_teamcolor_mod_red;
+        case COLOR_TEAM2: return hudskin_sector_teamcolor_mod_blue;
+        case COLOR_TEAM3: return hudskin_sector_teamcolor_mod_yellow;
+        case COLOR_TEAM4: return hudskin_sector_teamcolor_mod_pink;
+    }
+}
+
+vector HUDSkin_GetTeamColorMod_Border(float color)
+{
+    switch(color)
+    {
+        default         : return '0 0 0';
+        case COLOR_TEAM1: return hudskin_border_teamcolor_mod_red;
+        case COLOR_TEAM2: return hudskin_border_teamcolor_mod_blue;
+        case COLOR_TEAM3: return hudskin_border_teamcolor_mod_yellow;
+        case COLOR_TEAM4: return hudskin_border_teamcolor_mod_pink;
+    }
+}
+
