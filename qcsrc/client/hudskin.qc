@@ -13,6 +13,12 @@ void HUDSkin_Unload()
         hudskin_image_border_right = string_null;
     }
     
+    if(hudskin_image_line_fill)
+    {
+        fstrunzone(hudskin_image_line_fill);
+        hudskin_image_line_fill = string_null;
+    }
+    
     hudskin_size_border_left = '0 0 0';
     hudskin_size_border_right = '0 0 0';
     hudskin_offset_border_left = '0 0 0';
@@ -56,6 +62,7 @@ void HUDSkin_Unload()
     hudskin_flash_sector_amod = 0;
     hudskin_flash_border_imod = 0;
     hudskin_flash_border_amod = 0;
+    hudskin_line_fill = FILL_COLOR;
     
     print("Unloaded HUD skin\n");
     
@@ -120,6 +127,23 @@ float HUDSkin_ReadBool()
         
         default:
             return (stof(argv(1))? TRUE : FALSE);
+    }
+}
+
+float HUDSkin_ReadFillMode()
+{
+    switch(argv(1))
+    {
+        case "color":
+            return FILL_COLOR;
+        
+        case "tile":
+            return FILL_TILE;
+        
+        case "stretch":
+            return FILL_STRETCH;
+        
+        default: return FILL_WTF;
     }
 }
 
@@ -330,6 +354,28 @@ float HUDSkin_Eval(string cmd)
             hudskin_image_border_right = strzone(argv(1));
             return TRUE;
         
+        case "line_fill":
+            hudskin_line_fill = HUDSkin_ReadFillMode();
+            
+            if(hudskin_line_fill == FILL_WTF)
+            {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_line_fill = FILL_COLOR;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "extern_image_line_fill":
+            if(hudskin_image_line_fill)
+            {
+                fstrunzone(hudskin_image_line_fill);
+                hudskin_image_line_fill = string_null;
+            }
+            
+            hudskin_image_line_fill = strzone(argv(1));
+            return TRUE;
+        
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
@@ -355,12 +401,13 @@ float HUDSkin_Load(string skin)
         {
             print("Failed to load skininfo for HUD skin '", skin, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
             HUDSkin_Load(HUDSKIN_DEFAULT);
-            return;
+            return FALSE;
         }
     }
     
     hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin, "/border_left"));
     hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin, "/border_right"));
+    hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin, "/line_fill"));
     
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
@@ -372,6 +419,7 @@ float HUDSkin_Load(string skin)
     
     hudskin_size_border_left = drawgetimagesize(hudskin_image_border_left);
     hudskin_size_border_right = drawgetimagesize(hudskin_image_border_right);
+    hudskin_size_line_fill = drawgetimagesize(hudskin_image_line_fill);
     
     print("Loaded HUD skin '", skin, "'\n");
     hudskin_name = strzone(skin);

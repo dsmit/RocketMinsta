@@ -43,6 +43,9 @@ float hudskin_flash_sector_imod;
 float hudskin_flash_sector_amod;
 float hudskin_flash_border_imod;
 float hudskin_flash_border_amod;
+float hudskin_line_fill;
+string hudskin_image_line_fill;
+vector hudskin_size_line_fill;
 string hudskin_name;
 
 float HUDSkin_Load(string);
@@ -59,5 +62,10 @@ vector HUDSkin_GetTeamColorMod_Border(float);
 #define TC_ALWAYS 1
 #define TC_SOME 2
 #define TC_WTF -1
+
+#define FILL_COLOR 0
+#define FILL_TILE 1
+#define FILL_STRETCH 2
+#define FILL_WTF -1
 
 #define HUDSKIN_DEFAULT "default"

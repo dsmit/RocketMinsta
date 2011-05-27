@@ -2604,7 +2604,7 @@ float th_fadetime;
 float th_alpha;
 float teamhud_wide;
 
-#define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL); linedrawn = 1; }
+#define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { DrawHUDLineSlice(hudline_pos, hudline, slice_basecolor, slice_basealpha); linedrawn = 1; }
 #define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a, ba, sector_alphamod, bg, bbg);
 //drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
 #define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
@@ -2615,6 +2615,40 @@ float teamhud_wide;
 #define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
 #define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
 #define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
+
+void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
+{
+	if(hudskin_line_fill == FILL_COLOR)
+	{
+		drawfill(slicepos, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+		return;
+	}
+
+	local vector drawsize;
+	local float factor;
+
+	if(hudskin_line_fill == FILL_TILE)
+	{
+		drawsize = slicesize;
+		if(drawsize_y > hudskin_size_line_fill_y)
+		{
+			// autoscaling
+			factor = hudskin_size_line_fill_y / drawsize_y;
+			drawsize = drawsize * factor;
+		}
+		
+		if(hudskin_image_line_fill)
+			drawpic_tiled(slicepos, hudskin_image_line_fill, drawsize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+		return;
+	}
+	
+	if(hudskin_line_fill == FILL_STRETCH)
+	{
+		if(hudskin_image_line_fill)
+			drawpic_tiled(slicepos, hudskin_image_line_fill, slicesize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+		return;
+	}
+}
 
 void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, float borderalpha, float alphamod, vector sectorcolor, vector bordercolor)
 {

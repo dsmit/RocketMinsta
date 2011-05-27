@@ -12,7 +12,7 @@ border_teamcolor_brightness 1
 sector_alpha 0.2
 border_alpha 0.7
 line_color 0.6 0.6 0.6
-line_alpha 0.1
+line_alpha 0.2
 flash_alphamod 1
 flash_intmod 1
 border_drawmode normal
@@ -23,3 +23,4 @@ flash_sector_imod 2
 flash_sector_amod 0
 flash_border_imod 2
 flash_border_amod 1
+line_fill tile
