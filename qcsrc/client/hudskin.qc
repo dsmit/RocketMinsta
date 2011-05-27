@@ -42,6 +42,12 @@ void HUDSkin_Unload()
     hudskin_sector_teamcolor_mod = '0 0 0';
     hudskin_border_teamcolor_mod = '0 0 0';
     hudskin_line_full = FALSE;
+    hudskin_flash_line_imod = 0;
+    hudskin_flash_line_amod = 0;
+    hudskin_flash_sector_imod = 0;
+    hudskin_flash_sector_amod = 0;
+    hudskin_flash_border_imod = 0;
+    hudskin_flash_border_amod = 0;
     
     print("Unloaded HUD skin\n");
     
@@ -240,6 +246,30 @@ float HUDSkin_Eval(string cmd)
             hudskin_line_full = HUDSkin_ReadBool();
             return TRUE;
         
+        case "flash_line_imod":
+            hudskin_flash_line_imod = stof(argv(1));
+            return TRUE;
+        
+        case "flash_line_amod":
+            hudskin_flash_line_amod = stof(argv(1));
+            return TRUE;
+            
+        case "flash_sector_imod":
+            hudskin_flash_sector_imod = stof(argv(1));
+            return TRUE;
+        
+        case "flash_sector_amod":
+            hudskin_flash_sector_amod = stof(argv(1));
+            return TRUE;
+        
+        case "flash_border_imod":
+            hudskin_flash_border_imod = stof(argv(1));
+            return TRUE;
+        
+        case "flash_border_amod":
+            hudskin_flash_border_amod = stof(argv(1));
+            return TRUE;
+            
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;

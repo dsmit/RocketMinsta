@@ -29,6 +29,12 @@ float hudskin_sector_padding_bottom;
 float hudskin_line_full;
 vector hudskin_sector_teamcolor_mod;
 vector hudskin_border_teamcolor_mod;
+float hudskin_flash_line_imod;
+float hudskin_flash_line_amod;
+float hudskin_flash_sector_imod;
+float hudskin_flash_sector_amod;
+float hudskin_flash_border_imod;
+float hudskin_flash_border_amod;
 string hudskin_name;
 
 float HUDSkin_Load(string);

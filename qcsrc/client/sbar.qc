@@ -2605,14 +2605,18 @@ float th_alpha;
 float teamhud_wide;
 
 #define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL); linedrawn = 1; }
-#define HUDLINE_SECTOR(code,bg,bbg) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, sector_basealpha, sector_alphamod, bg, bbg);
+#define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a, ba, sector_alphamod, bg, bbg);
 //drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
 #define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
 #define BG_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamcolor : sector_basecolor)
 #define BG_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamcolor : border_basecolor)
 #define BG_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamcolor : border_basecolor)
+#define A_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamalpha : sector_basealpha)
+#define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
+#define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
+#define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
 
-void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, float alphamod, vector sectorcolor, vector bordercolor)
+void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, float borderalpha, float alphamod, vector sectorcolor, vector bordercolor)
 {
 	//sectorpos_x -= 2;
 	//sectorsize_x += 4;
@@ -2633,7 +2637,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 		   pos_left,  pos_right;
 	
 	if(hudskin_border_simple)
-		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, hudskin_border_alpha * alphamod, hudskin_border_drawflag);
+		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
 	else
 	{
 		float offset_right, offset_left;
@@ -2652,10 +2656,10 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 		pos_right = pos_right + hudskin_offset_border_right;
 		
 		if(hudskin_image_border_left)
-			drawpic(pos_left, hudskin_image_border_left, size_left, bordercolor, hudskin_border_alpha * alphamod, hudskin_border_drawflag);
+			drawpic(pos_left, hudskin_image_border_left, size_left, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
 		
 		if(hudskin_image_border_right)
-			drawpic(pos_right, hudskin_image_border_right, size_right, bordercolor, hudskin_border_alpha * alphamod, hudskin_border_drawflag);
+			drawpic(pos_right, hudskin_image_border_right, size_right, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
 	}
 }
 
@@ -3292,10 +3296,13 @@ void Sbar_Draw (void)
 
 	vector slice_basecolor; slice_basecolor = hudskin_line_color;
 	float slice_basealpha; slice_basealpha = hudskin_line_alpha;
+	float border_basealpha; border_basealpha = hudskin_border_alpha;
 	
 	vector sector_basecolor; sector_basecolor = hudskin_sector_color;
 	vector border_basecolor; border_basecolor = hudskin_border_color;
 	float sector_basealpha; sector_basealpha = hudskin_sector_alpha;
+	float sector_teamalpha = sector_basealpha;
+	float border_teamalpha = border_basealpha;
 	vector sector_teamcolor = (GetTeamRGB(myteam) + hudskin_sector_teamcolor_mod) * hudskin_sector_teamcolor_brightness;
 	vector border_teamcolor = (GetTeamRGB(myteam) + hudskin_border_teamcolor_mod) * hudskin_border_teamcolor_brightness;
 
@@ -3306,7 +3313,7 @@ void Sbar_Draw (void)
 	float linedrawn;
 
 	// hudflash slices
-	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, 1, 1);
+	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, hudskin_flash_line_imod, hudskin_flash_line_amod);
 		slice_basecolor = hudflash_resultcolor;
 		slice_basealpha = hudflash_resultalpha;
 	
@@ -3318,11 +3325,13 @@ void Sbar_Draw (void)
 	#endif
 	
 	// hudflash teamcolored sectors
-	HudFlash_Apply(sector_teamcolor, sector_basealpha, TRUE, 2, 1);
+	HudFlash_Apply(sector_teamcolor, sector_teamalpha, TRUE, hudskin_flash_sector_imod, hudskin_flash_sector_amod);
 		sector_teamcolor = hudflash_resultcolor;
+		sector_teamalpha = hudflash_resultalpha;
 
-	HudFlash_Apply(border_teamcolor, sector_basealpha, TRUE, 2, 1);
+	HudFlash_Apply(border_teamcolor, border_teamalpha, TRUE, hudskin_flash_border_imod, hudskin_flash_border_amod);
 		border_teamcolor = hudflash_resultcolor;
+		border_teamalpha = hudflash_resultalpha;
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
 	float ammosector_pos, next_sector;
@@ -3381,7 +3390,7 @@ void Sbar_Draw (void)
 				hud_sector_x = 103;
 				hud_sector_pos_x = hudline_pos_x + hudline_x + bw_left;
 				sector_mod = '0 0 0';
-			}, BG_SECTOR, BG_BORDER)
+			}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 			HUDLINE_SLICE({
 				hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -3502,7 +3511,7 @@ void Sbar_Draw (void)
 					sector_mod = '0 0 0'; //'-1 0 0';
 					
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM)
+				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
@@ -3515,7 +3524,7 @@ void Sbar_Draw (void)
 					ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
 					hud_sector_x = 103;
 					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				
 				// separator slice:
 				//		ammo | teamhud
@@ -3551,7 +3560,7 @@ void Sbar_Draw (void)
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
-					}, BG_SECTOR, BG_BORDER)
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				sector_alphamod = 1;
 				
@@ -3577,7 +3586,7 @@ void Sbar_Draw (void)
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 				// post-scores
 				HUDLINE_SLICE({
@@ -3621,7 +3630,7 @@ void Sbar_Draw (void)
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
-					}, BG_SECTOR, BG_BORDER)
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				sector_alphamod = 1;
 				
@@ -3657,7 +3666,7 @@ void Sbar_Draw (void)
 					ammosector_pos = hud_sector_pos_x = next_sector;
 					hud_sector_x = 103;
 					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				
 				// ammo | health-armor
 				HUDLINE_SLICE({
@@ -3673,7 +3682,7 @@ void Sbar_Draw (void)
 					sector_mod = '0 0 0';
 					
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM)
+				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
 				// separator slice:
 				// 		health-armor | scores
@@ -3690,7 +3699,7 @@ void Sbar_Draw (void)
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 				// post-scores
 				HUDLINE_SLICE({

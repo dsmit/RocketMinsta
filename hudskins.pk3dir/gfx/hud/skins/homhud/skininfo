@@ -17,3 +17,9 @@ flash_alphamod 1
 flash_intmod 2
 border_drawmode normal
 sector_padding -3 -3 -8 -8
+flash_line_imod 1
+flash_line_amod 1
+flash_sector_imod 2
+flash_sector_amod 0
+flash_border_imod 2
+flash_border_amod 0

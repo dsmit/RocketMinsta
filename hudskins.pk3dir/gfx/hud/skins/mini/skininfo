@@ -3,3 +3,9 @@ line_alpha 0
 line_full true
 flash_alphamod 1
 flash_intmod 1
+flash_line_imod 1
+flash_line_amod 1
+flash_sector_imod 2
+flash_sector_amod 0
+flash_border_imod 2
+flash_border_amod 0
