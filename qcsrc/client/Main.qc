@@ -187,6 +187,8 @@ void CSQC_Shutdown(void)
 #pragma TARGET fte
 #endif
 
+	HUDSkin_Unload();
+
 	remove(teams);
 	remove(players);
 	db_close(binddb);

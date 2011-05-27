@@ -269,7 +269,27 @@ float HUDSkin_Eval(string cmd)
         case "flash_border_amod":
             hudskin_flash_border_amod = stof(argv(1));
             return TRUE;
+        
+        case "extern_image_border_left":
+            if(hudskin_image_border_left)
+            {
+                fstrunzone(hudskin_image_border_left);
+                hudskin_image_border_left = string_null;
+            }
             
+            hudskin_image_border_left = strzone(argv(1));
+            return TRUE;
+        
+        case "extern_image_border_right":
+            if(hudskin_image_border_right)
+            {
+                fstrunzone(hudskin_image_border_right);
+                hudskin_image_border_right = string_null;
+            }
+            
+            hudskin_image_border_right = strzone(argv(1));
+            return TRUE;
+        
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
@@ -299,6 +319,9 @@ float HUDSkin_Load(string skin)
         }
     }
     
+    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin, "/border_left"));
+    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin, "/border_right"));
+    
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
     
@@ -307,8 +330,6 @@ float HUDSkin_Load(string skin)
     
     fclose(fh);
     
-    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin, "/border_left"));
-    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin, "/border_right"));
     hudskin_size_border_left = drawgetimagesize(hudskin_image_border_left);
     hudskin_size_border_right = drawgetimagesize(hudskin_image_border_right);
     
