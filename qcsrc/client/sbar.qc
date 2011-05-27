@@ -3661,7 +3661,7 @@ void Sbar_Draw (void)
 				
 				// ammo | health-armor
 				HUDLINE_SLICE({
-					hudline_x = 8 - bw_left;
+					hudline_x = 8 - bw_left - bw_right;
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 				
