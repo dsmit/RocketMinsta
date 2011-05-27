@@ -3668,7 +3668,8 @@ void Sbar_Draw (void)
 				// health-armor
 				HUDLINE_SECTOR({ 
 					hud_sector_x = 217;
-					hud_sector_pos_x = centersector;
+					//hud_sector_pos_x = centersector;
+					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
 					sector_mod = '0 0 0';
 					
 					s_health = hud_sector_pos;
