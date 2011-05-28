@@ -91,7 +91,7 @@ float RemapVote(string vote, string cmd, entity e)
 
 	// remap chmap to gotomap (forces intermission)
 	if(vote_argc < 2)
-		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban") // won't work without arguments
+		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban" || argv (0) == "nickban") // won't work without arguments
 			return FALSE;
 	if(argv(0) == "chmap")
 	{
@@ -183,11 +183,11 @@ float RemapVote(string vote, string cmd, entity e)
     }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
-		
+
 		if(argv(0) == "kill" && victim.classname != "player")
 		{
 			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));

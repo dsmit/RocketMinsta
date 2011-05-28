@@ -569,6 +569,16 @@ float GameCommand_Ban(string command)
 			Ban_Insert(ip, bantime, reason, 1);
 			return TRUE;
 		}
+	}
+	else if (argv (0) == "nickban")
+	{
+		if (argv >= 2)
+		{
+			INITARG(2);
+			RESTARG(reason); // permanent
+			Banning_BanPlayerByName (argv (1), reason);
+			return TRUE;
+		}
 #undef INITARG
 #undef GETARG
 #undef RESTARG
