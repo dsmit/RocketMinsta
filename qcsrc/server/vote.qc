@@ -79,7 +79,7 @@ float RemapVote(string vote, string cmd, entity e)
 
 	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
 	{
-		sprint (e, strcat ("^1IDIOT!!\n^1You cannot call votes this often. Wait for another ^2", ftos (time - cvar ("_sv_rm_lastvote")), " ^1seconds and try again... if you dare.\n"));
+		sprint (e, strcat ("^1You cannot call votes this often. Please wait for another ^2", ftos (time - cvar ("_sv_rm_lastvote")), " ^1second(s) and try again.\n"));
 		return FALSE;
 	}
 

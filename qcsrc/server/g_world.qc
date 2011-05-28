@@ -456,6 +456,8 @@ void spawnfunc_worldspawn (void)
 	registercvar ("_sv_rm_maprow_totaldom", "0");
 	registercvar ("_sv_rm_maprow_vip", "0");
 
+	registercvar ("_sv_rm_lastvote", cvar ("g_explosive_vote_mindelay")); // enable voting immediately on server start, even with a huge delay
+
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)
