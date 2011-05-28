@@ -3023,4 +3023,5 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	for (i = 0; i < fmCount; i ++)
 		if (argv (i) == gametype) return 0;
 	return 1;
+	// fuck
 }
