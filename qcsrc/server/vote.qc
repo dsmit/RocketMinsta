@@ -77,6 +77,12 @@ float RemapVote(string vote, string cmd, entity e)
 	vote_argc = tokenize_console(vote);
 	local string s;
 
+	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
+	{
+		sprint (e, strcat ("^1IDIOT!!\n^1You cannot call votes this often. Wait for another ^2", ftos (time - cvar ("_sv_rm_lastvote")), " ^1seconds and try again... if you dare.\n"));
+		return FALSE;
+	}
+
 	if(!VoteAllowed(argv(0), cmd))
 		return FALSE;
 
@@ -326,6 +332,8 @@ float RemapVote(string vote, string cmd, entity e)
 		keeptopic = TRUE;
 		cvar_set("_sv_explosive_topicby", e.netname);
 	}
+
+	cvar_set ("_sv_rm_lastvote", time);
 
 	return TRUE;
 }
