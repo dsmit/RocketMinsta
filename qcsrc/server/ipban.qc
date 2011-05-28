@@ -343,6 +343,13 @@ float Ban_IsClientBanned(entity client, float idx)
 		Ban_LoadBans();
 	if(!Ban_GetClientIP(client))
 		return FALSE;
+
+	if (Banning_IsNameBanned (client.netname))
+	{
+		sprint (client, "^1You are banned, good job!\n");
+		return TRUE;
+	}
+
 	if(idx < 0)
 	{
 		b = 0;
