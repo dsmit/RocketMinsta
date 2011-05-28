@@ -3023,7 +3023,23 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	for (i = 0; i < fmCount; i ++)
 		if (argv (i) == gametype) return 0;
 	return 1;
-	// fuck
+}
+
+float Banning_BanPlayerByName (string name)
+{
+	if (Banning_IsBanned (name))
+		return 0;
+	cvar_set ("_sv_rm_bannedplayers", strcat (cvar_string ("_sv_rm_bannedplayers"), " ", name));
+	return 1;
+}
+
+float Banning_IsBanned (string name)
+{
+	local float n, i;
+	n = tokenizebyseparator ("_sv_rm_bannedplayers", " ");
+	for (i = 0; i < n; i ++)
+		if (argv (i) == gametype) return 1;
+	return 0;
 }
 
 string GetVoteList()

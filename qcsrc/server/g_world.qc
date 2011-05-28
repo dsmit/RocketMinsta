@@ -452,6 +452,8 @@ void spawnfunc_worldspawn (void)
 	registercvar ("_sv_rm_lastservertime", 0));
 	cvar_set ("_sv_rm_lastvote", cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime"));
 
+	registercvar ("_sv_rm_bannedplayers", ""); // needs another name if we want to make it permanent
+
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)
