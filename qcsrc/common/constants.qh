@@ -306,6 +306,7 @@ const float STAT_PINKALIVE = 109;
 const float STAT_TOTALPOINTS = 110;
 const float STAT_REDPOINTS = 111;
 const float STAT_BLUEPOINTS = 112;
+const float STAT_MINSTA = 113;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -351,7 +352,7 @@ const float STAT_BLUEPOINTS = 112;
  */
  
 //<akari>
-#define MAX_SCORE 16
+#define MAX_SCORE 17
 //</akari>
 #define MAX_TEAMSCORE 2
 
@@ -361,14 +362,13 @@ const float STAT_BLUEPOINTS = 112;
 #define SP_SUICIDES 2
 #define SP_SCORE 3
 
-//<akari>
 #define SP_HOOKFRAGS 10
 #define SP_FREEZETAG_FROZENSTATUS 11
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
-#define SP_CN_CHAR0 14
-#define SP_CN_CHAR1 15
-//</akari>
+#define SP_JOINTIME 14
+#define SP_CN_CHAR0 15
+#define SP_CN_CHAR1 16
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 
@@ -554,11 +554,15 @@ float MAX_SHOT_DISTANCE = 32768;
 #define autocvar_hud_shownames_mindistance 1000
 #define autocvar_hud_shownames_maxdistance 2500
 
+#ifndef MENUQC
 const vector eX = '1 0 0';
 const vector eY = '0 1 0';
 const vector eZ = '0 0 1';
+#endif
 
 #define GTV_AVAILABLE 0
 #define GTV_OVERPLAYED 1
 // for later use in per-map gametype filtering
 #define GTV_FORBIDDEN 2
+
+float(string url, float id) uri_get = #513;

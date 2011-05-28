@@ -198,6 +198,7 @@ float GameCommand_Generic(string command)
 		print("  maplist maplist\n");
 		print("  maplist lsmaps\n");
 		print("  addtolist variable addedvalue\n");
+		print("  ip2c_lookup ipaddress\n");
 		print("  records\n");
 		return TRUE;
 	}
@@ -852,6 +853,9 @@ float GameCommand_Generic(string command)
 		}
 		return TRUE;
 #endif
+	} else if(argv(0) == "ip2c_lookup") {
+		IP2C_Lookup(argv(1), IP2C_Callback_DumpToConsole, world);
+		return TRUE;
 	}
 
 	return FALSE;

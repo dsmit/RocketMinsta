@@ -454,7 +454,9 @@ void CSQC_UpdateView(float w, float h)
 		}
 	}
 
-	sbar_alpha_fg = cvar("sbar_alpha_fg" ) * (1 - cvar("_menu_alpha"));
+	float m;
+	m = (1 - cvar("_menu_alpha"));
+	sbar_alpha_fg = cvar("sbar_alpha_fg" ) /* * (1 - cvar("_menu_alpha"))*/;
 	sbar_currentammo = cvar("sbar_showcurrentammo");
 	sbar_hudselector = cvar("sbar_hudselector");
 	sbar_hud_accuracy = cvar("sbar_hud_accuracy");
@@ -565,12 +567,13 @@ void CSQC_UpdateView(float w, float h)
 	} else */
 
 	// draw 2D entities
+	
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw2d)
 			self.draw2d();
 	self = e;
-
+	
 	// draw radar
 	if(
 		ons_showmap
@@ -707,8 +710,8 @@ void CSQC_UpdateView(float w, float h)
 					wcross_color_z = cvar("crosshair_color_blue");
 				}
 				
-                wcross_alpha = cvar("crosshair_color_alpha") * (1-cvar("_menu_alpha"));
-                wcross_sizefloat = cvar("crosshair_size") * (1-cvar("_menu_alpha"));
+                wcross_alpha = cvar("crosshair_color_alpha") * m;
+                wcross_sizefloat = cvar("crosshair_size") * m;
                 if (cvar("crosshair_per_weapon")) {
                     e = get_weaponinfo(activeweapon);
                     if (e && e.netname != "")

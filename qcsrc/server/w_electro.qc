@@ -286,7 +286,7 @@ float w_electro(float req)
 		}
 		else
 		{
-			if(!cvar("g_balance_minstanex_explosive"))
+			if(!g_minstagib)
 			{
 				if(w_deathtype & HITTYPE_BOUNCE) // combo
 					w_deathtypestring = "felt the electrifying air of #'s combo";

@@ -74,7 +74,8 @@ void freezetag_UglyFreezetagWorkaround_Think()
 
 void freezetag_Initialize()
 {
-	precache_model("models/ice/ice.md3");
+	precache_model("models/ice/ice_blue.md3");
+	precache_model("models/ice/ice_red.md3");
     
     if(inWarmupStage)
         warmup = time;
@@ -247,7 +248,21 @@ void freezetag_Freeze(entity attacker)
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
 	//ice.alpha = 0.6;
 	ice.effects |= EF_ADDITIVE;
-	setmodel(ice, "models/ice/ice.md3");
+	if(cvar("g_explosive_freezetag_iceblocks_teamcolored"))
+	{
+		if(self.team == COLOR_TEAM1)
+		{
+			setmodel(ice, "models/ice/ice_red.md3");
+		}
+		else
+		{
+			setmodel(ice, "models/ice/ice_blue.md3");
+		}
+	}
+	else
+	{
+		setmodel(ice, "models/ice/ice_blue.md3");
+	}
 
 	entity oldself;
 	oldself = self;
@@ -257,7 +272,8 @@ void freezetag_Freeze(entity attacker)
 
 	update_playercount();
 
-	sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
+	if(cvar("g_explosive_freezetag_freezesound"))
+		sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
 
 	// add waypoint
 	WaypointSprite_Spawn("freezetag_frozen", 0, 0, self, '0 0 64', world, self.team, self, waypointsprite_attached, TRUE);
@@ -394,7 +410,10 @@ float freezetag_PlayerDies()
 	}*/
 
 	frag_target.health = 100; // "respawn" the player :P
-	W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
+	
+	if(g_minstagib)
+		W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
+		
 	freezetag_CheckWinner();
 
 	return 1;

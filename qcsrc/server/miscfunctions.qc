@@ -213,7 +213,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm)
         if (self.team)
             have_team_spawns = 1;
 
@@ -2007,7 +2007,7 @@ float MAX_IPBAN_URIS = 16;
 float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
-float URI_GET_IP2C = 17;
+//float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -3024,4 +3024,21 @@ float GameTypeFilter_Allowed (string map, string gametype)
 		if (argv (i) == gametype) return 0;
 	return 1;
 	// fuck
+}
+
+string GetVoteList()
+{
+	return cvar_string("sv_vote_commands");
+}
+
+string GetVoteList_Filtered()
+{
+	local string votes;
+	local float i, n = tokenizebyseparator(GetVoteList(), " ");
+	
+	for(i = 0; i < n; ++i)
+		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
+			votes = strcat(votes, argv(i), " ");
+	
+	return votes;
 }

@@ -516,10 +516,10 @@ void vip_RegenerateExtra()
 	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
 	
 	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
-		self.owner.vip_maxarmor
+		self.vip_maxarmor
 	));
 	
-	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extralives_delay");
+	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
 }
 
 void vip_UpdateState_Health()
@@ -551,7 +551,7 @@ void vip_MakePlayerVIP(entity pl)
 	// causes the state updater to re-send the VIP info no matter what
 	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
 
-	if(cvar("g_balance_minstanex_explosive"))
+	if(!g_minstagib || cvar("g_balance_minstanex_explosive"))
 	{
 		pl.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(pl, "g_explosive_vip_health_dependonenemies");
 		
@@ -563,7 +563,7 @@ void vip_MakePlayerVIP(entity pl)
 		}
 	}
 	
-	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor"))
+	if(!g_minstagib || (cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor")))
 	{
 		pl.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(pl, "g_explosive_vip_armor_dependonenemies");
 		
@@ -578,6 +578,7 @@ void vip_MakePlayerVIP(entity pl)
 	}
 	else // in minstagib, we will just give him a bunch of extralives
 	{
+		pl.vip_maxhealth = 100;
 		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
 		
 		if(pl.vip_maxarmor)
@@ -646,16 +647,16 @@ void vip_PlayerPreThink()
 	{
 		if(self.vip_regenarmor_f)
 			self.vip_regenarmor_f();
-		else
-			bprint("^1URGENT: ^7", self.netname, " has no vip_regenarmor_f! Everything is fucked up!\n");
+		//else
+		//	bprint("^1URGENT: ^7", self.netname, " has no vip_regenarmor_f! Everything is fucked up!\n");
 	}
 		
 	if(time >= self.vip_healthregen_next)
 	{
 		if(self.vip_regenhealth_f)
 			self.vip_regenhealth_f();
-		else
-			bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
+		//else
+		//	bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
 	}
 }
 

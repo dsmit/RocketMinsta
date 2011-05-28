@@ -169,12 +169,7 @@ void CSQC_Init(void)
 		oldengine = 1;
 	}
 	
-	// workaround a crash for nexuiz-svn users
-	if(cvar_string("g_nexuizversion") == "2.5svn" || cvar_string("g_nexuizversion") == "2.5.3")
-	{
-		print("^1Potentially bugged SVN engine detected!\n");
-		svn_workaround = 1;
-	}
+	IP2C_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -186,6 +181,9 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+
+	HUDSkin_Unload();
+	IP2C_Shutdown();
 
 	remove(teams);
 	remove(players);
@@ -369,6 +367,35 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void ReloadMenu_f()
+{
+	if(!self.cnt)
+	{
+		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
+		localcmd("menu_restart\n");
+		self.cnt = 1;
+		self.nextthink = time + 1;
+	}
+	else
+	{
+		if(rm_helptime)
+			localcmd("menu_cmd directmenu RMConfig\n");
+			
+		gui_reloading = 0;
+		remove(self);
+	}
+}
+
+void ReloadMenu()
+{
+	vector pos;
+	pos_y = vid_conheight / 3;
+	gui_reloading = 1;
+	entity e = spawn();
+	e.think = ReloadMenu_f;
+	e.nextthink = time + 1;
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -432,14 +459,25 @@ void PostInit(void)
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
 			localcmd("seta rm_noflags 0; noflags 0\n");
+		case 24:
+			localcmd("seta rm_hudskin \"default\"\n");
+		case 25:	// yep, nothing here
+		case 26:
+		case 27:
+		case 28:
+		case 29:
+			localcmd("seta rm_nogamemenu 0; nogamemenu 0\n");
+		case 30:
+			localcmd("seta rm_notimer 0; notimer 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 24\n");
+		localcmd("seta rm_initialized 31\n");
 		RM_OUTDATED
 		break;
 	}
 	
 	localcmd("alias afk \"cmd afk\"\n");
+	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
@@ -477,7 +515,11 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
-
+	registercmd("notimer");
+	registercmd("nogamemenu");
+	// -- //
+	registercmd("hudskin");
+	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
@@ -497,8 +539,17 @@ void PostInit(void)
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
 	
+	HUDSkin_Load(cvar_string("rm_hudskin"));
+	
 	screenfade = time + 0.1;
 	fovlock = -1;
+	
+	registercvar("rm_loadedmenu", "");
+	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
+		ReloadMenu();
+	else if(rm_helptime)
+		localcmd("menu_cmd directmenu RMConfig\n");
+		
 	postinit = true;
 }
 
@@ -528,7 +579,7 @@ void SendRMCFGReport()
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n"));
+#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -595,14 +646,19 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
-		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags\n");
+		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
+		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
 		#ifdef RM_SUPPORT_MADOKA
+		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+		#endif
 		#endif
 		
 		print("\nIn addition, these commands are available:\n");
 		print("^5afk^7: Marks you as being away\n");
+		print("^5hudskin^7: Lists or switches HUD skins and displays other HUD-related information\n");
 		return true;
 	}
 	else if(
@@ -620,7 +676,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "visualscore"			||
 		strCmd == "oldhud"				||
 		strCmd == "althud"				||
-		strCmd == "noflags"				 )
+		strCmd == "noflags"				||
+		strCmd == "notimer"				||
+		strCmd == "nogamemenu"			 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -648,9 +706,11 @@ float CSQC_ConsoleCommand(string strMessage)
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
 				
-				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 			}
 		}
+		else if(strCmd == "notimer")
+			localcmd("cl_cmd sbar_columns_set default\n");
 		
 		SendRMCFGReport();
 		RMSETTINGREPORT
@@ -708,6 +768,56 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		SendRMCFGReport();
 		RMSETTINGREPORT
+		return true;
+	}
+	else if(strCmd == "hudskin")
+	{
+		if(argc < 2)
+		{
+			print("\n^xFB0The following HUD skins are available:\n");
+			
+			local float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+			local string tmpname, displayname;
+			globsize = search_getsize(hsglob);
+			
+			seed = floor(random() * globsize);
+			for(i = 0; i < globsize; ++i)
+			{
+				tmpname = search_getfilename(hsglob, i);
+				tmpname = substring(tmpname, strlen("gfx/hud/skins/"), strlen(tmpname));
+				tmpname = substring(tmpname, 0, strlen(tmpname) - strlen("/skininfo"));
+				
+				if(i == seed)
+					displayname = tmpname;
+					
+				print("^5    ", tmpname);
+				
+				if(tmpname == hudskin_name)
+					print(" ^8(current)\n");
+				else print("\n");
+			}
+			search_end(hsglob);
+			
+			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			
+			return true;
+		}
+		
+		if(!hudlocked)
+		{
+			HUDSkin_Load(argv(1));
+			cvar_set("rm_hudskin", hudskin_name);
+			SendRMCFGReport();
+			localcmd("menu_cmd update_rmvars\n");
+			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+		}
+		else
+		{
+			print("^1Can't change the HUD skin while spectating a player, please join the game or become an observer and try again\n");
+			return true;
+		}
+		
 		return true;
 	}
 
@@ -947,6 +1057,9 @@ void GameCommand(string msg)
 		
 		rm_althud = hudlocked_alt;
 		rm_oldhud = hudlocked_old;
+		
+		if(argv(3) != hudskin_name)
+			HUDSkin_Load(argv(3));
 	}
 	else if(cmd == "lockfov")
 	{
@@ -987,6 +1100,18 @@ void GameCommand(string msg)
 		}
 		
 		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)), stof(argv(4)));
+	}
+	else if(cmd == "hudskin")
+	{
+		HUDSkin_Load(argv(1));
+	}
+	else if(cmd == "hudskin_unload")
+	{
+		HUDSkin_Unload();
+	}
+	else if(cmd == "hudskin_eval")
+	{
+		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
 	else
 	{
@@ -1094,13 +1219,29 @@ void Ent_ReadPlayerScore()
 	float oldscore = o.(scores[SP_SCORE]);
 	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+	{
 		if(sf & p)
 		{
-			if(lf & p)
+			if(i == SP_JOINTIME)
+			{
+				local float srvtime;
+				srvtime = stof(ReadString());
+				
+				local float offs;
+				offs = srvtime - time;
+				
+				o.(scores[i]) = stof(ReadString()) - offs;
+			}
+			else if(lf & p)
+			{
 				o.(scores[i]) = ReadInt24_t();
+			}
 			else
+			{
 				o.(scores[i]) = ReadChar();
+			}
 		}
+	}
 
 	float newscore = o.(scores[SP_SCORE]);
 	

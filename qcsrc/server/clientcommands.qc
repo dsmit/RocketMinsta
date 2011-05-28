@@ -175,6 +175,10 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "spawn")
 	if(cmd != "begin")
 	if(cmd != "rmcfgreport")
+	if(cmd != "hudinfo")
+	if(cmd != "fovreport")
+	if(cmd != "zoomreport")
+	if(cmd != "menu_request")
 	{
 		if(cmd_floodcheck())
 			return;
@@ -197,6 +201,16 @@ void SV_ParseClientCommand(string s) {
 			return;
 		
 		self.rmcfgreport = strzone(s);
+	} else if(cmd == "menu_request"){
+		// Report that this server is running RM
+		stuffcmd(self, "set _rm_server 1\n");
+		
+		// Report available votes
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
+		
+		// Update all necessary dialogs
+		stuffcmd(self, "menu_cmd update_rmvars\n");
 	} else if(cmd == "spyrmcfg") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
 		
@@ -265,6 +279,11 @@ void SV_ParseClientCommand(string s) {
 		
 		self.hud_old = stof(argv(1));
 		self.hud_alt = stof(argv(2));
+		
+		if(self.hudskin)
+			fstrunzone(self.hudskin);
+		self.hudskin = strzone(argv(3));
+		
 		WriteSpectatorInfo(self);
 	} else if(cmd == "fakeflag") {
 		if(!self)

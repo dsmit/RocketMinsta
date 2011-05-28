@@ -514,6 +514,7 @@ void InitGameplayMode()
     }
 
 	gamemode_name = GametypeFullNameFromType(game);
+	gametypetoset = game;
 
 	if(teams_matter)
 		entcs_init();
@@ -564,6 +565,52 @@ void InitGameplayMode()
 			independent_players = 1;
 
 		ScoreRules_race();
+	}
+
+	
+	// More robust freezefag detector
+	local float __i, __j = tokenizebyseparator (cvar_string ("g_explosive_gametypevote_options") /* GameTypeVote_GetOptions () */ , " ");
+	local string gtype, gtype_cvar, gtype_cvar_other;
+	for (__i = 0; __i < __j; __i ++)
+	{
+		gtype = argv (__i);
+		
+		gtype_cvar = strcat ("_sv_rm_maprow_", gtype);
+		gtype_cvar_other = strcat ("_sv_rm_otherplayed_", gtype);
+		
+		// in case there are no cvars yet
+		registercvar(gtype_cvar, "0");
+		registercvar(gtype_cvar_other, "0");
+		
+		if (cvar (gtype_cvar) > 0 && gtype != GetGametype ())
+		{
+			if(cvar("g_explosive_gametypevote_overplayed_strict"))
+			{
+				cvar_set(gtype_cvar_other, ftos(cvar(gtype_cvar_other) + 1));
+				
+				if(cvar(gtype_cvar_other) >= cvar("g_explosive_gametypevote_overplayed_strict_minmaps"))
+				{
+					// not overplayed anymore, unlock this gametype
+					
+					cvar_set(gtype_cvar, "0");
+					cvar_set(gtype_cvar_other, "0");
+				}
+				
+				// Only decrease the counter if it didn't go beyond bounds of sanity.
+				if(cvar(gtype_cvar) < cvar("g_explosive_gametypevote_maxmaps"))
+					cvar_set (gtype_cvar, ftos(max(0, cvar(gtype_cvar) - 1)));
+			}
+			else // emulate the old behaviour: reset the counter
+			{
+				cvar_set (gtype_cvar, "0");
+				cvar_set(gtype_cvar_other, "0");
+			}
+		}
+		else if (gtype == GetGametype ())
+		{
+			cvar_set (gtype_cvar, ftos (cvar (gtype_cvar) + 1));
+			cvar_set(gtype_cvar_other, "0");
+		}
 	}
 
 	InitializeEntity(world, default_delayedinit, INITPRIO_GAMETYPE_FALLBACK);

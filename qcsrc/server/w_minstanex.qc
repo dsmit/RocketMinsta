@@ -121,7 +121,7 @@ void W_MinstaNex_Attack (void)
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
+	
 
 	yoda = 0;
 	damage_goodhits = 0;
@@ -129,11 +129,13 @@ void W_MinstaNex_Attack (void)
 	
 	//<akari>
 	//Executes the explosive attack
+	
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
+	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((cvar("g_explosive_minsta_damage") >= 0)? cvar("g_explosive_minsta_damage") : 10000000000),
 					   cvar("g_explosive_minsta_force"), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
