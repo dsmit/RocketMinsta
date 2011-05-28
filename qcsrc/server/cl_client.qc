@@ -1346,6 +1346,12 @@ void ClientConnect (void)
 	local string s;
 	float t;
 
+	if (Banning_IsNameBanned (self.netname))
+	{
+		sprint (self, "^1You are banned, good job!\n");
+		return;
+	}
+
 	if(self.flags & FL_CLIENT)
 	{
 		print("Warning: ClientConnect, but already connected!\n");

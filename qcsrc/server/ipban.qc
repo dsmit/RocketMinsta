@@ -577,6 +577,7 @@ float GameCommand_Ban(string command)
 			INITARG(2);
 			RESTARG(reason); // permanent
 			Banning_BanPlayerByName (argv (1), reason);
+			// dropclient ( ... );
 			return TRUE;
 		}
 #undef INITARG
