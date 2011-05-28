@@ -448,20 +448,9 @@ void spawnfunc_worldspawn (void)
 */
     registercvar("_g_explosive_infomessages_count", "0");
 
-/*
-        HEAD
-	// Increase or decrease the appropriate cvar by 1 when a particular gametype is played/not played
-	registercvar ("_sv_rm_maprow_ctf", "0");
-	registercvar ("_sv_rm_maprow_kh", "0");
-	registercvar ("_sv_rm_maprow_ft", "0");
-	registercvar ("_sv_rm_maprow_dom", "0");
-	registercvar ("_sv_rm_maprow_totaldom", "0");
-	registercvar ("_sv_rm_maprow_vip", "0");
-
-
-=======
-*/
-	registercvar ("_sv_rm_lastvote", 0)); // enable voting immediately on server start, even with a huge delay
+	registercvar ("_sv_rm_lastvote", 0));
+	registercvar ("_sv_rm_lastservertime", 0));
+	cvar_set ("_sv_rm_lastvote", cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime"));
 
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
@@ -2963,6 +2952,8 @@ void RestoreGame()
 
 void SV_Shutdown()
 {
+	cvar_set ("_sv_rm_lastservertime", time);
+
 	if(gameover > 1) // shutting down already?
 		return;
 
