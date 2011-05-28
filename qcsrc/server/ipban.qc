@@ -572,7 +572,7 @@ float GameCommand_Ban(string command)
 	}
 	else if (argv (0) == "nickban")
 	{
-		if (argv >= 2)
+		if (argc >= 2)
 		{
 			INITARG(2);
 			RESTARG(reason); // permanent

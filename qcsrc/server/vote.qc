@@ -336,7 +336,7 @@ float RemapVote(string vote, string cmd, entity e)
 		cvar_set("_sv_explosive_topicby", e.netname);
 	}
 
-	cvar_set ("_sv_rm_lastvote", time);
+	cvar_set ("_sv_rm_lastvote", ftos (time));
 
 	return TRUE;
 }

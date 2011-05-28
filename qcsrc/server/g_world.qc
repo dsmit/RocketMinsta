@@ -448,11 +448,9 @@ void spawnfunc_worldspawn (void)
 */
     registercvar("_g_explosive_infomessages_count", "0");
 
-	registercvar ("_sv_rm_lastvote", 0));
-	registercvar ("_sv_rm_lastservertime", 0));
-	cvar_set ("_sv_rm_lastvote", cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime"));
-
-	registercvar ("_sv_rm_bannedplayers", ""); // needs another name if we want to make it permanent
+	registercvar ("_sv_rm_lastvote", "0");
+	registercvar ("_sv_rm_lastservertime", "0");
+	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
 
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
@@ -2954,7 +2952,7 @@ void RestoreGame()
 
 void SV_Shutdown()
 {
-	cvar_set ("_sv_rm_lastservertime", time);
+	cvar_set ("_sv_rm_lastservertime", ftos (time));
 
 	if(gameover > 1) // shutting down already?
 		return;

@@ -3025,28 +3025,28 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	return 1;
 }
 
+float Banning_IsNameBanned (string name)
+{
+	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
+}
+
 float Banning_BanPlayerByName (string name, string reason)
 {
-	if (Banning_IsBanned (name))
+	if (Banning_IsNameBanned (name))
 		return 0;
-	db_set (ServerProgsDB, strcat ("nickbanned/", name), "1");
-	db_set (ServerProgsDB, strcat ("nickbanned_reason/", name), reason);
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "1");
+	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), reason);
 	return 1;
 }
 
 float Banning_UnbanPlayerByName (string name)
 {
-	if (! Banning_IsBanned (name))
+	if (! Banning_IsNameBanned (name))
 		return 0;
-	db_set (ServerProgsDB, strcat ("nickbanned/", name), "0");
-//	db_set (ServerProgsDB, strcat ("nickbanned_reason/", name), "");
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "0");
+//	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), "");
 //	leave the reason so we can know why was the chap banned in the first place
 	return 1;
-}
-
-float Banning_IsNameBanned (string name)
-{
-	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
 }
 
 string GetVoteList()
