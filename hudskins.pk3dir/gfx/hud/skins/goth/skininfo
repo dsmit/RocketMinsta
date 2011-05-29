@@ -7,7 +7,7 @@ border_right_width -2
 border_left_width -2
 border_teamcolor always
 sector_teamcolor always
-sector_teamcolor_brightness 0
+sector_teamcolor_brightness 0.1
 border_teamcolor_brightness 1
 border_teamcolor_mod 0.2 0.2 0.2
 sector_alpha 0.5
