@@ -236,6 +236,7 @@ vector Sbar_GetFontsize(string cvarname)
 
 float Sbar_GetWidth(float teamcolumnwidth)
 {
+	#ifdef WE_DONT_NEED_TO_GO_WIDER
 	float f;
 	f = cvar("sbar_width");
 	if(f == 0)
@@ -245,6 +246,9 @@ float Sbar_GetWidth(float teamcolumnwidth)
 	if(f > vid_conwidth - 2 * teamcolumnwidth)
 		f = vid_conwidth - 2 * teamcolumnwidth;
 	return f;
+	#else
+	return vid_conwidth - 2 * teamcolumnwidth;
+	#endif
 }
 
 float PreviewExists(string name)

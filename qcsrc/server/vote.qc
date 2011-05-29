@@ -117,7 +117,13 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
 				return FALSE;
 			}
-			
+
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
+
 			RemapVote_vote = strzone(strcat("gametype ", s, "; ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 			
@@ -226,6 +232,11 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(s != "")	// detected a gametype vote
 		{
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
 			RemapVote_vote = vote;
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 		}
