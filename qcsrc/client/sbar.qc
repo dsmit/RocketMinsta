@@ -2618,35 +2618,32 @@ float teamhud_wide;
 
 void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
 {
-	if(hudskin_line_fill == FILL_COLOR)
-	{
-		drawfill(slicepos, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
-		return;
-	}
-
 	local vector drawsize;
 	local float factor;
-
-	if(hudskin_line_fill == FILL_TILE)
-	{
-		drawsize = slicesize;
-		if(drawsize_y > hudskin_size_line_fill_y)
-		{
-			// autoscaling
-			factor = hudskin_size_line_fill_y / drawsize_y;
-			drawsize = drawsize * factor;
-		}
-		
-		if(hudskin_image_line_fill)
-			drawpic_tiled(slicepos, hudskin_image_line_fill, drawsize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
-		return;
-	}
 	
-	if(hudskin_line_fill == FILL_STRETCH)
+	switch(hudskin_line_fill)
 	{
-		if(hudskin_image_line_fill)
-			drawpic_tiled(slicepos, hudskin_image_line_fill, slicesize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
-		return;
+		case FILL_COLOR:
+			drawfill(slicepos, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
+		
+		case FILL_TILE:
+			drawsize = slicesize;
+			if(drawsize_y > hudskin_size_line_fill_y)
+			{
+				// autoscaling
+				factor = hudskin_size_line_fill_y / drawsize_y;
+				drawsize = drawsize * factor;
+			}
+			
+			if(hudskin_image_line_fill)
+				drawpic_tiled(slicepos, hudskin_image_line_fill, drawsize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
+		
+		case FILL_STRETCH:
+			if(hudskin_image_line_fill)
+				drawpic_tiled(slicepos, hudskin_image_line_fill, slicesize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
 	}
 }
 
