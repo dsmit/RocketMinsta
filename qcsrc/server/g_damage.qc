@@ -1267,6 +1267,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				else 
 					wpnstring = "^0unknown"; //??????????
 			}
+			else
 				wpnstring = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
 			
 			if(attacker.classname == "player") if(attacker != targ)
