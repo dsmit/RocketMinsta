@@ -1184,7 +1184,7 @@ void weapon_defaultspawnfunc(float wpn)
 	string _model;
 	string _sound;
 	
-	if(wpn == WEP_MINSTANEX && cvar("g_balance_minstanex_explosive"))
+	if(wpn == WEP_MINSTANEX && cvar("g_balance_minstanex_explosive") && g_minstagib)
 	{
 		_model = "models/items/g_h50.md3";
 		_sound = "misc/mediumhealth.wav";
