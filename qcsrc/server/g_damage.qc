@@ -1203,102 +1203,14 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		UpdateCSQCProjectile(self);
 	}
 	// apply damage
+	
+	self.rm_damage = damage;
+	self.rm_armordamage = armordamage;
+	
 	if (damage != 0 || (self.damageforcescale && vlen(force)))
 	if (self.event_damage)
 		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
 	self = oldself;
-
-	//<akari>
-	//Print damage to players
-	
-	local float olddamage;
-	olddamage = damage;
-	
-	damage = min(damage, t_oldhealth);
-	armordamage = min(armordamage, t_oldarmor);
-	
-	if(attacker.classname == "player")
-	if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
-	{
-		PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-		
-		//TODO: make it work for extralives
-		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
-		
-		if(attacker != targ) if(damage || armordamage)
-			hudflash_teamcolor_default_spec(attacker);
-	}
-	
-	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
-	{
-		float i;
-		
-		for(i = 0; i < 2; i++)
-		{
-			local string dmgstring, wpnstring;
-			
-			// To-do: generate prints client-side, send all the crap through a tempentity
-			
-			if(i) // damage
-			{
-				if(!damage)
-					continue;
-				
-				dmgstring = ftos(rint(damage));
-			}
-			else //armor damage
-			{
-				if(!armordamage)
-					continue;
-				
-				dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-			}
-			
-			if(g_minstagib)
-			{
-				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-					wpnstring = "^1splash";
-				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-					wpnstring = "^xFB0laser";
-				else if(deathtype == DEATH_NOAMMO)
-					wpnstring = "^7hook";
-				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
-					wpnstring = "^5insta";
-				else 
-					wpnstring = "^0unknown"; //??????????
-			}
-			else
-				wpnstring = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
-			
-			if(attacker.classname == "player") if(attacker != targ)
-			{
-				if(targ.netname)
-					centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-			}
-			
-			if(targ.classname == "player")
-			{
-				if(attacker.netname)
-				{
-					if(attacker == targ)
-						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-					else
-						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
-				}
-				else
-					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
-			}
-			
-			//hudflash_default_spec(attacker, '1 1 -1');
-			//hudflash_default_spec(targ, '2 1 -1');
-			
-			//hudflash_spec(attacker, '1 1 -1', HF_DEFAULT_TIME * 1.5, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-			hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-		}
-	}
-	damage = olddamage;
-	
-	//</akari>
 
 	if(targ.classname == "player" && attacker.classname == "player" && attacker != targ && attacker.health > 2)
 	{

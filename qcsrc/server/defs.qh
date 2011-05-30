@@ -662,3 +662,6 @@ float g_explosive_speedaward_ownaccel;
 
 #define DEPENDON(d) if(!(d)) return;
 #define DEPENDON_F(d,f) if(!(d)) return f;
+
+.float rm_damage;
+.float rm_armordamage;
