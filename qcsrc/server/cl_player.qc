@@ -588,100 +588,83 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		valid_damage_for_weaponstats = 1;
 	
 	// Print damage to players
-	if(!g_minstagib)
-	{
-		dh = dh - max(self.health, 0);
-		da = da - max(self.armorvalue, 0);
-	}
-	else
-	{
-		dh = self.rm_damage;
-		da = self.rm_armordamage;
-	}
-	
 	local float olddamage, armordamage;
 	local entity targ;
 	targ = self;
 	olddamage = damage;
 	
-	damage = min(dh, self.health);
-	armordamage = min(da, self.armorvalue);
-	
-	if(attacker.classname == "player")
-	if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
+	if(!g_minstagib)
 	{
-		PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-		
-		//TODO: make it work for extralives
-		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
-		
-		if(attacker != targ) if(damage || armordamage)
-			hudflash_teamcolor_default_spec(attacker);
-	}
+		damage = dh - max(self.health, 0);
+		armordamage = da - max(self.armorvalue, 0);
 	
-	if(!cvar("g_explosive_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
-	{
-		float i;
-		
-		for(i = 0; i < 2; i++)
+		damage = max(0, damage);
+		armordamage = max(0, armordamage);
+	
+		if(attacker.classname == "player")
+		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
 		{
-			local string dmgstring, wpnstring;
+			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
+			PlayerScore_Add(attacker, SP_SCORE, armordamage * 0.1);
 			
-			// To-do: generate prints client-side, send all the crap through a tempentity
-			
-			if(i) // damage
-			{
-				if(!damage)
-					continue;
-				
-				dmgstring = ftos(rint(damage));
-			}
-			else //armor damage
-			{
-				if(!armordamage)
-					continue;
-				
-				dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-			}
-			
-			if(g_minstagib)
-			{
-				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-					wpnstring = "^1splash";
-				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-					wpnstring = "^xFB0laser";
-				else if(deathtype == DEATH_NOAMMO)
-					wpnstring = "^7hook";
-				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
-					wpnstring = "^5insta";
-				else 
-					wpnstring = "^0unknown"; //??????????
-			}
-			else
-				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
-			
-			if(attacker.classname == "player") if(attacker != targ)
-			{
-				if(targ.netname)
-					centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-			}
-			
-			if(attacker.netname)
-			{
-				if(attacker == targ)
-					centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-				else
-					centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
-			}
-			else
-				centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
-			hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			if(attacker != targ) if(damage || armordamage)
+				hudflash_teamcolor_default_spec(attacker);
 		}
+		
+		if(!cvar("g_explosive_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
+		{
+			float i;
+			
+			for(i = 0; i < 2; i++)
+			{
+				local string dmgstring, wpnstring;
+				
+				// To-do: generate prints client-side, send all the crap through a tempentity
+				
+				if(i) // damage
+				{
+					if(!damage)
+						continue;
+					
+					dmgstring = ftos(rint(damage));
+				}
+				else //armor damage
+				{
+					if(!armordamage)
+						continue;
+					
+					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
+				}
+				
+				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+				
+				if(attacker.classname == "player") if(attacker != targ)
+				{
+					if(targ.netname)
+						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+				}
+				
+				if(attacker.netname)
+				{
+					if(attacker == targ)
+						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					else
+						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+				}
+				else
+					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
+				hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			}
+		}
+		damage = olddamage;
 	}
-	damage = olddamage;
 	
 	if(valid_damage_for_weaponstats)
+	{
+		dh = dh - max(self.health, 0);
+		da = da - max(self.armorvalue, 0);
 		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, dh + da);
+	}
 
 	if (self.health < 1)
 	{
