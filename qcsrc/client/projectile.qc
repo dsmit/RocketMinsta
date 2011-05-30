@@ -27,6 +27,8 @@ void Projectile_DrawTrail(vector to)
 	self.trail_oldorigin = to;
 	self.trail_oldtime = time;
 
+	g_minstagib = getstati(STAT_MINSTA);
+
 	if(from == to)
 	{
 		switch(self.cnt)
@@ -79,9 +81,10 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_GRENADE:
-			//trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
-			//trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			if(g_minstagib)
+				trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			else
+				trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
 		case PROJECTILE_GRENADE_BOUNCING:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);

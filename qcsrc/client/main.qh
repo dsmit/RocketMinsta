@@ -281,3 +281,5 @@ float screenfade;
 float fovlock;
 float speczoom_speed;
 float speczoom_factor;
+
+float g_minstagib;

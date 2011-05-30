@@ -660,5 +660,7 @@ float g_explosive_speedaward_ownaccel;
 .float speczoom_speed;
 .float speczoom_factor;
 
+.float g_minstagib_stat;
+
 #define DEPENDON(d) if(!(d)) return;
 #define DEPENDON_F(d,f) if(!(d)) return f;

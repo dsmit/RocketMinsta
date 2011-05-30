@@ -686,6 +686,8 @@ void spawnfunc_worldspawn (void)
 	if(g_freezetag || g_domination)
 		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
 
+	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
+
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
 
