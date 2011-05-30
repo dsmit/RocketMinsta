@@ -431,58 +431,73 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
 				} else {
-					//<akari>
 					//Let's detect laserfrags
-					if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+					if(g_minstagib)
 					{
-						play2(attacker, "announcer/male/awesome.wav");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
-					}
-					else if(deathtype == DEATH_NOAMMO)
-					{
-						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+						if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+						{
+							play2(attacker, "announcer/male/awesome.wav");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
+						}
+						else if(deathtype == DEATH_NOAMMO)
+						{
+							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-						
-						play2(attacker, "announcer/male/awesome.wav");
-						bigprint_spec(attacker, "holy^1shit", "Awesome frag", 1);
-						
-						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-					}
-					else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
-					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
-						PlayerScore_Add(attacker, SP_SCORE, 1);
-					}
-					//That's how I detect hookfrags. No, seriously!
-					else if(targ.pushltime == 1337)
-					{
-						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
-						//centerprint(attacker, "^7Hookfrag!");
-						
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-						
-						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-						
-						play2(attacker, "announcer/male/awesome.wav");
-						_hfrag = 1;
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+							
+							play2(attacker, "announcer/male/awesome.wav");
+							bigprint_spec(attacker, "holy^1shit", "Awesome frag", 1);
+							
+							PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+						}
+						else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+						{
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
+							PlayerScore_Add(attacker, SP_SCORE, 1);
+						}
+						//That's how I detect hookfrags. No, seriously!
+						else if(targ.pushltime == 1337)
+						{
+							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+							//centerprint(attacker, "^7Hookfrag!");
+							
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+							
+							PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+							
+							play2(attacker, "announcer/male/awesome.wav");
+							_hfrag = 1;
+						}
+						else
+						{
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
+							
+							if(g_vip)
+								PlayerScore_Add(attacker, SP_SCORE, 1);
+						}
 					}
 					else
 					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
+						local string tail;
+						tail = "";
+						
+						if(!DEATH_ISSPECIAL(deathtype))
+							tail = strcat(" with ^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+						
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, "^4", tail));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a, "^1", tail));
 						
 						if(g_vip)
 							PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
-					//</akari>
 					attacker.taunt_soundtime = time + 1;
 				}
 
