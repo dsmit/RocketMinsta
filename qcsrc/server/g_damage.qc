@@ -1239,16 +1239,20 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
 			}
 			
-			if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-				wpnstring = "^1splash";
-			else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-				wpnstring = "^xFB0laser";
-			else if(deathtype == DEATH_NOAMMO)
-				wpnstring = "^7hook";
-			else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
-				wpnstring = "^5insta";
-			else 
-				wpnstring = "^0unknown"; //??????????
+			if(g_minstagib)
+			{
+				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+					wpnstring = "^1splash";
+				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+					wpnstring = "^xFB0laser";
+				else if(deathtype == DEATH_NOAMMO)
+					wpnstring = "^7hook";
+				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+					wpnstring = "^5insta";
+				else 
+					wpnstring = "^0unknown"; //??????????
+			}
+				wpnstring = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
 			
 			if(attacker.classname == "player") if(attacker != targ)
 			{
