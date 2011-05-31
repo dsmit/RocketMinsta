@@ -3742,7 +3742,7 @@ void Sbar_Draw (void)
 
 			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 			
-			if(g_minstagib || sbar_currentammo || vid_conwidth < 800) {
+			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
 				if (stat_items & GetAmmoItemCode(i)) {
 					/*if (vid_conwidth >= 800) {
 						pos_x = 230;
@@ -3815,7 +3815,7 @@ void Sbar_Draw (void)
 						pos = bottom - pos;
 						pos_x = ammosector_pos;
 						
-						if(stat_items & GetAmmoItemCode(i) || (!rm_althud && a_unused == 4 && i == ammo_last))
+						if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
 						{
 							ammo_last = i;
 							
@@ -3832,7 +3832,7 @@ void Sbar_Draw (void)
 							#define bw_right 2
 							
 							pos_y -= 10;
-							pos_x = ammosector_pos - bw_left + ((103 + bw_right)/2) + a_offset - (42/2) * min(a_unused, (rm_althud? 4 : 3));
+							pos_x = ammosector_pos - bw_left + ((103 + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
 							
 							drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 							Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
