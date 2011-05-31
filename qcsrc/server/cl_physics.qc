@@ -524,7 +524,7 @@ void SV_PlayerPhysics()
 	float buttons_prev;
 	float not_allowed_to_move;
 	string c;
-	
+
 	if(self.movement != '0 0 0')
 	{
 		self.parm_idlesince = time;
@@ -534,12 +534,12 @@ void SV_PlayerPhysics()
 	else if(!self.is_away)
 	{
 		local float a = cvar("g_explosive_autoaway");
-		
+
 		if(a)
 		if(time - self.parm_idlesince >= a * 60)
 			MarkAway(self, 0);
 	}
-	
+
 	if(g_race || g_cts)
 	{
 		// if record times matter
@@ -623,7 +623,7 @@ void SV_PlayerPhysics()
 	}
 	else if(self.specialcommand_pos && (c != substring(specialcommand, self.specialcommand_pos - 1, 1)))
 		self.specialcommand_pos = 0;
-	
+
     if(self.PlayerPhysplug)
         if(self.PlayerPhysplug())
             return;
@@ -950,7 +950,7 @@ void SV_PlayerPhysics()
 			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
 		}
 	}
-	else if ((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO))
+	else if ((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freezetag || !self.freezetag_frozen))
 	{
 		//makevectors(self.v_angle_y * '0 1 0');
 		makevectors(self.v_angle);
@@ -1052,7 +1052,7 @@ void SV_PlayerPhysics()
 	else if (self.flags & FL_ONGROUND)
 	{
 		// we get here if we ran out of ammo
-		if((self.items & IT_JETPACK) && self.BUTTON_HOOK && !(buttons_prev & 32))
+		if((self.items & IT_JETPACK) && self.BUTTON_HOOK && !(buttons_prev & 32) && (!g_freezetag || !self.freezetag_frozen))
 			sprint(self, "You don't have any fuel for the ^2Jetpack\n");
 
 		// walking
@@ -1185,7 +1185,7 @@ void SV_PlayerPhysics()
 
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
-	
+
 	if(!g_explosive_speedaward_ownaccel)
 	{
 		float myvel = vlen(self.velocity);
