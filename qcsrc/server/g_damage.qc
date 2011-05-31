@@ -1472,7 +1472,10 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						if (targ.classname == "player")
 							center = targ.origin + targ.view_ofs;
 						force = normalize(center - blastorigin);
-						force = force * (finaldmg / coredamage) * forceintensity;
+						//force = force * (finaldmg / coredamage) * forceintensity;
+						// WHAT? This completely breaks force on low damages, how did it even work before?!
+						force = force * forceintensity;
+						
 						// test line of sight to multiple positions on box,
 						// and do damage if any of them hit
 						hits = 0;
