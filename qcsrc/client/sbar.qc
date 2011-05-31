@@ -2599,6 +2599,8 @@ float th_fadetime;
 float th_alpha;
 float teamhud_wide;
 
+float ammo_last;
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3813,8 +3815,10 @@ void Sbar_Draw (void)
 						pos = bottom - pos;
 						pos_x = ammosector_pos;
 						
-						if(stat_items & GetAmmoItemCode(i))
+						if(stat_items & GetAmmoItemCode(i) || (!rm_althud && a_unused == 4 && i == ammo_last))
 						{
+							ammo_last = i;
+							
 							drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 							if(a < 10)
 								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -3824,14 +3828,11 @@ void Sbar_Draw (void)
 						else
 						{
 							// XXX: Remove this once hud_skinsystem is merged!
-							
 							#define bw_left 2
 							#define bw_right 2
 							
 							pos_y -= 10;
-							//pos_x += a_offset - ((103 + bw_right + bw_left)/2)/a_unused;
-							
-							pos_x = ammosector_pos - bw_left + ((103 + bw_right)/2) + a_offset - (42/2)*a_unused;
+							pos_x = ammosector_pos - bw_left + ((103 + bw_right)/2) + a_offset - (42/2) * min(a_unused, (rm_althud? 4 : 3));
 							
 							drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 							Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
