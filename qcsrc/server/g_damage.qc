@@ -245,6 +245,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	
 	local string ragemeter;
 
+	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
 	{
 		if(time - attacker.lastkill > rage_timeout)
