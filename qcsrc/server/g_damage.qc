@@ -245,6 +245,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	local string ragemeter;
 
+	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
 	{
 		if(time - attacker.lastkill > rage_timeout)
@@ -1488,7 +1489,10 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						if (targ.classname == "player")
 							center = targ.origin + targ.view_ofs;
 						force = normalize(center - blastorigin);
-						force = force * (finaldmg / coredamage) * forceintensity;
+						//force = force * (finaldmg / coredamage) * forceintensity;
+						// WHAT? This completely breaks force on low damages, how did it even work before?!
+						force = force * forceintensity;
+						
 						// test line of sight to multiple positions on box,
 						// and do damage if any of them hit
 						hits = 0;
