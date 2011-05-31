@@ -465,9 +465,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		//<akari>
-		"ping pl cn name | hfrags +ft/kills +ft/deaths +ft/suicides +ft/revivals ",
-		//</akari>
+		strcat("ping pl cn name |", (g_minstagib? " hfrags" : ""), " +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
 		"+lms/lives +lms/rank +vip/vipkills +vip/survivals ",
@@ -2659,6 +2657,12 @@ void Sbar_Draw (void)
 
 	o2_y += sbar_fontsize_y * 1.5;
 
+	g_minstagib = getstati(STAT_MINSTA);
+	if(g_minstagib) if(!minstasbar_fixed)
+	{
+		localcmd("cl_cmd sbar_columns_set default\n");
+		minstasbar_fixed = TRUE;
+	}
 
 	if(spectatee_status == -1 || !spectatee_status)
 	{
