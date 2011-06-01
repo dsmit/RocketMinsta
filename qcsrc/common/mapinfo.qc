@@ -142,7 +142,7 @@ float MapInfo_Cache_Retrieve(string map)
 
 // GLOB HANDLING (for all BSP files)
 float _MapInfo_globopen;
-float _MapInfo_globcount; 
+float _MapInfo_globcount;
 float _MapInfo_globhandle;
 string _MapInfo_GlobItem(float i)
 {
@@ -197,6 +197,7 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 	MapInfo_count = 0;
 	for(i = 0, j = -1; i < _MapInfo_globcount; ++i)
 	{
+		/*
 		if(MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0) == 2) // if we generated one... BAIL OUT and let the caller continue in the next frame.
 			if(pAbortOnGenerate)
 			{
@@ -208,11 +209,15 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 		if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
 		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
 		if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
+		*/
 			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+			
+		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
+		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;
 	MapInfo_ClearTemps();
-	
+
 	// sometimes the glob isn't sorted nicely, so fix it here...
 	heapsort(MapInfo_count, _MapInfo_FilterList_swap, _MapInfo_FilterList_cmp, world);
 
@@ -449,7 +454,7 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 	MapInfo_Map_supportedGametypes |= pThisType;
 	if(!(pThisType & pWantedType))
 		return;
-	
+
 	if(pWantedType == MAPINFO_TYPE_ASSAULT || pWantedType == MAPINFO_TYPE_ONSLAUGHT || pWantedType == MAPINFO_TYPE_RACE || pWantedType == MAPINFO_TYPE_CTS) // these modes don't use fraglimit
 	{
 		cvar_set("fraglimit", "0");
@@ -967,11 +972,15 @@ float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with t
 {
 	if(!MapInfo_Get_ByName(s, 1, 0))
 		return 0;
+	return 1;
+	
+	/*
 	if((MapInfo_Map_supportedGametypes & MapInfo_CurrentGametype()) == 0)
 		return 0;
 	if((MapInfo_Map_supportedFeatures & MapInfo_CurrentFeatures()) != MapInfo_CurrentFeatures())
 		return 0;
 	return 1;
+	*/
 }
 
 float MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
@@ -1027,7 +1036,9 @@ void MapInfo_SwitchGameType(float t)
 void MapInfo_SwitchGameType_String(string gtname)
 {
 	MapInfo_SwitchGameType(MapInfo_Type_FromString(gtname));
-	
+
+	// TODO: remove this horrible mess
+
 	if(gtname == "kh")
 	{
 		cvar_set("g_ctf", "0");
@@ -1035,6 +1046,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
 		cvar_set("g_vip", "0");
+		cvar_set("g_dm", "0");
+		cvar_set("g_tdm", "0");
         _is_key_hunt = 1;
 	}
 	else if(gtname == "ft")
@@ -1044,6 +1057,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
 		cvar_set("g_vip", "0");
+		cvar_set("g_dm", "0");
+		cvar_set("g_tdm", "0");
         _is_key_hunt = 0;
 	}
 	else if(gtname == "ctf")
@@ -1053,6 +1068,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_domination", "0");
 		cvar_set("g_total_domination", "0");
         cvar_set("g_vip", "0");
+        cvar_set("g_dm", "0");
+        cvar_set("g_tdm", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "dom")
@@ -1062,6 +1079,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_ctf", "0");
 		cvar_set("g_total_domination", "0");
         cvar_set("g_vip", "0");
+        cvar_set("g_dm", "0");
+        cvar_set("g_tdm", "0");
 		_is_key_hunt = 0;
 	}
 	else if(gtname == "totaldom")
@@ -1072,6 +1091,8 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_total_domination", "1");
 		cvar_set("g_domination", "1");
         cvar_set("g_vip", "0");
+        cvar_set("g_dm", "0");
+        cvar_set("g_tdm", "0");
 		_is_key_hunt = 0;
 	}
     else if(gtname == "vip")
@@ -1081,8 +1102,34 @@ void MapInfo_SwitchGameType_String(string gtname)
 		cvar_set("g_ctf", "0");
 		cvar_set("g_total_domination", "0");
 		cvar_set("g_domination", "0");
+		cvar_set("g_dm", "0");
+		cvar_set("g_tdm", "0");
 		_is_key_hunt = 0;
     }
+    else if(gtname == "dm")
+    {
+		cvar_set("g_dm", "1");
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		cvar_set("g_domination", "0");
+		cvar_set("g_vip", "0");
+		cvar_set("g_tdm", "0");
+		_is_key_hunt = 0;
+	}
+	else if(gtname == "tdm")
+    {
+		cvar_set("g_tdm", "1");
+		cvar_set("g_dm", "0");
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		cvar_set("g_domination", "0");
+		cvar_set("g_vip", "0");
+		_is_key_hunt = 0;
+	}
 }
 
 void MapInfo_LoadMap(string s)
@@ -1114,7 +1161,7 @@ string MapInfo_ListAllowedMaps(float pRequiredFlags, float pForbiddenFlags)
 void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 {
 	//print("^1MapInfo_LoadMapSettings\n");
-	
+
 	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
 	#ifdef WE_GIVE_A_SHIT_ABOUT_MAPINFO
 	{
