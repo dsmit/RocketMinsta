@@ -154,7 +154,7 @@ float RemapVote(string vote, string cmd, entity e)
 			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
 			{
 				// Moved from ValidateMap
-				sprint (e, strcat ("^1", GametypeFullNameFromName(game), " is not allowed on the selected map\n"));
+				sprint (e, strcat ("^1", GametypeFullNameFromType(game), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
@@ -283,7 +283,7 @@ float RemapVote(string vote, string cmd, entity e)
 			// Let's give this another shot
 			if (! GameTypeFilter_Allowed (mapname, s))
 			{
-				sprint (e, strcat ("^1I wouldn't play this map on ^2", GametypeFullNameFromName (s), " ^1with YOUR DICK!!!\n"));
+				sprint (e, strcat ("^1", GametypeFullNameFromName(s), " is not allowed on the current map\n"));
 				return FALSE;
 			}
 			if (! cvar ("g_explosive_gametypevote_call"))
