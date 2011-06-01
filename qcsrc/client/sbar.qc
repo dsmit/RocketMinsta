@@ -1468,7 +1468,11 @@ void Sbar_Score()
 		}
 		else
 		{
-			Sbar_DrawXNum(score_pos + ((score > 9)? '24 0 0' : '0 0 0'), score, 4, 0, 24, GetTeamRGB(tm.team) * ((!leader)? 1 : 0.8) + ((!leader)? '0.2 0.2 0.2' : '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			score_pos = score_pos + ((score > 9)? '24 0 0' : '0 0 0');
+			secondary_score_pos = score_pos + '24 0 0' * 2.7 + '16 0 0' * (distribution > 9);
+			
+			Sbar_DrawXNum(score_pos, score, 4, 0, 24, GetTeamRGB(tm.team) * ((!leader)? 1 : 0.8) + ((!leader)? '0.2 0.2 0.2' : '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			Sbar_DrawXNum(secondary_score_pos, distribution, 4, 3, 16, distribution_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 		}
 	} else { // teamgames
 		float max_fragcount;
