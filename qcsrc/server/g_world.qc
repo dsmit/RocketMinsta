@@ -2690,10 +2690,7 @@ float GameTypeVote_AvailabilityStatus(string gtname)
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_AVAILABLE;
 	
-	if not(cvar(strcat ("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
-		return GTV_AVAILABLE;
-	
-	if(gtname == GametypeNameFromType(game))
+	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_OVERPLAYED;
 
 	return GTV_AVAILABLE;
