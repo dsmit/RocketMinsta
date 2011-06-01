@@ -242,20 +242,21 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	local float maxrage = 5;
 	local float rage_timeout = 3;
-	
+
 	local string ragemeter;
 
+	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
 	{
 		if(time - attacker.lastkill > rage_timeout)
 			attacker.rage = 0;
-		
+
 		attacker.lastkill = time;
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
-		
+
 		ragemeter = "^1";
-		
+
 		local float i;
 		i = 2;
 		while(i < maxrage)
@@ -264,7 +265,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				ragemeter = strcat(ragemeter, "^0");
 			else
 				ragemeter = strcat(ragemeter, "");
-			
+
 			i++;
 		}
 		if(attacker.rage-1 >= maxrage)
@@ -272,9 +273,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		else
 			ragemeter = strcat(ragemeter, "^0");
 	}
-	
+
 	float _hfrag;
-	
+
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
 		if (targ.classname == "corpse")
@@ -376,10 +377,10 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1", a, "^1 took action against a team mate\n");
 				} else {
 					//<akari>
-					
+
 					//Fixed this a little
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, "^1, a team mate!"));
-					
+
 					//Why isn't there a teamfrag message for victims?
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were fragged by ^7", a, "^1, the teamkilling moron"));
 					//</akari>
@@ -405,7 +406,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			else
 			{
 				attacker.killsound = 1;
-				
+
 				string blood_message, victim_message;
 				if (!checkrules_firstblood)
 				{
@@ -421,7 +422,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint("^1",a, "^1 drew first blood", "\n");
 						//blood_message = "^1First blood\n";
 						//victim_message = "^1First victim\n";  // or First casualty
-						
+
 						bigprint_spec(attacker, "^7first^1blood", "", 1);
 						bigprint_spec(targ, "^7first^0victim", "", 1);
 					}
@@ -431,58 +432,75 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
 				} else {
-					//<akari>
 					//Let's detect laserfrags
-					if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+					if(g_minstagib)
 					{
-						play2(attacker, "announcer/male/awesome.wav");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
-					}
-					else if(deathtype == DEATH_NOAMMO)
-					{
-						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+						if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+						{
+							play2(attacker, "announcer/male/awesome.wav");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
+						}
+						else if(deathtype == DEATH_NOAMMO)
+						{
+							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
 
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-						
-						play2(attacker, "announcer/male/awesome.wav");
-						bigprint_spec(attacker, "holy^1shit", "Awesome frag", 1);
-						
-						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-					}
-					else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
-					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
-						PlayerScore_Add(attacker, SP_SCORE, 1);
-					}
-					//That's how I detect hookfrags. No, seriously!
-					else if(targ.pushltime == 1337)
-					{
-						bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-						PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
-						//centerprint(attacker, "^7Hookfrag!");
-						
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-						
-						PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-						
-						play2(attacker, "announcer/male/awesome.wav");
-						_hfrag = 1;
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+
+							play2(attacker, "announcer/male/awesome.wav");
+							bigprint_spec(attacker, "holy^1shit", "Awesome frag", 1);
+
+							PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+						}
+						else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+						{
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
+
+							if(!g_dm && !g_tdm)
+								PlayerScore_Add(attacker, SP_SCORE, 1);
+						}
+						//That's how I detect hookfrags. No, seriously!
+						else if(targ.pushltime == 1337)
+						{
+							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
+							PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+							//centerprint(attacker, "^7Hookfrag!");
+
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
+
+							PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+
+							play2(attacker, "announcer/male/awesome.wav");
+							_hfrag = 1;
+						}
+						else
+						{
+							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
+							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
+
+							if(g_vip)
+								PlayerScore_Add(attacker, SP_SCORE, 1);
+						}
 					}
 					else
 					{
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-						
+						local string tail;
+						tail = "";
+
+						if(!DEATH_ISSPECIAL(deathtype))
+							tail = strcat(" with ^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, "^4", tail));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a, "^1", tail));
+
 						if(g_vip)
 							PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
-					//</akari>
 					attacker.taunt_soundtime = time + 1;
 				}
 
@@ -536,8 +554,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint ("^1",s, "^1 was burnt to death by ^1", a, "\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
-					
-					
+
+
 				}
 
 				if(g_ctf && targ.flagcarried)
@@ -571,7 +589,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				if (attacker.killcount == 3)
 				{
 					//We already have a triple kill in another context
-					
+
 					/*if(sv_gentle) {
 						bprint (a,"^7 made a ^1TRIPLE SCORE\n");
 					} else {
@@ -640,14 +658,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bigprint_spec(attacker, "^1armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
-				
+
 				#define RAGESOUND announce(attacker, "porto/fire.wav");
 				switch(attacker.rage)
 				{
 					case 0:
 					case 1:
 						break;
-					
+
 					case 2: RAGESOUND
 						bigprint_spec(attacker, "^2double^7kill!", ragemeter, 1);
 						break;
@@ -758,7 +776,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	if (gameover || targ.killcount == -666)
 		return;
-	
+
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
 
@@ -863,15 +881,15 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(g_vip) if(vip_soulgem) if(!vip_started) if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;
-			
+
 			if(targ != attacker)
 			{
 				force = '0 0 0';
-				
+
 				if(attacker.classname == "player") if(targ.classname == "player")
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
-			
+
 			/*
 			if(deathtype == DEATH_HURTTRIGGER)
 			{
@@ -879,7 +897,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				self = targ;
 				PutClientInServer();
 				self = oldself;
-				
+
 				if(ISVIP(targ))
 				vip_ResetHealthArmor(targ);
 			}
@@ -897,18 +915,18 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				self = oldself;
 				return;
 			}
-			
+
 			local float ex = cvar("g_balance_minstanex_explosive");
 			local float ex_armor = cvar("g_explosive_armor");
 			float armor_passthrough = cvar("g_explosive_armor_passthrough");
-			
+
 			if(ex)
 			if(targ.ignore_next && DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
 			{
 				damage = 0;
 				targ.ignore_next = 0;
 			}
-			
+
 			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_explosive_minsta_damage") <= 0))
 			{
 				if(!ex || !ex_armor)
@@ -933,13 +951,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 						damage = (100 - targ.armorvalue) * cvar("g_explosive_armor_factor");
 						targ.armorvalue = 0;
 					}
-					
+
 					attacker.hitsound += 1;
 					targ.hitsound += 1;
 					targ.ignore_next = 1;
 				}
 			}
-			
+
 			if(ex)
 			if(ex_armor)
 			if(targ.armorvalue)
@@ -949,12 +967,12 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			{
 				armordamage = damage * cvar("g_explosive_armor_factor");
 				attacker.hitsound += 1;
-				
+
 				if(armor_passthrough)
 				{
 					float rest;
 					rest = targ.armorvalue - armordamage;
-					
+
 					if(rest < 0)
 						damage = -rest;
 					else
@@ -962,10 +980,10 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				}
 				else
 					damage = 0;
-				
+
 				targ.armorvalue -= min(targ.armorvalue, armordamage);
 			}
-			
+
 			if(ex)
 			{
 				if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
@@ -994,7 +1012,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				}
 			}
 		}
-		
+
 		if not(DEATH_ISSPECIAL(deathtype))
 		{
 			damage *= g_weapondamagefactor;
@@ -1007,7 +1025,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		{
 			damage = 0;
 			force = force * cvar("g_explosive_freezetag_frozen_force");
-			
+
 			if(targ.team != attacker.team || cvar("g_explosive_freezetag_melt_teamdamage"))
 			{
 				targ.freezetag_meltprogress = 0;
@@ -1015,7 +1033,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				targ.freezetag_meltprogress = 0;
 				targ.freezetag_revive_progress = 0;
 			}
-			
+
 			if(deathtype == DEATH_HURTTRIGGER)
 			{
 				oldself = self;
@@ -1024,7 +1042,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				self = oldself;
 			}
 		}
-		
+
 		// apply strength multiplier
 		if ((attacker.items & IT_STRENGTH) && !g_minstagib)
 		{
@@ -1167,14 +1185,14 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	if (vlen(force))
 	{
 		self.velocity = self.velocity + self.damageforcescale * force;
-		
+
 		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
 			self.velocity = self.velocity * cvar("g_explosive_splash_velocity_influence");
 		else if(DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 			self.velocity = self.velocity * cvar("g_explosive_laser_velocity_influence");
 		else
 			self.velocity = self.velocity * cvar("g_explosive_default_velocity_influence");
-		
+
 		if(g_explosive_speedaward_ownaccel)
 		if(attacker == targ)
 		if(self.classname == "player")
@@ -1183,102 +1201,102 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(myvel > highest_velocity)
 				UpdateHighestVelocity(myvel, self);
 		}
-		
+
 		self.flags &~= FL_ONGROUND;
 		UpdateCSQCProjectile(self);
 	}
 	// apply damage
+
 	if (damage != 0 || (self.damageforcescale && vlen(force)))
 	if (self.event_damage)
 		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
 	self = oldself;
 
-	//<akari>
-	//Print damage to players
-	
-	local float olddamage;
-	olddamage = damage;
-	
-	damage = min(damage, t_oldhealth);
-	armordamage = min(armordamage, t_oldarmor);
-	
-	if(attacker.classname == "player")
-	if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
+	// Print damage
+	if(g_minstagib) // since I'm too lazy to do this crap the way it should be done, minstagib uses it's own damage indicator
 	{
-		PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-		
-		//TODO: make it work for extralives
-		PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
-		
-		if(attacker != targ) if(damage || armordamage)
-			hudflash_teamcolor_default_spec(attacker);
-	}
-	
-	if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
-	{
-		float i;
-		
-		for(i = 0; i < 2; i++)
+		local float olddamage;
+		olddamage = damage;
+
+		damage = min(damage, t_oldhealth);
+		armordamage = min(armordamage, t_oldarmor);
+
+		if(attacker.classname == "player")
+		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
 		{
-			local string dmgstring, wpnstring;
-			
-			// To-do: generate prints client-side, send all the crap through a tempentity
-			
-			if(i) // damage
-			{
-				if(!damage)
-					continue;
-				
-				dmgstring = ftos(rint(damage));
-			}
-			else //armor damage
-			{
-				if(!armordamage)
-					continue;
-				
-				dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-			}
-			
-			if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-				wpnstring = "^1splash";
-			else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-				wpnstring = "^xFB0laser";
-			else if(deathtype == DEATH_NOAMMO)
-				wpnstring = "^7hook";
-			else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
-				wpnstring = "^5insta";
-			else 
-				wpnstring = "^0unknown"; //??????????
-			
-			if(attacker.classname == "player") if(attacker != targ)
-			{
-				if(targ.netname)
-					centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-			}
-			
-			if(targ.classname == "player")
-			{
-				if(attacker.netname)
-				{
-					if(attacker == targ)
-						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-					else
-						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
-				}
-				else
-					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
-			}
-			
-			//hudflash_default_spec(attacker, '1 1 -1');
-			//hudflash_default_spec(targ, '2 1 -1');
-			
-			//hudflash_spec(attacker, '1 1 -1', HF_DEFAULT_TIME * 1.5, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-			hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
+
+			//TODO: make it work for extralives
+			PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
+
+			if(attacker != targ) if(damage || armordamage)
+				hudflash_teamcolor_default_spec(attacker);
 		}
+
+		if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
+		{
+			float i;
+
+			for(i = 0; i < 2; i++)
+			{
+				local string dmgstring, wpnstring;
+
+				// To-do: generate prints client-side, send all the crap through a tempentity
+
+				if(i) // damage
+				{
+					if(!damage)
+						continue;
+
+					dmgstring = ftos(rint(damage));
+				}
+				else //armor damage
+				{
+					if(!armordamage)
+						continue;
+
+					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
+				}
+
+				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+					wpnstring = "^1splash";
+				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+					wpnstring = "^xFB0laser";
+				else if(deathtype == DEATH_NOAMMO)
+					wpnstring = "^7hook";
+				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
+					wpnstring = "^5insta";
+				else
+					wpnstring = "^0unknown";
+
+				if(attacker.classname == "player") if(attacker != targ)
+				{
+					if(targ.netname)
+						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+				}
+
+				if(targ.classname == "player")
+				{
+					if(attacker.netname)
+					{
+						if(attacker == targ)
+							centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+						else
+							centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+					}
+					else
+						centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
+				}
+
+				//hudflash_default_spec(attacker, '1 1 -1');
+				//hudflash_default_spec(targ, '2 1 -1');
+
+				//hudflash_spec(attacker, '1 1 -1', HF_DEFAULT_TIME * 1.5, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+				hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			}
+		}
+		damage = olddamage;
 	}
-	damage = olddamage;
-	
-	//</akari>
 
 	if(targ.classname == "player" && attacker.classname == "player" && attacker != targ && attacker.health > 2)
 	{
@@ -1471,7 +1489,10 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						if (targ.classname == "player")
 							center = targ.origin + targ.view_ofs;
 						force = normalize(center - blastorigin);
-						force = force * (finaldmg / coredamage) * forceintensity;
+						//force = force * (finaldmg / coredamage) * forceintensity;
+						// WHAT? This completely breaks force on low damages, how did it even work before?!
+						force = force * forceintensity;
+						
 						// test line of sight to multiple positions on box,
 						// and do damage if any of them hit
 						hits = 0;

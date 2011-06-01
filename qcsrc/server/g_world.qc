@@ -1821,6 +1821,7 @@ void ShuffleMaplist()
 float leaderfrags;
 float WinningCondition_Scores(float limit, float leadlimit)
 {
+	local entity e;
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
@@ -1845,23 +1846,41 @@ float WinningCondition_Scores(float limit, float leadlimit)
 		limit = -limit;
 	}
 
+	
+
 	if(WinningConditionHelper_zeroisworst)
 		leadlimit = 0; // not supported in this mode
 
 	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
+		local string winmsg;
+		
+		if(teamplay)
+			winmsg = strcat(ColoredTeamName(WinningConditionHelper_winnerteam), " ^7is about to win");
+		else
+			winmsg = strcat(WinningConditionHelper_winner.netname, " ^7is about to win");
+		
 		if(leaderfrags != WinningConditionHelper_topscore)
 		{
 			leaderfrags = WinningConditionHelper_topscore;
 
 			if (limit)
 			if (leaderfrags == limit - 1)
+			{
 				play2all("announcer/robotic/1fragleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "one frag remains", winmsg, 2);
+			}
 			else if (leaderfrags == limit - 2)
+			{
 				play2all("announcer/robotic/2fragsleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "two frags remain", winmsg, 2);
+			}
 			else if (leaderfrags == limit - 3)
+			{
 				play2all("announcer/robotic/3fragsleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "three frags remain", winmsg, 2);
+			}
 		}
 	}
 
@@ -2752,7 +2771,8 @@ void GameTypeVote_Start()
 
 	for(j = 0; j < mapvote_count; ++j)
 		if(mapvote_maps[j])
-			strunzone(mapvote_maps[j]);
+			if(mapvote_maps[j] != "")
+				strunzone(mapvote_maps[j]);
 	
 	mapvote_count = 0;
 	mapvote_timeout = time + cvar("g_explosive_gametypevote_timeout");

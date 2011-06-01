@@ -106,12 +106,18 @@ float RemapVote(string vote, string cmd, entity e)
 
 		if(vote_argc > 2)
 		{
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
+			
 			s = NormalizeGametypeName(argv(2));
-			if(!ListContains(GameTypeVote_GetOptions(), s, " ")) s = "";
-
+			if(!ListContains(cvar_string("sv_vote_commands"), s, " ")) s = "";
+			
 			// ListContains tokenizes
 			vote_argc = tokenize_console(vote);
-
+			
 			if(s == "")
 			{
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));

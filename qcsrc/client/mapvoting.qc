@@ -63,8 +63,12 @@ string GameTypeVote_GameTypeName(string gtype)
 			return "Total Domination";
 		case "vip":
 			return "VIP";
+		case "dm":
+			return "Deathmatch";
+		case "tdm":
+			return "Team Deathmatch";
 	}
-	
+
 	return strcat(gtype, " (unknown gametype?!)");
 }
 
@@ -84,8 +88,12 @@ string GameTypeVote_GameTypeDescription(string gtype)
 			return "A round based Domination spin-off.\nYou must overtake all of the control points on the map to win the round.";
 		case "vip":
 			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
+		case "dm":
+			return "Free for all: the one to get most frags wins.";
+		case "tdm":
+			return "Team-based deathmatch: the team to get most frags wins.";
 	}
-	
+
 	return "No description is available for this gametype";
 }
 
@@ -95,13 +103,13 @@ string GameTypeVote_DescriptionByID(float id)
 	{
 		case GTV_AVAILABLE:
 			return GameTypeVote_GameTypeDescription(mv_maps[id]);
-		
+
 		case GTV_OVERPLAYED:
 			return "This gametype is currently overplayed.";
-		
+
 		case GTV_FORBIDDEN:
 			return "This gametype is forbidden on this map.";
-		
+
 		default:
 			return "wtf?";
 	}
@@ -115,19 +123,19 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 {
 	local string s;
 	s = GameTypeVote_DescriptionByID(id);
-	
+
 	local float a, i, n = tokenizebyseparator(s, "\n");
 	if(mv_avail[id] != GTV_AVAILABLE)
 		a = 0.5;
 	else
 		a = 1;
-	
+
 	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2, a);
 	for(i = 0; i < n; ++i)
 	{
 		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
-	
+
 	drawGameTypeLine("", '1 1 1', 1, 1);
 	return o;
 }
@@ -138,24 +146,24 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	vector rgb;
 	string label;
 	float text_size;
-	
+
 	isize -= sbar_fontsize_y; // respect the text when calculating the image size
 
 	rgb = MapVote_RGB(id);
-	
+
 	img_size_y = isize;
 	img_size_x = isize / 0.75; // 4:3 x can be stretched easily, height is defined in isize
 
 	drawfont = sbar_font;
 	pos_y = pos_y + img_size_y;
-	
+
 	label = MapVote_FormatMapItem(id, map, count, tsize / sbar_fontsize_x);
 
 	text_size = stringwidth(label, false) * sbar_fontsize_x;
-	
+
 	pos_x -= text_size*0.5;
 	drawstring(pos, label, sbar_fontsize, rgb, 1, DRAWFLAG_NORMAL);
-	
+
 	pos_x = pos_x + text_size*0.5 - img_size_x*0.5;
 	pos_y = pos_y - img_size_y;
 
@@ -169,7 +177,7 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	{
 		drawpic(pos, pic, img_size, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
-	
+
 	drawpic(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', 0.6, DRAWFLAG_NORMAL);
 
 	if(id == mv_ownvote || pic == "")
@@ -189,16 +197,16 @@ void MapVote_DrawAbstain(vector pos, float isize, float tsize, float count, floa
 	vector rgb;
 	float text_size;
 	string label;
-	
+
 	rgb = MapVote_RGB(id);
 
 	drawfont = sbar_font;
 	pos_y = pos_y + sbar_fontsize_y;
-	
+
 	label = MapVote_FormatMapItem(id, "Don't care", count, tsize / sbar_fontsize_x);
 
 	text_size = stringwidth(label, false) * sbar_fontsize_x;
-	
+
 	pos_x -= text_size*0.5;
 	drawstring(pos, label, sbar_fontsize, rgb, 1, DRAWFLAG_NORMAL);
 }
@@ -226,7 +234,7 @@ void MapVote_Draw()
 
 	if(!mv_active)
 		return;
-	
+
 	center = (vid_conwidth - 1)/2;
 	xmin = vid_conwidth*0.05; // 5% border must suffice
 	xmax = vid_conwidth - xmin;
@@ -254,12 +262,12 @@ void MapVote_Draw()
 	pos_x = xmin;
 
 	drawfont = sbar_font;
-	
+
 	// base for multi-column stuff...
 	ymin = pos_y;
 	if(mv_abstain)
 		mv_num_maps -= 1;
-	
+
 	if(mv_num_maps > 3)
 	{
 		columns = 3;
@@ -276,26 +284,26 @@ void MapVote_Draw()
 	pos_x += (xmax - xmin) / (2 * columns);
 	pos_y += (dist_y - isize) / 2;
 	ymax -= isize;
-	
+
 	local vector o;
-	
+
 	if(gametypevote)
 	{
 		// draws the picked map
-		
+
 		vector img_size;
 		img_size_y = isize;
 		img_size_x = isize / 0.75;
-		
+
 		o_x = min(
 			vid_conwidth * 0.5 + (sbar_fontsize_x * gametypevote_longest) * 0.25,
 			vid_conwidth - sbar_fontsize_x - img_size_x
 		);
-		
+
 		o_y = sbar_fontsize_y * 10;
-	
+
 		drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
-	
+
 		if(mapvote_choosenmappic == "")
 		{
 			drawfill(o, img_size, '.5 .5 .5', .7, DRAWFLAG_NORMAL);
@@ -304,23 +312,23 @@ void MapVote_Draw()
 		{
 			drawpic(o, mapvote_choosenmappic, img_size, '1 1 1', 1, DRAWFLAG_NORMAL);
 		}
-		
+
 		o_y += img_size_y;
 		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
-		
+
 		drawstring(o, mapvote_choosenmap, sbar_fontsize, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
-	
+
 	o_x = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);
 	o_y = sbar_fontsize_y * 10;
-	
+
 	for(i = 0; i < mv_num_maps; ++i)
 	{
 		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
 		if(tmp < 0)
 			continue;
 		map = mv_maps[i];
-		
+
 		if(gametypevote)
 		{
 			o = GameTypeVote_DrawGametypeItem(o, map, tmp, i);
@@ -336,7 +344,7 @@ void MapVote_Draw()
 
 	if(mv_abstain)
 		++mv_num_maps;
-	
+
 	if(mv_abstain && i < mv_num_maps) {
 		tmp = mv_votes[i];
 		pos_y = ymax + isize - sbar_fontsize_y;
@@ -355,19 +363,19 @@ void Cmd_MapVote_MapDownload(float argc)
 		print("mv_mapdownload: ^3You're not supposed to use this command on your own!\n");
 		return;
 	}
-	
+
 	id = stof(argv(1));
 	for(pak = mv_pk3list; pak; pak = pak.chain)
 		if(pak.sv_entnum == id)
 			break;
-	
+
 	if(!pak || pak.sv_entnum != id) {
 		print("^1Error:^7 Couldn't find pak index.\n");
 		return;
 	}
 
 	//print(strcat("^3Adding: ", ftos(id), " - ", pak.message, " - "));
-	
+
 	if(PreviewExists(pak.message))
 	{
 		mv_preview[id] = true;
@@ -386,10 +394,10 @@ void MapVote_CheckPK3(string pic, string pk3, float id)
 	pak.netname = pk3;
 	pak.message = pic;
 	pak.sv_entnum = id;
-	
+
 	pak.chain = mv_pk3list;
 	mv_pk3list = pak;
-	
+
 	if(pk3 != "")
 	{
 		localcmd(strcat("\ncurl --pak ", pk3, "; wait; cl_cmd mv_download ", ftos(id), "\n"));
@@ -427,7 +435,7 @@ void MapVote_Init()
 	mv_active = 1;
 
 	ssdir = ReadString();
-	
+
 	mv_num_maps = min(MAPVOTE_COUNT, ReadByte());
 	mv_abstain = ReadByte();
 	if(mv_abstain)
@@ -438,7 +446,7 @@ void MapVote_Init()
 	mv_timeout = ReadCoord();
 
 	gametypevote = ReadByte();
-	
+
 	if(gametypevote)
 	{
 		print("^5Now decide the GAMETYPE!\n");
@@ -449,10 +457,10 @@ void MapVote_Init()
 		mv_maps_mask = ReadByte();
 	else
 		mv_maps_mask = ReadShort();
-	
+
 	// Assume mv_pk3list is NULL, there should only be 1 mapvote per round
 	mv_pk3list = NULL; // I'm still paranoid!
-	
+
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
 	{
 		mv_votes[i] = 0;
@@ -470,11 +478,11 @@ void MapVote_Init()
 
 			//print(strcat("RECV: ", map, " in ", pk3, "\n"));
 			MapVote_CheckPic(map, pk3, i);
-			
+
 			if(gametypevote)
 			{
 				mv_avail[i] = ReadByte();
-				
+
 				map = mv_maps[i];
 				n = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
 				for(j = 0; j < n; ++j)
@@ -497,8 +505,8 @@ void MapVote_Init()
 
 	// do we NEED this, or can we handle key presses directly in CSQC?
 	localcmd("\nin_bind 7 1 \"impulse 1\"; in_bind 7 2 \"impulse 2\"; in_bind 7 3 \"impulse 3\"; in_bind 7 4 \"impulse 4\"; in_bind 7 5 \"impulse 5\"; in_bind 7 6 \"impulse 6\"; in_bind 7 7 \"impulse 7\"; in_bind 7 8 \"impulse 8\"; in_bind 7 9 \"impulse 9\"; in_bind 7 0 \"impulse 10\"; in_bind 7 KP_1 \"impulse 1\"; in_bind 7 KP_2 \"impulse 2\"; in_bind 7 KP_3 \"impulse 3\"; in_bind 7 KP_4 \"impulse 4\"; in_bind 7 KP_5 \"impulse 5\"; in_bind 7 KP_6 \"impulse 6\"; in_bind 7 KP_7 \"impulse 7\"; in_bind 7 KP_8 \"impulse 8\"; in_bind 7 KP_9 \"impulse 9\"; in_bind 7 KP_0 \"impulse 10\"; in_bindmap 7 0\n");
-	
-	
+
+
 }
 
 void MapVote_UpdateMask()
