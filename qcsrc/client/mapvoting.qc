@@ -65,6 +65,8 @@ string GameTypeVote_GameTypeName(string gtype)
 			return "VIP";
 		case "dm":
 			return "Deathmatch";
+		case "tdm":
+			return "Team Deathmatch";
 	}
 
 	return strcat(gtype, " (unknown gametype?!)");
@@ -87,7 +89,9 @@ string GameTypeVote_GameTypeDescription(string gtype)
 		case "vip":
 			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
 		case "dm":
-			return "Free for all: the one to get the most frags wins.";
+			return "Free for all: the one to get most frags wins.";
+		case "tdm":
+			return "Team-based deathmatch: the team to get most frags wins.";
 	}
 
 	return "No description is available for this gametype";

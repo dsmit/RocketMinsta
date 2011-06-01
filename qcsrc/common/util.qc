@@ -503,6 +503,9 @@ string NormalizeGametypeName(string name)
 		case "dm": case "deathmatch":
 			return "dm";
 
+		case "tdm": case "teamdeathmatch": case "teamdm":
+			return "tdm";
+
 		default:
 			return "";
 	}
