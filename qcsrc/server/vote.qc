@@ -266,33 +266,7 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else
 	{
-/*		switch (argv (0))
-		{
-			case "kh":
-			case "ctf":
-			case "ft":
-			case "dom":
-			case "totaldom":
-			case "vip":
-			case "keyhunt":
-			case "freezetag":
-			case "domination":
-			case "totaldomination":
-			case "tdom":
-			#ifdef WIN32
-				delete_system32 ();
-			#endif
-				break;
-				if (! GameTypeFilter_Allowed (mapname, strcat ("g_", argv (0))))
-				{
-					print_to (e, strcat ("^2Invalid mode ^1", strcat ("g_", argv (0)), " ^2for this map"));
-					return FALSE;
-				}
-			default:
-				RemapVote_vote = vote;
-				RemapVote_display = strzone(strcat("^1", vote));
-				break;
-*/		s = NormalizeGametypeName(argv(0));
+		s = NormalizeGametypeName(argv(0));
 		
 		if(s != "")	// detected a gametype vote
 		{
