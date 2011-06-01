@@ -569,6 +569,25 @@ void InitGameplayMode()
 		ScoreRules_race();
 	}
 
+	
+	// More robust freezefag detector
+	local float __i, __j = tokenizebyseparator (cvar_string ("g_explosive_gametypevote_options") /* GameTypeVote_GetOptions () */ , " ");
+	local string gtype, gtype_cvar;
+	for (__i = 0; __i < __j; __i ++)
+	{
+		gtype = argv (__i);
+		gtype_cvar = strcat ("_sv_rm_maprow_", gtype);
+		if (cvar (gtype_cvar) > 0 && gtype != GetGametype ())
+		{
+			if(cvar("g_explosive_gametypevote_overplayed_strict"))
+				cvar_set (gtype_cvar, ftos (cvar (gtype_cvar) - 1));
+			else // emulate the old behaviour: reset the counter
+				cvar_set (gtype_cvar, "0");
+		}
+		else if (gtype == GetGametype ())
+			cvar_set (gtype_cvar, ftos (cvar (gtype_cvar) + 1));
+	}
+
 	InitializeEntity(world, default_delayedinit, INITPRIO_GAMETYPE_FALLBACK);
 }
 
