@@ -448,14 +448,6 @@ void spawnfunc_worldspawn (void)
 */
     registercvar("_g_explosive_infomessages_count", "0");
 
-	// Increase or decrease the appropriate cvar by 1 when a particular gametype is played/not played
-	registercvar ("_sv_rm_maprow_ctf", "0");
-	registercvar ("_sv_rm_maprow_kh", "0");
-	registercvar ("_sv_rm_maprow_ft", "0");
-	registercvar ("_sv_rm_maprow_dom", "0");
-	registercvar ("_sv_rm_maprow_totaldom", "0");
-	registercvar ("_sv_rm_maprow_vip", "0");
-
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)

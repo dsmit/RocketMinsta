@@ -515,6 +515,9 @@ void InitGameplayMode()
 
 	gamemode_name = GametypeFullNameFromType(game);
 
+	//Increase or decrease the appropriate cvar by 1 when a particular gametype is played/not played
+	registercvar(strcat("_sv_rm_maprow_", GametypeNameFromType(game)), "0");
+
 	if(teams_matter)
 		entcs_init();
 
