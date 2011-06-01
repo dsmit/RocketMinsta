@@ -287,33 +287,38 @@ float Item_GiveTo(entity item, entity player)
 					{
 						//if(player.health <= 30)
 						//	play2(player, "misc/poweroff.wav");
-						
+
 						if(player.health < 2)
 						{
 							//centerprint(player, "^1WHAT THE FUCK?!");
 							bigprint_spec(player, "^7morning^xfb0rescue", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
-							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_1hp"));
+
+							if(!g_dm && !g_tdm)
+								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_1hp"));
 							play2(player, RM_SOUND_MORNINGRESCUE);
 						}
 						else if(player.health <= 10)
 						{
 							//centerprint(player, "^xF60P^xF40H^xF20O^1E^xF20N^xF40I^xF60X");
 							bigprint_spec(player, "^xf20phoenix", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
-							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_10hp"));
+							if(!g_dm && !g_tdm)
+								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_10hp"));
 							play2(player, RM_SOUND_PHOENIX);
 						}
 						else if(player.health <= 20)
 						{
 							//centerprint(player, "^x06FR^x04FE^x02FB^4I^x02FR^x04FT^x06FH");
 							bigprint_spec(player, "^x06Frebirth", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
-							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_20hp"));
+							if(!g_dm && !g_tdm)
+								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_20hp"));
 							play2(player, RM_SOUND_REBIRTH);
 						}
 						else if(player.health <= 30)
 						{
 							//centerprint(player, "^xCCCR^xDDDE^xEEEC^7OV^xEEEE^xDDDR^xCCCY");
 							bigprint_spec(player, "^7recovery", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
-							PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_30hp"));
+							if(!g_dm && !g_tdm)
+								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_30hp"));
 							play2(player, RM_SOUND_RECOVERY);
 						}
 					}
@@ -327,14 +332,14 @@ float Item_GiveTo(entity item, entity player)
 					W_GiveWeapon (player, WEP_MINSTANEX, "Nex");
 				if (item.ammo_cells)
 					player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
-				
+
 				//<akari>
 				if(player.health < 100)
 					player.health = 100;
 				else if(cvar("g_explosive_health_overflow"))
 					if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
 						player.health += cvar("g_explosive_health_overflow");
-					
+
 				//</akari>
 			}
 
@@ -373,7 +378,7 @@ float Item_GiveTo(entity item, entity player)
 				player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
 				player.pauserotfuel_finished = max(player.pauserotfuel_finished, time + cvar("g_balance_pause_fuel_rot"));
 			}
-			
+
 			//<akari>
 			if(item.armorvalue)
 			{
@@ -976,14 +981,14 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 void RocketMinsta_SpawnArmor()
 {
 	self.classname = "minstagib";
-	
+
 	if(!self.armorvalue)
 		self.armorvalue = 100;
 	if(!self.max_armorvalue)
 		self.max_armorvalue = cvar("g_explosive_armor_max");
 	//if(!self.pickup_anyway)
 	//	self.pickup_anyway = 1;
-		
+
 	StartItem ("models/items/g_a25.md3", "misc/armor25.wav",
 		g_pickup_respawntime_medium,
 		g_pickup_respawntimejitter_long,
@@ -994,7 +999,7 @@ void RocketMinsta_SpawnArmor()
 	);
 }
 //</akari>
- 
+
 void minstagib_items (float itemid)
 {
 	// we don't want to replace dropped weapons ;)
@@ -1014,7 +1019,7 @@ void minstagib_items (float itemid)
 	if (itemid == IT_CELLS)
 	{
 		self.ammo_cells = 1;
-		
+
 		//<akari>
 		if(cvar("g_balance_minstanex_explosive"))
 			StartItem ("models/items/g_h50.md3",
@@ -1025,7 +1030,7 @@ void minstagib_items (float itemid)
 			StartItem ("models/items/a_cells.md3",
 				"misc/itempickup.wav", 45, 0,
 				"Nex Ammo", IT_CELLS, 0, 0, generic_pickupevalfunc, 100);
-		
+
 		return;
 	}
 
@@ -1180,11 +1185,11 @@ void weapon_defaultspawnfunc(float wpn)
 	//<akari>
 	//In explosive mode, we will make the dropped nex look and sound like a health bonus
 	//Why? Because it behaves like a health bonus!
-	
+
 	string _model;
 	string _sound;
-	
-	if(wpn == WEP_MINSTANEX && cvar("g_balance_minstanex_explosive"))
+
+	if(wpn == WEP_MINSTANEX && cvar("g_balance_minstanex_explosive") && g_minstagib)
 	{
 		_model = "models/items/g_h50.md3";
 		_sound = "misc/mediumhealth.wav";
@@ -1194,7 +1199,7 @@ void weapon_defaultspawnfunc(float wpn)
 		_model = e.model;
 		_sound = "weapons/weaponpickup.wav";
 	}
-	
+
 	//</akari>
 
 	if(e.items && e.items != IT_SUPERWEAPON)
@@ -1427,7 +1432,7 @@ void spawnfunc_item_strength (void) {
 		return;
 	}
 	//</akari>
-	
+
 	if(!cvar("g_powerup_strength"))
 		return;
 
@@ -1453,7 +1458,7 @@ void spawnfunc_item_invincible (void) {
 		return;
 	}
 	//</akari>
-	
+
 	if(!cvar("g_powerup_shield"))
 		return;
 
@@ -1478,7 +1483,7 @@ void spawnfunc_item_minst_cells (void) {
 		return;
 	}
 	//</akari>
-	
+
 	if (g_minstagib)
 	{
 		minst_no_auto_cells = 1;

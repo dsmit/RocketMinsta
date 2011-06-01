@@ -12,6 +12,7 @@ VERSION="$(rm-version)"
 BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
+COMMONSUM=""
 
 function buildall
 {
@@ -31,6 +32,9 @@ function buildall
             echo "#define RM_SUPPORT_PKG_$i"          >> "$QCSOURCE"/common/rm_auto.qh
         done
     fi
+
+    echo " -- Calculating sum of common/..."
+    COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -113,10 +117,10 @@ function buildqc
         echo " -- Calculating sum of $1..."
         sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
         
-        if [ -e "pkgcache/qccache/$progname.dat.$sum" ]; then
+        if [ -e "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
             echo " -- Found a cached build of $1, using it"
             
-            cp -v "pkgcache/qccache/$progname.dat.$sum" "$progname.dat" || error "Failed to copy progs??"
+            cp -v "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
             return
         fi
     fi
@@ -135,7 +139,7 @@ function buildqc
     
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
-        cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum" || error "WTF"
+        cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
     fi
 }
 
@@ -239,6 +243,11 @@ fi
 if [ -z $CACHEPKGS ]; then
     warn-oldconfig "config.sh" "CACHEPKGS" "0"
     CACHEPKGS=0
+fi
+
+if [ -z $CACHEQC ]; then
+    warn-oldconfig "config.sh" "CACHEQC" "0"
+    CACHEQC=0
 fi
 
 if [ "$1" = "cleancache" ]; then
