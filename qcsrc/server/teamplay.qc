@@ -606,7 +606,10 @@ void InitGameplayMode()
 			}
 		}
 		else if (gtype == GetGametype ())
+		{
 			cvar_set (gtype_cvar, ftos (cvar (gtype_cvar) + 1));
+			cvar_set(gtype_cvar_other, "0");
+		}
 	}
 
 	InitializeEntity(world, default_delayedinit, INITPRIO_GAMETYPE_FALLBACK);
