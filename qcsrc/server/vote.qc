@@ -154,7 +154,7 @@ float RemapVote(string vote, string cmd, entity e)
 			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
 			{
 				// Moved from ValidateMap
-				print_to (e, strcat ("^2Invalid mode ^1", GametypeFullNameFromType (game), " ^2for that map"));
+				sprint (e, strcat ("^1", GametypeFullNameFromName(game), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
