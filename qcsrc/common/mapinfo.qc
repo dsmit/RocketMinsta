@@ -206,10 +206,10 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 				return 0;
 			}
 		if((MapInfo_Map_supportedGametypes & pGametype) != 0)
+		*/
 		if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
 		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
 		if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
-		*/
 			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
 			
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
