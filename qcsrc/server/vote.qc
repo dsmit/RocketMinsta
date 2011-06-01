@@ -125,7 +125,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			else if (! GameTypeFilter_Allowed (argv (1), s))
 			{
-				sprint (e, strcat ("^1I wouldn't play this map on ^2", GametypeFullNameFromName (s), " ^1with YOUR DICK!!!\n"));
+				sprint (e, strcat ("^1", GametypeFullNameFromName (s), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
