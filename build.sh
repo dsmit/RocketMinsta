@@ -241,6 +241,11 @@ if [ -z $CACHEPKGS ]; then
     CACHEPKGS=0
 fi
 
+if [ -z $CACHEQC ]; then
+    warn-oldconfig "config.sh" "CACHEQC" "0"
+    CACHEQC=0
+fi
+
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
     rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"
