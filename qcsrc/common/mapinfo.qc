@@ -213,7 +213,7 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
 			
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
-		print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
+		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;
 	MapInfo_ClearTemps();
