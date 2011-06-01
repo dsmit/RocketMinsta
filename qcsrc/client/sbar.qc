@@ -930,7 +930,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			#ifdef RM_SUPPORT_MADOKA
 			drawfont = tmp_font;
 			#endif
-		} else if(field == SP_CN_CHAR0 && !svn_workaround && !rm_noflags) {
+		} else if(field == SP_CN_CHAR0 && !rm_noflags) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
 
 			local float scale = sbar_fontsize_x / 11;
