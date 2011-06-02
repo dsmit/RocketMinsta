@@ -362,6 +362,32 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void ReloadMenu_f()
+{
+	if(!self.cnt)
+	{
+		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
+		localcmd("menu_restart\n");
+		self.cnt = 1;
+		self.nextthink = time + 1;
+	}
+	else
+	{
+		gui_reloading = 0;
+		remove(self);
+	}
+}
+
+void ReloadMenu()
+{
+	vector pos;
+	pos_y = vid_conheight / 3;
+	gui_reloading = 1;
+	entity e = spawn();
+	e.think = ReloadMenu_f;
+	e.nextthink = time + 1;
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -425,6 +451,9 @@ void PostInit(void)
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
 			localcmd("seta rm_noflags 0; noflags 0\n");
+		//case 24:		// RESERVED FOR hud_skinsystem!
+		//case 25:
+			
 		
 		//More to come here with each update
 		localcmd("seta rm_initialized 24\n");
@@ -492,6 +521,11 @@ void PostInit(void)
 	
 	screenfade = time + 0.1;
 	fovlock = -1;
+	
+	registercvar("rm_loadedmenu", "");
+	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
+		ReloadMenu();
+		
 	postinit = true;
 }
 

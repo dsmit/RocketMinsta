@@ -3881,7 +3881,25 @@ void Sbar_Draw (void)
 		position_y = vid_conheight;
 		drawfill('0 0 0', position, '1 0 0', bound(0, 1 - 4 * (time - (tmpmadoka_fadetime- 1)), 0.5), DRAWFLAG_ADDITIVE);
 	}
-
+	
+	if(gui_reloading)
+	{
+		local vector position;
+		position_x = vid_conwidth;
+		position_y = vid_conheight;
+		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);
+		
+		position_x = 0;
+		position_y = vid_conheight / 3;
+		drawcolorcodedstringcenter(
+			position,
+			"Reloading GUI, this will take some time... Please be patient.",
+			sbar_fontsize * 1.5,
+			1,
+			DRAWFLAG_NORMAL
+		);
+	}
+	
 	return;
 }
 

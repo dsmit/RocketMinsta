@@ -565,12 +565,13 @@ void CSQC_UpdateView(float w, float h)
 	} else */
 
 	// draw 2D entities
+	
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw2d)
 			self.draw2d();
 	self = e;
-
+	
 	// draw radar
 	if(
 		ons_showmap
