@@ -559,10 +559,19 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	s = ftos(p);
 	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0);
+	
+	vector o;
+	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
+	o_x -= me.realFontSize_x / 1.5;
+	
 	draw_Text(me.realUpperMargin * eY + me.columnNameOrigin * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0);
 	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
+	
+	if(strstrofs(s, "_rm-", 0) >= 0)
+		draw_Text(o, "*", me.realFontSize, theColor, theAlpha, 0);
+	
 	p = strstrofs(s, ":", 0);
 	if(p >= 0)
 		s = substring(s, 0, p);

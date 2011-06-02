@@ -5,7 +5,7 @@ CLASS(NexuizServerInfoDialog) EXTENDS(NexuizDialog)
 	ATTRIB(NexuizServerInfoDialog, title, string, "Server Information")
 	ATTRIB(NexuizServerInfoDialog, color, vector, SKINCOLOR_DIALOG_SERVERINFO)
 	ATTRIB(NexuizServerInfoDialog, intendedWidth, float, 0.68)
-	ATTRIB(NexuizServerInfoDialog, rows, float, 11)
+	ATTRIB(NexuizServerInfoDialog, rows, float, 13)
 	ATTRIB(NexuizServerInfoDialog, columns, float, 12)
 
 	ATTRIB(NexuizServerInfoDialog, currentServerName, string, string_null)
@@ -17,6 +17,7 @@ CLASS(NexuizServerInfoDialog) EXTENDS(NexuizDialog)
 	ATTRIB(NexuizServerInfoDialog, currentServerNumBots, string, string_null)
 	ATTRIB(NexuizServerInfoDialog, currentServerMod, string, string_null)
 	ATTRIB(NexuizServerInfoDialog, currentServerVersion, string, string_null)
+	ATTRIB(NexuizServerInfoDialog, currentServerRMLabel, string, string_null)
 	ATTRIB(NexuizServerInfoDialog, currentServerPing, string, string_null)
 
 	ATTRIB(NexuizServerInfoDialog, nameLabel, entity, NULL)
@@ -29,6 +30,7 @@ CLASS(NexuizServerInfoDialog) EXTENDS(NexuizDialog)
 	ATTRIB(NexuizServerInfoDialog, modLabel, entity, NULL)
 	ATTRIB(NexuizServerInfoDialog, versionLabel, entity, NULL)
 	ATTRIB(NexuizServerInfoDialog, pingLabel, entity, NULL)
+	ATTRIB(NexuizServerInfoDialog, rmLabel, entity, NULL)
 ENDCLASS(NexuizServerInfoDialog)
 
 float SLIST_FIELD_NAME;
@@ -48,7 +50,7 @@ void Join_Click(entity btn, entity me);
 void loadServerInfoNexuizServerInfoDialog(entity me, float i)
 {
 	float m;
-	string s, typestr, versionstr, numh, maxp;
+	string s, typestr, versionstr, rmversion, numh, maxp;
 
 	SLIST_FIELD_NAME = gethostcacheindexforkey("name");
 	me.currentServerName = strzone(gethostcachestring(SLIST_FIELD_NAME, i));
@@ -71,9 +73,12 @@ void loadServerInfoNexuizServerInfoDialog(entity me, float i)
 		typestr = "N/A";
 		versionstr = "N/A";
 	}
+	
+	m = tokenizebyseparator(versionstr, "_rm-");
+	rmversion = argv(1);
+
 	me.currentServerType = strzone(typestr);
 	me.typeLabel.setText(me.typeLabel, me.currentServerType);
-
 
 	SLIST_FIELD_MAP = gethostcacheindexforkey("map");
 	me.currentServerMap = strzone(gethostcachestring(SLIST_FIELD_MAP, i));
@@ -101,6 +106,9 @@ void loadServerInfoNexuizServerInfoDialog(entity me, float i)
 
 	me.currentServerVersion = strzone(versionstr);
 	me.versionLabel.setText(me.versionLabel, me.currentServerVersion);
+	me.currentServerRMLabel = strzone(((rmversion && rmversion != "")? strcat("This server is running RocketMinsta ", rmversion) : 
+																	   strcat("This server is running Nexuiz ", versionstr)));
+	me.rmLabel.setText(me.rmLabel, me.currentServerRMLabel);
 
 	SLIST_FIELD_PING = gethostcacheindexforkey("ping");
 	s = ftos(gethostcachenumber(SLIST_FIELD_PING, i));
@@ -117,7 +125,12 @@ void fillNexuizServerInfoDialog(entity me)
 			e.allowCut = 1;
 			me.nameLabel = e;
 	me.TR(me);
-		me.TD(me, 1, me.columns, e = makeNexuizTextLabel(0.5, ""));
+		me.TD(me, 0.2, me.columns, e = makeNexuizTextLabel(0.5, ""));
+			e.colorL = SKINCOLOR_SERVERINFO_NAME;
+			e.allowCut = 1;
+			me.rmLabel = e;
+	me.TR(me);
+		me.TD(me, 0.2, me.columns, e = makeNexuizTextLabel(0.5, ""));
 			e.colorL = SKINCOLOR_SERVERINFO_IP;
 			e.allowCut = 1;
 			me.cnameLabel = e;
@@ -125,11 +138,12 @@ void fillNexuizServerInfoDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 5.5, e = makeNexuizTextLabel(0, "Players:"));
 	me.TR(me);
-		me.TD(me, me.rows - 4, 6, e = makeNexuizPlayerList());
+		me.TD(me, me.rows - 5, 6, e = makeNexuizPlayerList());
 			me.rawPlayerList = e;
 
 	me.gotoRC(me, 1, 6.25); me.setFirstColumn(me, me.currentColumn);
 
+	me.TR(me);
 	me.TR(me);
 		me.TD(me, 1, 1.75, e = makeNexuizTextLabel(0, "Type:"));
 		me.TD(me, 1, 4.0, e = makeNexuizTextLabel(0, ""));
