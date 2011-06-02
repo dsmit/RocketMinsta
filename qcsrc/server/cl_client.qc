@@ -347,7 +347,12 @@ entity SelectSpawnPoint (float anypoint)
 			if(some_spawn_has_been_used)
 				return world; // team can't spawn any more, because of actions of other team
 			else
-				error("Cannot find a spawn point - please fix the map!");
+			{
+				//error("Cannot find a spawn point - please fix the map!");
+				bprint("\x01^1* Cannot find a spawn point! ^7Forced endmatch.\n");
+				localcmd("timelimit -1\n");
+				return world;
+			}
 		}
 	}
 
@@ -537,8 +542,8 @@ void PutObserverInServer (void)
 	race_PreSpawnObserver();
 
 	spot = SelectSpawnPoint (TRUE);
-	if(!spot)
-		error("No spawnpoints for observers?!?\n");
+	//if(!spot)
+	//	error("No spawnpoints for observers?!?\n");
 	RemoveGrapplingHook(self); // Wazat's Grappling Hook
 
 	if(clienttype(self) == CLIENTTYPE_REAL)

@@ -3010,3 +3010,17 @@ float CountAFKClients()
     }
     return r;
 }
+
+// do i have to use floats for everything?
+// --thexdarksider
+// (apparently yes i do, whatever) -- 27/05/11
+float GameTypeFilter_Allowed (string map, string gametype)
+{
+	local string forbiddenModes;
+	local float fmCount, i;
+	forbiddenModes = cvar_string (strcat ("g_gametypefilter_", map));
+	fmCount = tokenizebyseparator (forbiddenModes, " ");
+	for (i = 0; i < fmCount; i ++)
+		if (argv (i) == gametype) return 0;
+	return 1;
+}

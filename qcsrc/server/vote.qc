@@ -103,7 +103,7 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		vote = strcat("gotomap ", vote, s);
 		vote_argc = tokenize_console(vote); // ValidateMap may have done some stuff to it
-		
+
 		if(vote_argc > 2)
 		{
 			if (! cvar ("g_explosive_gametypevote_call"))
@@ -123,6 +123,20 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
 				return FALSE;
 			}
+			else if (! GameTypeFilter_Allowed (argv (1), s))
+			{
+				sprint (e, strcat ("^1", GametypeFullNameFromName (s), " is not allowed on the selected map\n"));
+				return FALSE;
+			}
+			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			{
+				// Gametype overplayed?
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
 
 			if (! cvar ("g_explosive_gametypevote_call"))
 			{
@@ -134,6 +148,26 @@ float RemapVote(string vote, string cmd, entity e)
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 			
 			return TRUE;
+		}
+		else
+		{
+			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
+			{
+				// Moved from ValidateMap
+				sprint (e, strcat ("^1", GametypeFullNameFromType(game), " is not allowed on the selected map\n"));
+				return FALSE;
+			}
+			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
+			
+			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
+			{
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
 		}
 	}
     if(argv(0) == "endround")
@@ -238,6 +272,24 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(s != "")	// detected a gametype vote
 		{
+			// Gametype overplayed?
+			// TODO: Get rid of this, if the gametype is overplayed a gametype voting screen should appear
+			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
+			{
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
+
+			// Let's give this another shot
+			if (! GameTypeFilter_Allowed (mapname, s))
+			{
+				sprint (e, strcat ("^1", GametypeFullNameFromName(s), " is not allowed on the current map\n"));
+				return FALSE;
+			}
 			if (! cvar ("g_explosive_gametypevote_call"))
 			{
 				sprint (e, "^1Gametype voting is not allowed.\n");
@@ -590,6 +642,16 @@ string ValidateMap(string m, entity e)
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
 		return string_null;
 	}
+
+/*
+//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
+	if (! GameTypeFilter_Allowed (m, GetGametype ()))
+	{
+		print_to (e, strcat ("^2Invalid mode ^1", GametypeFullNameFromType (game), " ^2for map ^1", m));
+		return string_null;
+	}
+	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't
+*/
 
 	return m;
 }
