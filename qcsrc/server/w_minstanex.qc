@@ -42,7 +42,7 @@ void W_Explosive_Attack (float attacktype)
 	if(cvar("g_explosive_norecoil"))
 		expl_recoil = 0;
 	
-	W_SetupShot_ProjectileSize (self, '0 0 0', '0 0 0', FALSE, expl_recoil, "", expl_damage);
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, expl_recoil, "", expl_damage);
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
 	//pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -129,6 +129,7 @@ void W_MinstaNex_Attack (void)
 	
 	//<akari>
 	//Executes the explosive attack
+	
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
