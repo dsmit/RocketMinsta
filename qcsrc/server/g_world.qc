@@ -441,8 +441,11 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
     registercvar("g_vip", "0");
+/*
+ - now unused
     registercvar("_sv_rm_lastgametype", "");
     registercvar("_sv_rm_maprow", "0");
+*/
     registercvar("_g_explosive_infomessages_count", "0");
 
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
@@ -757,14 +760,17 @@ void spawnfunc_worldspawn (void)
 		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
 		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
 	}
-	
+
+/*
+	-- Not needed anymore --
 	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
 	{
 		cvar_set("_sv_rm_lastgametype", GametypeNameFromType(game));
 		cvar_set("_sv_rm_maprow", "0");
 	}
-	
-	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
+*/
+
+//	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
 	InfoMessages_Init();
 	IP2C_Init();
 	
@@ -2678,15 +2684,15 @@ void MapVote_Think()
 
 float GameTypeVote_AvailabilityStatus(string gtname)
 {
+	if (! GameTypeFilter_Allowed (getmapname_stored, gtname))
+		return GTV_FORBIDDEN;
+
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_AVAILABLE;
 	
-	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
-		return GTV_AVAILABLE;
-	
-	if(gtname == GametypeNameFromType(game))
+	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_OVERPLAYED;
-	
+
 	return GTV_AVAILABLE;
 }
 
@@ -2738,7 +2744,7 @@ void GameTypeVote_Start()
 {
 	local float j;
 	MapVote_ClearAllVotes();
-	
+
 	for(j = 0; j < mapvote_count; ++j)
 		if(mapvote_maps[j])
 			if(mapvote_maps[j] != "")
@@ -2752,10 +2758,13 @@ void GameTypeVote_Start()
 	
 	for(j = 0; j < n; ++j)
 	{
+		// If we don't spam tokenizebyseparator, shit fucks up
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
 		MapVote_AddVotable(argv(j), 0);
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
 		mapvote_maps_availability[j] = GameTypeVote_AvailabilityStatus(argv(j));
 	}
-	
+
 	if(cvar("g_explosive_gametypevote_shuffle"))
 	{
 		for(j = 0; j < mapvote_count * 3; ++j)
