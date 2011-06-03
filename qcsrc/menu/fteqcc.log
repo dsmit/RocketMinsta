@@ -31,6 +31,8 @@ in function NormalizeGametypeName (line 482),
 compiling ../common/gamecommand.qc
 compiling gamecommand.qc
 compiling menu.qc
+in function m_init (line 18),
+menu.qc:24: warning: too few parameters on call to registercvar
 compiling draw.qc
 compiling nexuiz/util.qc
 compiling ../common/campaign_file.qc
@@ -39,4 +41,4 @@ compiling ../common/mapinfo.qc
 compiling ../common/items.qc
 Progs should run on any Quake executor
 Not writing linenumbers file due to conflicting optimisation
-3 warnings
+4 warnings

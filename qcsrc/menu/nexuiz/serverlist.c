@@ -26,6 +26,7 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	METHOD(NexuizServerList, setSortOrder, void(entity, float, float))
 	ATTRIB(NexuizServerList, filterShowEmpty, float, 1)
 	ATTRIB(NexuizServerList, filterShowFull, float, 1)
+	ATTRIB(NexuizServerList, filterShowOnlyRM, float, 0)
 	ATTRIB(NexuizServerList, filterString, string, string_null)
 	ATTRIB(NexuizServerList, controlledTextbox, entity, NULL)
 	ATTRIB(NexuizServerList, ipAddressBox, entity, NULL)
@@ -52,6 +53,7 @@ ENDCLASS(NexuizServerList)
 entity makeNexuizServerList();
 void ServerList_Connect_Click(entity btn, entity me);
 void ServerList_ShowEmpty_Click(entity box, entity me);
+void ServerList_ShowOnlyRM_Click(entity box, entity me);
 void ServerList_ShowFull_Click(entity box, entity me);
 void ServerList_Filter_Change(entity box, entity me);
 void ServerList_Favorite_Click(entity btn, entity me);
@@ -210,6 +212,8 @@ void refreshServerListNexuizServerList(entity me, float mode)
 			sethostcachemasknumber(++m, SLIST_FIELD_NUMHUMANS, 1, SLIST_TEST_GREATEREQUAL);
 		if(typestr != "")
 			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, strcat(typestr, ":"), SLIST_TEST_STARTSWITH);
+		if(me.filterShowOnlyRM)
+			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_rm-", SLIST_TEST_CONTAINS);
 		if(modstr != "")
 		{
 			if(substring(modstr, 0, 1) == "!")
@@ -398,6 +402,15 @@ void ServerList_Filter_Change(entity box, entity me)
 void ServerList_ShowEmpty_Click(entity box, entity me)
 {
 	box.setChecked(box, me.filterShowEmpty = !me.filterShowEmpty);
+	me.refreshServerList(me, 0);
+
+	me.ipAddressBox.setText(me.ipAddressBox, "");
+	me.ipAddressBox.cursorPos = 0;
+	me.ipAddressBoxFocused = -1;
+}
+void ServerList_ShowOnlyRM_Click(entity box, entity me)
+{
+	box.setChecked(box, me.filterShowOnlyRM = !me.filterShowOnlyRM);
 	me.refreshServerList(me, 0);
 
 	me.ipAddressBox.setText(me.ipAddressBox, "");
