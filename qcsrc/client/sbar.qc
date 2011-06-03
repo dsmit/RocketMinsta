@@ -3048,6 +3048,7 @@ void Sbar_Draw (void)
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 
+#if 0
 	if(time < rm_helptime)
 	{
 		local float halpha = bound(0, 1 - 4 * (time - (rm_helptime - 1)), 1);
@@ -3060,6 +3061,7 @@ void Sbar_Draw (void)
 			o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
 		}
 	}
+#endif
 
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)

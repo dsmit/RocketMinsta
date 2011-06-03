@@ -373,6 +373,9 @@ void ReloadMenu_f()
 	}
 	else
 	{
+		if(rm_helptime)
+			localcmd("menu_cmd directmenu RMConfig\n");
+			
 		gui_reloading = 0;
 		remove(self);
 	}
@@ -525,6 +528,8 @@ void PostInit(void)
 	registercvar("rm_loadedmenu", "");
 	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
 		ReloadMenu();
+	else if(rm_helptime)
+		localcmd("menu_cmd directmenu RMConfig\n");
 		
 	postinit = true;
 }
