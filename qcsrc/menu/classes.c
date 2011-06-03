@@ -49,6 +49,7 @@
 #include "nexuiz/dialog_multiplayer_join_serverinfo.c"
 #include "nexuiz/playerlist.c"
 #include "nexuiz/listbox.c"
+#include "nexuiz/rm_hudskinlist.qc"
 #include "nexuiz/serverlist.c"
 #include "nexuiz/inputbox.c"
 #include "nexuiz/dialog_quit.c"

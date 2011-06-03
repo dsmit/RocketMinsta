@@ -21,6 +21,9 @@ compiling oo/constructors.h
 compiling classes.c
 compiling oo/implementation.h
 compiling classes.c
+in function mouseDragRMHudSkinList (line 13),
+nexuiz/rm_hudskinlist.qc:48: warning: mouseDragListBox: Too few parameters
+item/listbox.c:8:    mouseDragListBox  is defined here
 compiling ../common/util.qc
 in function GametypeIDFromName (line 459),
 ../common/util.qc:459: warning: Local "name" defined with name of a global
@@ -41,4 +44,4 @@ compiling ../common/mapinfo.qc
 compiling ../common/items.qc
 Progs should run on any Quake executor
 Not writing linenumbers file due to conflicting optimisation
-4 warnings
+5 warnings

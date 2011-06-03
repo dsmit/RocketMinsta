@@ -8,6 +8,7 @@ CLASS(NexuizRadarDialog) EXTENDS(NexuizDialog)
 	ATTRIB(NexuizRadarDialog, intendedWidth, float, 0.7)
 	ATTRIB(NexuizRadarDialog, rows, float, 18)
 	ATTRIB(NexuizRadarDialog, columns, float, 4)
+	ATTRIB(NexuizRMConfigDialog, name, string, "HUDSetup")
 ENDCLASS(NexuizRadarDialog)
 #endif
 

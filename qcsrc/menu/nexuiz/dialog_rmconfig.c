@@ -66,6 +66,14 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
 		setDependent(e, "rm_oldhud", 0, 0);
+	me.setFirstColumn(me, me.firstColumn - 0.1);
+		me.TR(me);
+		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
+		setDependent(e, "rm_oldhud", 0, 0);
+	me.TR(me);
+		me.TD(me, me.rows - 5, 8, e = makeRMHudSkinList());
+		setDependent(e, "rm_oldhud", 0, 0);
+		
 }
 #endif
 
