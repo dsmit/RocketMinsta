@@ -2629,8 +2629,8 @@ float teamhud_wide;
 
 void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
 {
-	local vector drawsize;
-	local float factor;
+	vector drawsize;
+	float factor;
 	
 	switch(hudskin_line_fill)
 	{
@@ -2673,7 +2673,54 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	fillsize_y -= hudskin_sector_padding_top;
 	fillsize_y -= hudskin_sector_padding_bottom;
 	
-	drawfill(fillpos, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+	local float factor;
+	switch(hudskin_sector_fill)
+	{
+		case FILL_COLOR:
+			drawfill(fillpos, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			break;
+		
+		case FILL_TILE:
+			local vector size_left, size_center, size_right;
+			size_left = hudskin_size_sector_fill_left;
+			size_right = hudskin_size_sector_fill_right;
+			size_center = hudskin_size_sector_fill_center;
+			
+			// Autoscaling based on the center area
+			if(size_center_y > fillsize_y)
+			{
+				factor = fillsize_y / size_center_y;
+				size_center = size_center * factor;
+				size_left = size_left * factor;
+				size_right = size_right * factor;
+			}
+			
+			local vector part_left, part_center, part_right;
+			part_left = size_left;
+			part_right = size_right;
+			part_center = size_center;
+			part_center_x = fillsize_x;
+			
+			local vector origin_left, origin_center, origin_right;
+			origin_left = origin_center = origin_right = fillpos;
+			
+			origin_center_x = origin_left_x + part_left_x;
+			part_center_x -= part_left_x;
+			
+			origin_right_x = origin_right_x + fillsize_x - part_right_x;
+			part_center_x -= part_right_x;
+			
+			if(hudskin_image_sector_fill_left)
+				drawpic_tiled(origin_left, hudskin_image_sector_fill_left, size_left, part_left, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			if(hudskin_image_sector_fill_center)
+				drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			if(hudskin_image_sector_fill_right)
+				drawpic_tiled(origin_right, hudskin_image_sector_fill_right, size_right, part_right, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			break;
+		
+		case FILL_STRETCH:
+			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+	}
 	
 	vector size_left, size_right,
 		   pos_left,  pos_right;

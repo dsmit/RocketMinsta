@@ -1,23 +1,14 @@
 
+#define FREE(s) if(s) { strunzone(s); s = string_null; }
+
 void HUDSkin_Unload()
 {
-    if(hudskin_image_border_left)
-    {
-        fstrunzone(hudskin_image_border_left);
-        hudskin_image_border_left = string_null;
-    }
-    
-    if(hudskin_image_border_right)
-    {
-        fstrunzone(hudskin_image_border_right);
-        hudskin_image_border_right = string_null;
-    }
-    
-    if(hudskin_image_line_fill)
-    {
-        fstrunzone(hudskin_image_line_fill);
-        hudskin_image_line_fill = string_null;
-    }
+    FREE(hudskin_image_border_left)
+    FREE(hudskin_image_border_right)
+    FREE(hudskin_image_line_fill)
+    FREE(hudskin_image_sector_fill_left)
+    FREE(hudskin_image_sector_fill_center)
+    FREE(hudskin_image_sector_fill_right)
     
     hudskin_size_border_left = '0 0 0';
     hudskin_size_border_right = '0 0 0';
@@ -63,6 +54,11 @@ void HUDSkin_Unload()
     hudskin_flash_border_imod = 0;
     hudskin_flash_border_amod = 0;
     hudskin_line_fill = FILL_COLOR;
+    hudskin_size_line_fill = '0 0 0';
+    hudskin_sector_fill = FILL_COLOR;
+    hudskin_size_sector_fill_center = '0 0 0';
+    hudskin_size_sector_fill_left = '0 0 0';
+    hudskin_size_sector_fill_right = '0 0 0';
     
     print("Unloaded HUD skin\n");
     
@@ -335,23 +331,15 @@ float HUDSkin_Eval(string cmd)
             return TRUE;
         
         case "extern_image_border_left":
-            if(hudskin_image_border_left)
-            {
-                fstrunzone(hudskin_image_border_left);
-                hudskin_image_border_left = string_null;
-            }
-            
+            FREE(hudskin_image_border_left)
             hudskin_image_border_left = strzone(argv(1));
+            hudskin_size_border_left = drawgetimagesize(hudskin_image_border_left);
             return TRUE;
         
         case "extern_image_border_right":
-            if(hudskin_image_border_right)
-            {
-                fstrunzone(hudskin_image_border_right);
-                hudskin_image_border_right = string_null;
-            }
-            
+            FREE(hudskin_image_border_right)
             hudskin_image_border_right = strzone(argv(1));
+            hudskin_size_border_right = drawgetimagesize(hudskin_image_border_right);
             return TRUE;
         
         case "line_fill":
@@ -367,13 +355,38 @@ float HUDSkin_Eval(string cmd)
             return TRUE;
         
         case "extern_image_line_fill":
-            if(hudskin_image_line_fill)
+            FREE(hudskin_image_line_fill)
+            hudskin_image_line_fill = strzone(argv(1));
+            return TRUE;
+        
+        case "extern_image_sector_fill_left":
+            FREE(hudskin_image_sector_fill_left)
+            hudskin_image_sector_fill_left = strzone(argv(1));
+            hudskin_size_sector_fill_left = drawgetimagesize(hudskin_image_sector_fill_left);
+            return TRUE;
+        
+        case "extern_image_sector_fill_right":
+            FREE(hudskin_image_sector_fill_right)
+            hudskin_image_sector_fill_right = strzone(argv(1));
+            hudskin_size_sector_fill_right = drawgetimagesize(hudskin_image_sector_fill_left);
+            return TRUE;
+        
+        case "extern_image_sector_fill_center":
+            FREE(hudskin_image_sector_fill_center)
+            hudskin_image_sector_fill_center = strzone(argv(1));
+            hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_left);
+            return TRUE;
+        
+        case "sector_fill":
+			hudskin_sector_fill = HUDSkin_ReadFillMode();
+            
+            if(hudskin_line_fill == FILL_WTF)
             {
-                fstrunzone(hudskin_image_line_fill);
-                hudskin_image_line_fill = string_null;
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_sector_fill = FILL_COLOR;
+                return FALSE;
             }
             
-            hudskin_image_line_fill = strzone(argv(1));
             return TRUE;
         
         default:
@@ -408,6 +421,9 @@ float HUDSkin_Load(string skin)
     hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin, "/border_left"));
     hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin, "/border_right"));
     hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin, "/line_fill"));
+    hudskin_image_sector_fill_left = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_left"));
+    hudskin_image_sector_fill_center = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_center"));
+    hudskin_image_sector_fill_right = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_right"));
     
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
@@ -420,6 +436,9 @@ float HUDSkin_Load(string skin)
     hudskin_size_border_left = drawgetimagesize(hudskin_image_border_left);
     hudskin_size_border_right = drawgetimagesize(hudskin_image_border_right);
     hudskin_size_line_fill = drawgetimagesize(hudskin_image_line_fill);
+    hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_center);
+    hudskin_size_sector_fill_left = drawgetimagesize(hudskin_image_sector_fill_left);
+    hudskin_size_sector_fill_right = drawgetimagesize(hudskin_image_sector_fill_right);
     
     print("Loaded HUD skin '", skin, "'\n");
     hudskin_name = strzone(skin);
