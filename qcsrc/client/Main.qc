@@ -555,7 +555,7 @@ void SendRMCFGReport()
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n"));
+#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;

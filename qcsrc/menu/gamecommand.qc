@@ -75,6 +75,14 @@ void GameCommand(string theCommand)
 		return;
 	}
 
+	if(argv(0) == "update_rmvars")
+	{
+		local entity v;
+		for(v = world; (v = findfloat(v, instanceOfRMCheckBox, 1)); )
+			v.loadCvars(v);
+		return;
+	}
+
 #if 0
 	if(argv(0) == "tokentest")
 	{
