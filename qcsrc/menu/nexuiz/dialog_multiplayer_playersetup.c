@@ -147,8 +147,11 @@ void fillNexuizPlayerSettingsTab(entity me)
 		me.TD(me, 1, 2/3, e = makeNexuizRadioButton(1, "crosshair_hittest", "1",    "TrueAim"));
 		me.TD(me, 1, 2/3, e = makeNexuizRadioButton(1, "crosshair_hittest", "1.25", "Enemies"));
 	me.TR(me);
-		me.TDempty(me, 0.4);
-		me.TD(me, 1, 2.2, e = makeNexuizButton("Radar, HUD & Waypoints...", '0 0 0'));
+		//me.TDempty(me, 0.4);
+		me.TD(me, 1, 1.5, e = makeNexuizButton("RocketMinsta Options", '0 0 0'));
+			e.onClick = DialogOpenButton_Click;
+			e.onClickEntity = main.rmDialog;
+		me.TD(me, 1, 1.5, e = makeNexuizButton("Radar, HUD & Waypoints", '0 0 0'));
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.radarDialog;
 		me.TDempty(me, 0.5);
