@@ -789,6 +789,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
 			SendRMCFGReport();
+			localcmd("menu_cmd update_rmvars\n");
 			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 		}
 		else

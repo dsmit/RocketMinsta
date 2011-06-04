@@ -11,10 +11,12 @@ CLASS(RMHudSkinList) EXTENDS(NexuizListBox)
 	METHOD(RMHudSkinList, setSelected, void(entity, float))
 	METHOD(RMHudSkinList, keyDown, float(entity, float, float, float))
 	METHOD(RMHudSkinList, mouseDrag, float(entity, vector))
+	METHOD(RMHudSkinList, updateSkinList, void(entity))
 	ATTRIB(RMHudSkinList, color, vector, SKINCOLOR_SCROLLBAR_N)
 	ATTRIB(RMHudSkinList, colorF, vector, SKINCOLOR_SCROLLBAR_F)
 	ATTRIB(RMHudSkinList, color2, vector, SKINCOLOR_SCROLLBAR_S)
 	ATTRIB(RMHudSkinList, colorC, vector, SKINCOLOR_SCROLLBAR_C)
+	ATTRIB(RMHudSkinList, isUpdating, float, FALSE)
 	ATTRIB(RMHudSkinList, skinlist_buf, float, -1)
 ENDCLASS(RMHudSkinList)
 entity makeRMHudSkinList();
@@ -32,7 +34,12 @@ entity makeRMHudSkinList()
 void setSelectedRMHudSkinList(entity me, float i)
 {
 	if(!me.disabled)
+	{
 		setSelectedListBox(me, i);
+		
+		if(!me.isUpdating)
+			localcmd("hudskin ", bufstr_get(me.skinlist_buf, me.selectedItem), "\n");
+	}
 }
 
 float keyDownRMHudSkinList(entity me, float key, float ascii, float shift)
@@ -45,24 +52,49 @@ float keyDownRMHudSkinList(entity me, float key, float ascii, float shift)
 float mouseDragRMHudSkinList(entity me, vector pos)
 {
 	if(!me.disabled)
-		return mouseDragListBox();
+		return mouseDragListBox(me, pos);
 	return 0;
 }
 
-void configureRMHudSkinListRMHudSkinList(entity me)
+void updateSkinListRMHudSkinList(entity me)
 {
-	local float i;
-	i = -1;
-	me.configureNexuizListBox(me);
-	
 	if(me.skinlist_buf > -1)
 		buf_del(me.skinlist_buf);
 	
+	me.isUpdating = TRUE;
 	me.skinlist_buf = buf_create();
+	/*
 	bufstr_set(me.skinlist_buf, ++i, "Replace this");
 	bufstr_set(me.skinlist_buf, ++i, "once hud_skinsystem");
 	bufstr_set(me.skinlist_buf, ++i, "is merged");
 	me.nItems = buf_getsize(me.skinlist_buf);
+	*/
+	
+	// Copy-pasted from client/Main.qc... universal way of iteration through skins needed?
+	local float i, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+	local string tmpname, current;
+	globsize = search_getsize(hsglob);
+	current = cvar_string("rm_hudskin");
+	
+	for(i = 0; i < globsize; ++i)
+	{
+		tmpname = search_getfilename(hsglob, i);
+		tmpname = substring(tmpname, strlen("gfx/hud/skins/"), strlen(tmpname));
+		tmpname = substring(tmpname, 0, strlen(tmpname) - strlen("/skininfo"));
+		bufstr_set(me.skinlist_buf, i, tmpname);
+		
+		if(current == tmpname)
+			me.setSelected(me, i);
+	}
+	me.nItems = buf_getsize(me.skinlist_buf);
+	search_end(hsglob);
+	me.isUpdating = FALSE;
+}
+
+void configureRMHudSkinListRMHudSkinList(entity me)
+{
+	me.configureNexuizListBox(me);
+	me.updateSkinList(me);
 }
 
 void resizeNotifyRMHudSkinList(entity me, vector relOrigin, vector relSize, vector absOrigin, vector absSize)

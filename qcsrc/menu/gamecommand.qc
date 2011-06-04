@@ -80,6 +80,9 @@ void GameCommand(string theCommand)
 		local entity v;
 		for(v = world; (v = findfloat(v, instanceOfRMCheckBox, 1)); )
 			v.loadCvars(v);
+			
+		for(v = world; (v = findfloat(v, instanceOfRMHudSkinList, 1)); )
+			v.updateSkinList(v);
 		return;
 	}
 
