@@ -24,4 +24,3 @@ flash_sector_imod 1
 flash_sector_amod 0
 flash_border_imod 2
 flash_border_amod 1
-
