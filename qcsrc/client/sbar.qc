@@ -2562,6 +2562,9 @@ void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imo
 	local float a, i;
 	local vector c;
 
+	imod *= hudskin_flash_intmod;
+	amod *= hudskin_flash_alphamod;
+
 	hudflash_resultalpha = basealpha;
 	hudflash_resultcolor = basecolor;
 
@@ -2611,6 +2614,147 @@ float th_appeartime;
 float th_fadetime;
 float th_alpha;
 float teamhud_wide;
+
+#define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { DrawHUDLineSlice(hudline_pos, hudline, slice_basecolor, slice_basealpha); linedrawn = 1; }
+#define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a, ba, sector_alphamod, bg, bbg);
+//drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
+#define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
+#define BG_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamcolor : sector_basecolor)
+#define BG_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamcolor : border_basecolor)
+#define BG_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamcolor : border_basecolor)
+#define A_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamalpha : sector_basealpha)
+#define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
+#define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
+#define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
+
+void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
+{
+	vector drawsize;
+	float factor;
+	
+	slicepos_y  += hudskin_line_padding_x;
+	slicesize_y -= hudskin_line_padding_x;
+	slicesize_y -= hudskin_line_padding_y;
+	
+	switch(hudskin_line_fill)
+	{
+		case FILL_COLOR:
+			drawfill(slicepos, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
+		
+		case FILL_TILE:
+			drawsize = slicesize;
+			if(drawsize_y > hudskin_size_line_fill_y)
+			{
+				// autoscaling
+				factor = hudskin_size_line_fill_y / drawsize_y;
+				drawsize = drawsize * factor;
+			}
+			
+			if(hudskin_image_line_fill)
+				drawpic_tiled(slicepos, hudskin_image_line_fill, drawsize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
+		
+		case FILL_STRETCH:
+			if(hudskin_image_line_fill)
+				drawpic_tiled(slicepos, hudskin_image_line_fill, slicesize, slicesize, slicecolor, slicealpha, DRAWFLAG_NORMAL);
+			return;
+	}
+}
+
+void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, float borderalpha, float alphamod, vector sectorcolor, vector bordercolor)
+{
+	//sectorpos_x -= 2;
+	//sectorsize_x += 4;
+	
+	vector fillsize, fillpos;
+	fillpos = sectorpos;
+	fillsize = sectorsize;
+	fillpos_x += hudskin_sector_padding_left;
+	fillsize_x -= hudskin_sector_padding_left;
+	fillsize_x -= hudskin_sector_padding_right;
+	fillpos_y += hudskin_sector_padding_top;
+	fillsize_y -= hudskin_sector_padding_top;
+	fillsize_y -= hudskin_sector_padding_bottom;
+	
+	local float factor;
+	switch(hudskin_sector_fill)
+	{
+		case FILL_COLOR:
+			drawfill(fillpos, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			break;
+		
+		case FILL_TILE:
+			local vector size_left, size_center, size_right;
+			size_left = hudskin_size_sector_fill_left;
+			size_right = hudskin_size_sector_fill_right;
+			size_center = hudskin_size_sector_fill_center;
+			
+			// Autoscaling based on the center area
+			if(size_center_y > fillsize_y)
+			{
+				factor = fillsize_y / size_center_y;
+				size_center = size_center * factor;
+				size_left = size_left * factor;
+				size_right = size_right * factor;
+			}
+			
+			local vector part_left, part_center, part_right;
+			part_left = size_left;
+			part_right = size_right;
+			part_center = size_center;
+			part_center_x = fillsize_x;
+			
+			local vector origin_left, origin_center, origin_right;
+			origin_left = origin_center = origin_right = fillpos;
+			
+			origin_center_x = origin_left_x + part_left_x;
+			part_center_x -= part_left_x;
+			
+			origin_right_x = origin_right_x + fillsize_x - part_right_x;
+			part_center_x -= part_right_x;
+			
+			if(hudskin_image_sector_fill_left)
+				drawpic_tiled(origin_left, hudskin_image_sector_fill_left, size_left, part_left, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			if(hudskin_image_sector_fill_center)
+				drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			if(hudskin_image_sector_fill_right)
+				drawpic_tiled(origin_right, hudskin_image_sector_fill_right, size_right, part_right, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			break;
+		
+		case FILL_STRETCH:
+			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+	}
+	
+	vector size_left, size_right,
+		   pos_left,  pos_right;
+	
+	if(hudskin_border_simple)
+		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
+	else
+	{
+		float offset_right, offset_left;
+		
+		size_left = hudskin_size_border_left * hudskin_scale_border_left;
+		offset_left = (sectorsize_y - size_left_y) / 2;
+		pos_left = sectorpos;
+		pos_left_y += offset_left;
+		pos_left = pos_left + hudskin_offset_border_left;
+		
+		size_right = hudskin_size_border_right * hudskin_scale_border_right;
+		offset_right = (sectorsize_y - size_right_y) / 2;
+		pos_right = sectorpos + '1 0 0' * sectorsize_x;
+		pos_right_x -= size_right_x;
+		pos_right_y += offset_right;
+		pos_right = pos_right + hudskin_offset_border_right;
+		
+		if(hudskin_image_border_left)
+			drawpic(pos_left, hudskin_image_border_left, size_left, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
+		
+		if(hudskin_image_border_right)
+			drawpic(pos_right, hudskin_image_border_right, size_right, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
+	}
+}
 
 void Sbar_Draw (void)
 {
@@ -2690,6 +2834,9 @@ void Sbar_Draw (void)
 			hudlocked = 0;
 			rm_althud = rm_althud_option;
 			rm_oldhud = rm_oldhud_option;
+			
+			if(hudskin_name != cvar_string("rm_hudskin"))
+				HUDSkin_Load(cvar_string("rm_hudskin"));
 		}
 
 		if(fovlock >= 0)
@@ -3237,25 +3384,43 @@ void Sbar_Draw (void)
 	}
 
 	Sbar_UpdatePlayerTeams();
-
-#define HUDLINE_SLICE(code) code drawfill(hudline_pos, hudline, slice_basecolor, slice_basealpha, DRAWFLAG_NORMAL);
-#define HUDLINE_SECTOR(code,bg) code drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
-#define BG_DEFAULT (sector_basecolor)
-#define BG_TEAM (sector_teamcolor)
 	//'0.2 0.2 0.2'
 
 	float sector_alphamod;
 	sector_alphamod = 1;
 
-	vector slice_basecolor; slice_basecolor = '0.5 0.5 0.5';
-	float slice_basealpha; slice_basealpha = 0.2;
+	vector slice_basecolor; slice_basecolor = hudskin_line_color;
+	float slice_basealpha; slice_basealpha = hudskin_line_alpha;
+	float border_basealpha; border_basealpha = hudskin_border_alpha;
+	
+	vector sector_basecolor; sector_basecolor = hudskin_sector_color;
+	vector border_basecolor; border_basecolor = hudskin_border_color;
+	float sector_basealpha; sector_basealpha = hudskin_sector_alpha;
+	float sector_teamalpha = sector_basealpha;
+	float border_teamalpha = border_basealpha;
+	
+	vector base_teamcolor;
+	
+	if(teamplay)
+		base_teamcolor = GetTeamRGB(myteam);
+	else
+	{
+		base_teamcolor_x = cvar("sbar_color_bg_r");
+		base_teamcolor_y = cvar("sbar_color_bg_g");
+		base_teamcolor_z = cvar("sbar_color_bg_b");
+	}
+	
+	vector sector_teamcolor = (base_teamcolor + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
+	vector border_teamcolor = (base_teamcolor + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
 
-	vector sector_basecolor; sector_basecolor = '0.2 0.2 0.2';
-	float sector_basealpha; sector_basealpha = 0.5;
-	vector sector_teamcolor = GetTeamRGB(myteam) * 0.2;
+	float bw_left, bw_right;
+	bw_left = HUDSkin_GetBorderWidth(BORDER_LEFT);
+	bw_right = HUDSkin_GetBorderWidth(BORDER_RIGHT);
+
+	float linedrawn;
 
 	// hudflash slices
-	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, 1, 1);
+	HudFlash_Apply(slice_basecolor, slice_basealpha, TRUE, hudskin_flash_line_imod, hudskin_flash_line_amod);
 		slice_basecolor = hudflash_resultcolor;
 		slice_basealpha = hudflash_resultalpha;
 
@@ -3267,8 +3432,13 @@ void Sbar_Draw (void)
 	#endif
 
 	// hudflash teamcolored sectors
-	HudFlash_Apply(sector_teamcolor, sector_basealpha, TRUE, 2, 1);
+	HudFlash_Apply(sector_teamcolor, sector_teamalpha, TRUE, hudskin_flash_sector_imod, hudskin_flash_sector_amod);
 		sector_teamcolor = hudflash_resultcolor;
+		sector_teamalpha = hudflash_resultalpha;
+
+	HudFlash_Apply(border_teamcolor, border_teamalpha, TRUE, hudskin_flash_border_imod, hudskin_flash_border_amod);
+		border_teamcolor = hudflash_resultcolor;
+		border_teamalpha = hudflash_resultalpha;
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
 	float ammosector_pos, next_sector;
@@ -3309,19 +3479,28 @@ void Sbar_Draw (void)
 			hud_sector_pos_y = bottom_y - 27;
 
 			next_sector = bottomright_x - 103 - 6;
+			
+			if(hudskin_line_full)
+			{
+				HUDLINE_SLICE({
+					hudline_pos_x = 0;
+					hudline_x = topright_x;
+				})
+			}
+			
 			HUDLINE_SLICE({
 				hudline_pos_x = 0;
-				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+				hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 			})
 
 			HUDLINE_SECTOR({
 				hud_sector_x = 103;
-				hud_sector_pos_x = hudline_pos_x + hudline_x;
+				hud_sector_pos_x = hudline_pos_x + hudline_x + bw_left;
 				sector_mod = '0 0 0';
-			}, BG_DEFAULT)
+			}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 			HUDLINE_SLICE({
-				hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+				hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				hudline_x = topright_x;
 			})
 		}
@@ -3414,6 +3593,14 @@ void Sbar_Draw (void)
 
 			if(rm_althud)	/// RM hud layout
 			{
+				if(hudskin_line_full)
+				{
+					HUDLINE_SLICE({
+						hudline_pos_x = 0;
+						hudline_x = topright_x;
+					})
+				}
+				
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
 				if(gametype == GAME_VIP) if(vid_conwidth >= 800)
@@ -3421,7 +3608,7 @@ void Sbar_Draw (void)
 
 				// pre-healtharmor
 				HUDLINE_SLICE({
-					hudline_x = 7;
+					hudline_x = 7 - bw_left;
 				})
 
 				// healtharmor
@@ -3431,21 +3618,21 @@ void Sbar_Draw (void)
 					sector_mod = '0 0 0'; //'-1 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_TEAM)
+				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
-					hudline_x = 10;
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = 10 - bw_right - bw_left;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 
 				// ammo
 				HUDLINE_SECTOR({
-					ammosector_pos = hud_sector_pos_x = hudline_pos_x + 10;
+					ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
 					hud_sector_x = 103;
 					sector_mod = '0 0 0';
-				}, BG_DEFAULT)
-
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+				
 				// separator slice:
 				//		ammo | teamhud
 
@@ -3462,8 +3649,8 @@ void Sbar_Draw (void)
 					next_sector = bottom_x - 103/2;
 
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 
 				// teamhud
@@ -3480,14 +3667,14 @@ void Sbar_Draw (void)
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
-					}, BG_DEFAULT)
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				sector_alphamod = 1;
 
 				if(!teamhud_enabled || teamhud_enabled != th_finalstate)
 				{
 					hud_sector_pos_x = next_sector;
-					hud_sector_x = -2;
+					hud_sector_x = -bw_right - bw_left;
 				}
 
 				teamhud_pos = hud_sector_pos;
@@ -3495,9 +3682,9 @@ void Sbar_Draw (void)
 				// teamhud | scores
 				next_sector = bottomright_x - 103 - 6;
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					//hudline_x = 10;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 
 				// scores
@@ -3506,11 +3693,11 @@ void Sbar_Draw (void)
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
-				}, BG_TEAM)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 				// post-scores
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					hudline_x = topright_x;
 				})
 			}
@@ -3518,7 +3705,15 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
-
+				
+				if(hudskin_line_full)
+				{
+					HUDLINE_SLICE({
+						hudline_pos_x = 0;
+						hudline_x = topright_x;
+					})
+				}
+				
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
 				if(gametype == GAME_VIP) if(vid_conwidth >= 890)
@@ -3526,8 +3721,8 @@ void Sbar_Draw (void)
 
 				// pre-teamhud
 				HUDLINE_SLICE({
-					hudline_x = 7;
-					next_sector = hudline_x;
+					hudline_x = 7 - bw_left;
+					next_sector = hudline_x + bw_left;
 				})
 
 				// teamhud
@@ -3542,13 +3737,13 @@ void Sbar_Draw (void)
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
-					}, BG_DEFAULT)
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				sector_alphamod = 1;
 
 				if(!teamhud_enabled || teamhud_enabled != th_finalstate)
 				{
-					hud_sector_x = -2;
+					hud_sector_x = -bw_left - bw_right;
 					hud_sector_pos_x = next_sector;
 				}
 
@@ -3569,8 +3764,8 @@ void Sbar_Draw (void)
 				}
 
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 
 				// ammo
@@ -3578,30 +3773,31 @@ void Sbar_Draw (void)
 					ammosector_pos = hud_sector_pos_x = next_sector;
 					hud_sector_x = 103;
 					sector_mod = '0 0 0';
-				}, BG_DEFAULT)
-
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+				
 				// ammo | health-armor
 				HUDLINE_SLICE({
-					hudline_x = 8;
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_x = 8 - bw_left - bw_right;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 
 				// health-armor
 				HUDLINE_SECTOR({
 					hud_sector_x = 217;
-					hud_sector_pos_x = centersector;
+					//hud_sector_pos_x = centersector;
+					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
 					sector_mod = '0 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_TEAM)
-
+				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+				
 				// separator slice:
 				// 		health-armor | scores
 				next_sector = bottomright_x - 103 - 6;
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					//hudline_x = 10;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector);
+					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
 				})
 
 				// scores
@@ -3610,11 +3806,11 @@ void Sbar_Draw (void)
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
-				}, BG_DEFAULT)
+				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 
 				// post-scores
 				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + 2;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					hudline_x = topright_x;
 				})
 			}
@@ -3874,7 +4070,7 @@ void Sbar_Draw (void)
 		position_y = vid_conheight - sbar_fontsize_y;
 
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-		drawstring(position, rm_watermark, sbar_fontsize, '1 1 1', 0.2, DRAWFLAG_NORMAL);
+		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
 	}
 
 	if(tmpmadoka_fadetime >= time)
@@ -4406,7 +4602,7 @@ void CSQC_vip_hud(vector hudpos)
 
 	// red vip
 	healthpercent = min(vip_red_health / vip_red_maxhealth, 1);
-	drawstring(hudpos, textShortenToWidth(vip_red_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
+	drawstring(hudpos + '1 0 0', textShortenToWidth(vip_red_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill_x *= healthpercent;
@@ -4417,7 +4613,7 @@ void CSQC_vip_hud(vector hudpos)
 
 	// blue vip
 	healthpercent = min(vip_blue_health / vip_blue_maxhealth, 1);
-	drawstring(hudpos, textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
+	drawstring(hudpos + '1 0 0', textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
 	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
 	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
 	pbfill = pbsize - '2 2 0';

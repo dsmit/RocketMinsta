@@ -175,6 +175,9 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "spawn")
 	if(cmd != "begin")
 	if(cmd != "rmcfgreport")
+	if(cmd != "hudinfo")
+	if(cmd != "fovreport")
+	if(cmd != "zoomreport")
 	{
 		if(cmd_floodcheck())
 			return;
@@ -265,6 +268,11 @@ void SV_ParseClientCommand(string s) {
 		
 		self.hud_old = stof(argv(1));
 		self.hud_alt = stof(argv(2));
+		
+		if(self.hudskin)
+			fstrunzone(self.hudskin);
+		self.hudskin = strzone(argv(3));
+		
 		WriteSpectatorInfo(self);
 	} else if(cmd == "fakeflag") {
 		if(!self)
