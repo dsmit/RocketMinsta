@@ -2,8 +2,8 @@ extern_image_border_right gfx/hud/skins/grid/border_right
 extern_image_border_left gfx/hud/skins/grid/border_left
 border_left_scale 0.3
 border_right_scale 0.3
-border_left_offset -7 -6
-border_right_offset 7 6
+border_left_offset -7 -3
+border_right_offset 7 3
 border_simple 0
 border_right_width 3
 border_left_width 3
