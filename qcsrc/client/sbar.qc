@@ -2632,6 +2632,10 @@ void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, floa
 	vector drawsize;
 	float factor;
 	
+	slicepos_y  += hudskin_line_padding_x;
+	slicesize_y -= hudskin_line_padding_x;
+	slicesize_y -= hudskin_line_padding_y;
+	
 	switch(hudskin_line_fill)
 	{
 		case FILL_COLOR:

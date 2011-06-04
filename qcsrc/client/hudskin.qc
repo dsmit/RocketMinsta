@@ -59,6 +59,7 @@ void HUDSkin_Unload()
     hudskin_size_sector_fill_center = '0 0 0';
     hudskin_size_sector_fill_left = '0 0 0';
     hudskin_size_sector_fill_right = '0 0 0';
+    hudskin_line_padding = '0 0 0';
     
     print("Unloaded HUD skin\n");
     
@@ -388,6 +389,11 @@ float HUDSkin_Eval(string cmd)
             }
             
             return TRUE;
+        
+        case "line_padding":
+			hudskin_line_padding_x = stof(argv(1));
+			hudskin_line_padding_y = stof(argv(2));
+			return TRUE;
         
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");

@@ -53,6 +53,7 @@ vector hudskin_size_sector_fill_right;
 float hudskin_sector_fill;
 string hudskin_image_line_fill;
 vector hudskin_size_line_fill;
+vector hudskin_line_padding;
 string hudskin_name;
 
 float HUDSkin_Load(string);

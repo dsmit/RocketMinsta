@@ -23,3 +23,4 @@ flash_sector_imod 2
 flash_sector_amod 0
 flash_border_imod 2
 flash_border_amod 0
+line_padding 6 8
