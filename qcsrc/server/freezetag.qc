@@ -257,7 +257,8 @@ void freezetag_Freeze(entity attacker)
 
 	update_playercount();
 
-	sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
+	if(cvar("g_explosive_freezetag_freezesound"))
+		sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
 
 	// add waypoint
 	WaypointSprite_Spawn("freezetag_frozen", 0, 0, self, '0 0 64', world, self.team, self, waypointsprite_attached, TRUE);

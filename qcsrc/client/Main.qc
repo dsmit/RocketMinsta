@@ -180,6 +180,8 @@ void CSQC_Shutdown(void)
 #pragma TARGET fte
 #endif
 
+	HUDSkin_Unload();
+
 	remove(teams);
 	remove(players);
 	db_close(binddb);
@@ -425,9 +427,11 @@ void PostInit(void)
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
 			localcmd("seta rm_noflags 0; noflags 0\n");
+		case 24:
+			localcmd("seta rm_hudskin \"default\"\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 24\n");
+		localcmd("seta rm_initialized 25\n");
 		RM_OUTDATED
 		break;
 	}
@@ -470,7 +474,9 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
-
+	// -- //
+	registercmd("hudskin");
+	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
@@ -489,6 +495,8 @@ void PostInit(void)
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
+	
+	HUDSkin_Load(cvar_string("rm_hudskin"));
 	
 	screenfade = time + 0.1;
 	fovlock = -1;
@@ -596,6 +604,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		print("\nIn addition, these commands are available:\n");
 		print("^5afk^7: Marks you as being away\n");
+		print("^5hudskin^7: Lists or switches HUD skins and displays other HUD-related information\n");
 		return true;
 	}
 	else if(
@@ -641,7 +650,7 @@ float CSQC_ConsoleCommand(string strMessage)
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
 				
-				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 			}
 		}
 		
@@ -701,6 +710,55 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		SendRMCFGReport();
 		RMSETTINGREPORT
+		return true;
+	}
+	else if(strCmd == "hudskin")
+	{
+		if(argc < 2)
+		{
+			print("\n^xFB0The following HUD skins are available:\n");
+			
+			local float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+			local string tmpname, displayname;
+			globsize = search_getsize(hsglob);
+			
+			seed = floor(random() * globsize);
+			for(i = 0; i < globsize; ++i)
+			{
+				tmpname = search_getfilename(hsglob, i);
+				tmpname = substring(tmpname, strlen("gfx/hud/skins/"), strlen(tmpname));
+				tmpname = substring(tmpname, 0, strlen(tmpname) - strlen("/skininfo"));
+				
+				if(i == seed)
+					displayname = tmpname;
+					
+				print("^5    ", tmpname);
+				
+				if(tmpname == hudskin_name)
+					print(" ^8(current)\n");
+				else print("\n");
+			}
+			search_end(hsglob);
+			
+			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			
+			return true;
+		}
+		
+		if(!hudlocked)
+		{
+			HUDSkin_Load(argv(1));
+			cvar_set("rm_hudskin", hudskin_name);
+			SendRMCFGReport();
+			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+		}
+		else
+		{
+			print("^1Can't change the HUD skin while spectating a player, please join the game or become an observer and try again\n");
+			return true;
+		}
+		
 		return true;
 	}
 
@@ -940,6 +998,9 @@ void GameCommand(string msg)
 		
 		rm_althud = hudlocked_alt;
 		rm_oldhud = hudlocked_old;
+		
+		if(argv(3) != hudskin_name)
+			HUDSkin_Load(argv(3));
 	}
 	else if(cmd == "lockfov")
 	{
@@ -980,6 +1041,18 @@ void GameCommand(string msg)
 		}
 		
 		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)), stof(argv(4)));
+	}
+	else if(cmd == "hudskin")
+	{
+		HUDSkin_Load(argv(1));
+	}
+	else if(cmd == "hudskin_unload")
+	{
+		HUDSkin_Unload();
+	}
+	else if(cmd == "hudskin_eval")
+	{
+		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
 	else
 	{

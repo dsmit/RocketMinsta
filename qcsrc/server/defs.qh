@@ -661,6 +661,7 @@ float g_explosive_speedaward_ownaccel;
 .float speczoom_factor;
 
 .float g_minstagib_stat;
+.string hudskin;
 
 #define DEPENDON(d) if(!(d)) return;
 #define DEPENDON_F(d,f) if(!(d)) return f;

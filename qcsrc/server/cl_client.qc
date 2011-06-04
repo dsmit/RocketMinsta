@@ -1599,6 +1599,10 @@ void ClientDisconnect (void)
 		strunzone(self.netname_previous);
 	if(self.clientstatus)
 		strunzone(self.clientstatus);
+	
+	if(clienttype(self) != CLIENTTYPE_BOT)
+	if(self.hudskin)
+		fstrunzone(self.hudskin);
 
 	ClearPlayerSounds();
 
@@ -2165,7 +2169,7 @@ void WriteSpectatorInfo(entity player)
 		#ifdef RM_SUPPORT_MADOKA
 		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
 		#endif
-		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), "\n"));
+		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), " ", player.hudskin, "\n"));
 		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
 		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
 		WriteSpectatorInfoOf(spec, player);

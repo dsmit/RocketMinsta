@@ -1,0 +1,28 @@
+border_left_scale 0.11
+border_right_scale 0.11
+border_left_offset -3 0
+border_right_offset 3 0
+border_simple 0
+border_right_width 2
+border_left_width 2
+border_teamcolor always
+sector_teamcolor always
+sector_teamcolor_brightness 1
+border_teamcolor_brightness 1
+sector_alpha 0.2
+border_alpha 0.7
+line_color 0.6 0.6 0.6
+line_alpha 0.2
+flash_alphamod 1
+flash_intmod 1
+border_drawmode normal
+sector_padding 2 2
+flash_line_imod 1
+flash_line_amod 1
+flash_sector_imod 2
+flash_sector_amod 0
+flash_border_imod 2
+flash_border_amod 1
+line_fill tile
+extern_image_sector_fill_center gfx/hud/skins/glow/line_fill
+sector_fill stretch
