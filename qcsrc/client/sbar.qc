@@ -4052,7 +4052,7 @@ void Sbar_Draw (void)
 		position_y = vid_conheight - sbar_fontsize_y;
 
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-		drawstring(position, rm_watermark, sbar_fontsize, '1 1 1', 0.2, DRAWFLAG_NORMAL);
+		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
 	}
 
 	if(tmpmadoka_fadetime >= time)
