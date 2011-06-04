@@ -37,7 +37,7 @@ void setSelectedRMHudSkinList(entity me, float i)
 	{
 		setSelectedListBox(me, i);
 		
-		if(!me.isUpdating)
+		if(!me.isUpdating) if(cvar_string("rm_hudskin") != bufstr_get(me.skinlist_buf, me.selectedItem))
 			localcmd("hudskin ", bufstr_get(me.skinlist_buf, me.selectedItem), "\n");
 	}
 }
