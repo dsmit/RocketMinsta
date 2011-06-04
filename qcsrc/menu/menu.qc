@@ -20,6 +20,7 @@ void SUB_Null() { };
 
 void() m_init =
 {
+	registercvar("_menu_alpha", "0");
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0");
 

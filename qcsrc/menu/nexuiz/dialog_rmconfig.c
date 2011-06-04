@@ -1,32 +1,16 @@
 #ifdef INTERFACE
 CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	METHOD(NexuizRMConfigDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
-	METHOD(NexuizRMConfigDialog, showNotify, void(entity))
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
 	ATTRIB(NexuizRMConfigDialog, rows, float, 13)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
-	ATTRIB(NexuizRMConfigDialog, team1, entity, NULL)
-	ATTRIB(NexuizRMConfigDialog, team2, entity, NULL)
-	ATTRIB(NexuizRMConfigDialog, team3, entity, NULL)
-	ATTRIB(NexuizRMConfigDialog, team4, entity, NULL)
 ENDCLASS(NexuizRMConfigDialog)
 #endif
 
 #ifdef IMPLEMENTATION
-
-void showNotifyNexuizRMConfigDialog(entity me)
-{
-	float teams, nTeams;
-	teams = cvar("_teams_available");
-	nTeams = 0;
-	me.team1.disabled = !(teams & 1); nTeams += !!(teams & 1);
-	me.team2.disabled = !(teams & 2); nTeams += !!(teams & 2);
-	me.team3.disabled = !(teams & 4); nTeams += !!(teams & 4);
-	me.team4.disabled = !(teams & 8); nTeams += !!(teams & 8);
-}
 
 void fillNexuizRMConfigDialog(entity me)
 {
