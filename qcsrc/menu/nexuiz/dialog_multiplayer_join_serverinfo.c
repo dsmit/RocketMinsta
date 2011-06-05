@@ -77,7 +77,7 @@ void loadServerInfoNexuizServerInfoDialog(entity me, float i)
 	m = tokenizebyseparator(versionstr, "_rm-");
 	rmversion = argv(1);
 
-	me.currentServerType = strzone(typestr);
+	me.currentServerType = GametypeFullNameFromName(typestr); //strzone(typestr);
 	me.typeLabel.setText(me.typeLabel, me.currentServerType);
 
 	SLIST_FIELD_MAP = gethostcacheindexforkey("map");
