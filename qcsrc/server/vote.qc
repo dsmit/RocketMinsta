@@ -158,7 +158,9 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
+			// Akari: not needed, will show a gametype voting screen instead
 			
+			/*
 			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
 			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
 			{
@@ -168,6 +170,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "\n");
 				return FALSE;
 			}
+			*/
 		}
 	}
     if(argv(0) == "endround")
