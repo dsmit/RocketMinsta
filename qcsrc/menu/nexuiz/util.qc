@@ -273,10 +273,15 @@ void() Item_Nex_ExtResponseSystem_CheckForResponse =
 
 // END OF EXTRESPONSE SYSTEM /////////////////////////////////////////////////
 
+float gamestat_previous;
+float gamestat;
+
 float preMenuInit()
 {
 	vector sz;
 	vector boxA, boxB;
+
+	gamestat_previous = -1;
 
 	MapInfo_Cache_Create();
 	MapInfo_Enumerate();
@@ -303,10 +308,34 @@ float preMenuInit()
 	return TRUE;
 }
 
+void Event_Connect()
+{
+	print("^5Connected to server\n");
+	cvar_set("_voting_allowed", "0");
+	localcmd("cmd menu_request voting\n"); // For upcoming vcall dialog
+}
+
+void Event_Disconnect()
+{
+	print("^1Disconnected from server\n");
+	cvar_set("_voting_allowed", "0");
+}
+
 string campaign_name_previous;
 float campaign_won_previous;
 void postMenuDraw()
 {
+	gamestat = (gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
+	
+	if(gamestat != gamestat_previous)
+	{
+		if(gamestat)
+			Event_Connect();
+		else
+			Event_Disconnect();
+		
+		gamestat_previous = gamestat;
+	}
 }
 void preMenuDraw()
 {

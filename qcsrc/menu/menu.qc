@@ -20,9 +20,10 @@ void SUB_Null() { };
 
 void() m_init =
 {
-	registercvar("_menu_alpha", "0");
+	registercvar("_menu_alpha", "0", 0);
 	cvar_set("_menu_alpha", "0");
-	registercvar("menu_slist_showonlyrm", "0");
+	registercvar("menu_slist_showonlyrm", "0", 0);
+	registercvar("_voting_allowed", "0", 0);
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
