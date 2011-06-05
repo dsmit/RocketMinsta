@@ -687,7 +687,11 @@ void() m_toggle =
 	if(Menu_Active)
 		m_hide();
 	else
+	{
+		if(gamestatus & (GAME_ISSERVER | GAME_CONNECTED))
+			m_activate_window(main.gameMenuDialog);
 		m_display();
+	}
 };
 
 void() m_shutdown =

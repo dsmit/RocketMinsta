@@ -26,6 +26,7 @@
 #include "nexuiz/modbutton.c"
 #include "nexuiz/dialog_teamselect.c"
 #include "nexuiz/dialog_rmconfig.c"
+#include "nexuiz/dialog_gamemenu.c"
 #include "nexuiz/dialog_settings.c"
 #include "nexuiz/dialog_settings_video.c"
 #include "nexuiz/dialog_settings_effects.c"
