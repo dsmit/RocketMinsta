@@ -459,9 +459,12 @@ void PostInit(void)
 		case 24:
 			localcmd("seta rm_hudskin \"default\"\n");
 		case 25:	// yep, nothing here
+		case 26:
+		case 27:
+		case 28:
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 26\n");
+		localcmd("seta rm_initialized 29\n");
 		RM_OUTDATED
 		break;
 	}
