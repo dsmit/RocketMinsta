@@ -279,12 +279,27 @@ SelectSpawnPoint
 Finds a point to respawn
 =============
 */
+
+entity global_spawnpoint;
+
 entity SelectSpawnPoint (float anypoint)
 {
 	local float teamcheck;
 	local entity firstspot_new;
 	local entity spot, firstspot, playerlist;
 
+	local float randspawns;
+	randspawns = cvar("g_explosive_randomspawns");
+	
+	if(!global_spawnpoint)
+		global_spawnpoint = spawn();
+
+	if(randspawns == 2)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		return global_spawnpoint;
+	}
+	
 	spot = find (world, classname, "testplayerstart");
 	if (spot)
 		return spot;
@@ -336,6 +351,12 @@ entity SelectSpawnPoint (float anypoint)
 			for(e = firstspot; e; e = e.chain)
 				if(e.team != teamcheck)
 					error("invalid spawn found");
+	}
+
+	if(!spot) if(randspawns)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		spot = global_spawnpoint;
 	}
 
 	if (!spot)
