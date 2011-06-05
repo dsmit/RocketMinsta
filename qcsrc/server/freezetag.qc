@@ -74,7 +74,8 @@ void freezetag_UglyFreezetagWorkaround_Think()
 
 void freezetag_Initialize()
 {
-	precache_model("models/ice/ice.md3");
+	precache_model("models/ice/ice_blue.md3");
+	precache_model("models/ice/ice_red.md3");
     
     if(inWarmupStage)
         warmup = time;
@@ -247,7 +248,18 @@ void freezetag_Freeze(entity attacker)
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
 	//ice.alpha = 0.6;
 	ice.effects |= EF_ADDITIVE;
-	setmodel(ice, "models/ice/ice.md3");
+	if(self.team == COLOR_TEAM1)
+	{
+		setmodel(ice, "models/ice/ice_red.md3");
+	}
+	else if(self.team == COLOR_TEAM2)
+	{
+		setmodel(ice, "models/ice/ice_blue.md3");
+	}
+	else
+	{
+		setmodel(ice, "models/ice/ice_blue.md3");
+	}
 
 	entity oldself;
 	oldself = self;
