@@ -335,6 +335,11 @@ void Event_Disconnect()
 
 string campaign_name_previous;
 float campaign_won_previous;
+
+float map_nextcheck;
+float map_crc;
+float map_crc_old;
+
 void postMenuDraw()
 {
 	gamestat = (gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
@@ -347,6 +352,21 @@ void postMenuDraw()
 			Event_Disconnect();
 		
 		gamestat_previous = gamestat;
+	}
+	else if(gamestat)
+	{
+		if(time >= map_nextcheck)
+		{
+			map_crc = crc16(FALSE, cvar_string("cl_worldbasename"));
+			
+			if(map_crc != map_crc_old)
+			{
+				Event_Connect();
+				map_crc_old = map_crc;
+			}
+			
+			map_nextcheck = time + 2;
+		}
 	}
 }
 void preMenuDraw()
