@@ -283,3 +283,5 @@ float speczoom_speed;
 float speczoom_factor;
 
 float gui_reloading;
+float g_minstagib;
+float minstasbar_fixed;

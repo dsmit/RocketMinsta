@@ -544,24 +544,17 @@ float w_rlauncher(float req)
 		w_deathtypestring = "exploded";
 	else if (req == WR_KILLMESSAGE)
 	{
-		//<akari>
-		//
-		// Changed death messages for minstanex's explosive attack
-		// Fucks up the RL, but who gives a shit?
-		//
-		
-		/*
-		if(w_deathtype & HITTYPE_BOUNCE) // (remote detonation)
-			w_deathtypestring = "got too close to #'s rocket";
-		else if(w_deathtype & HITTYPE_SPLASH)
-			w_deathtypestring = "almost dodged #'s rocket";
+		if(!g_minstagib)
+		{
+			if(w_deathtype & HITTYPE_BOUNCE) // (remote detonation)
+				w_deathtypestring = "got too close to #'s rocket";
+			else if(w_deathtype & HITTYPE_SPLASH)
+				w_deathtypestring = "almost dodged #'s rocket";
+			else
+				w_deathtypestring = "ate #'s rocket";
+		}
 		else
-			w_deathtypestring = "ate #'s rocket";
-		*/
-		
-		w_deathtypestring = "has been blown up by #";
-		
-		//</akari>
+			w_deathtypestring = "has been blown up by #";
 	}
 	else if (req == WR_RESETPLAYER)
 	{

@@ -660,6 +660,7 @@ float g_explosive_speedaward_ownaccel;
 .float speczoom_speed;
 .float speczoom_factor;
 
+.float g_minstagib_stat;
 .string hudskin;
 
 float gtv_force;
