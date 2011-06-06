@@ -393,6 +393,8 @@ float GameCommand_Vote(string s, entity e) {
 					vote = VoteParse(s, argc);
 					if(vote == "") {
 						print_to(e, "^1Your vote is empty. See 'vhelp' for more info.");
+					} else if(vote == "$*") {	// happens on "vcall" without arguments
+						stuffcmd(e, "menu_cmd directmenu VcallMenu\n");
 					} else if(e
 						&& time < e.vote_next) {
 							print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote."));
