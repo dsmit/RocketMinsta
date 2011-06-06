@@ -315,6 +315,9 @@ void Menu_ClearVars()
 	
 	registercvar("_vote_commands", "", 0);
 	cvar_set("_vote_commands", "");
+	
+	registercvar("_rm_server", "", 0);
+	cvar_set("_rm_server", "0");
 }
 
 void Event_Connect()

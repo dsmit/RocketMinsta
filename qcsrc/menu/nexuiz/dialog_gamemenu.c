@@ -41,6 +41,7 @@ void fillNexuizGameMenuDialog(entity me)
 	me.TR(me);
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("RM Options", '0 0 0', "menu_cmd directmenu RMConfig;", COMMANDBUTTON_CLOSE));
+		setDependent(e, "_rm_server", 1, 1);
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizButton("Main menu", '0 0 0'));
 			e.onClick = GotoMainMenu;

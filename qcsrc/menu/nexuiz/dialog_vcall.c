@@ -22,6 +22,7 @@ void VoteCall_f(entity btn, entity me)
 void fillNexuizVcallDialog(entity me)
 {
 	entity e, vlist;
+	
 	me.TR(me);
 		me.TD(me, 1, 3, e = makeNexuizTextLabel(0, "Available votes:"));
 	me.TR(me);
