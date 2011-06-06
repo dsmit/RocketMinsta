@@ -4067,7 +4067,7 @@ void Sbar_Draw (void)
 	{
 		vector position;
 		position = '0 0 0';
-		position_y = vid_conheight - sbar_fontsize_y;
+		position_y = vid_conheight - 8;
 
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
