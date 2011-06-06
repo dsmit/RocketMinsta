@@ -151,6 +151,7 @@ void fillNexuizPlayerSettingsTab(entity me)
 		me.TD(me, 1, 1.5, e = makeNexuizButton("RocketMinsta Options", '0 0 0'));
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.rmDialog;
+			setDependent(e, "_rm_server", 1, 1);
 		me.TD(me, 1, 1.5, e = makeNexuizButton("Radar, HUD & Waypoints", '0 0 0'));
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.radarDialog;

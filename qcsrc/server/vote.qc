@@ -393,6 +393,8 @@ float GameCommand_Vote(string s, entity e) {
 					vote = VoteParse(s, argc);
 					if(vote == "") {
 						print_to(e, "^1Your vote is empty. See 'vhelp' for more info.");
+					} else if(vote == "$*") {	// happens on "vcall" without arguments
+						stuffcmd(e, "menu_cmd directmenu VcallMenu\n");
 					} else if(e
 						&& time < e.vote_next) {
 							print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote."));
@@ -602,15 +604,7 @@ void VoteHelp(entity e) {
 	print_to(e, "^7If enough of the players vote no the vote is rejected.");
 	print_to(e, strcat("^7If neither the vote will timeout after ", cvar_string("sv_vote_timeout"), "^7 seconds."));
 	print_to(e, "^7You can call a vote for or execute these commands:");
-	
-	local string votes;
-	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
-	
-	for(i = 0; i < n; ++i)
-		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
-			votes = strcat(votes, argv(i), " ");
-	
-	print_to(e, strcat("^3", votes, "^7and maybe further ^3arguments^7"));
+	print_to(e, strcat("^3", GetVoteList_Filtered(), "^7and maybe further ^3arguments^7"));
 }
 
 string VoteNetname(entity e)

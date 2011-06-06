@@ -308,21 +308,38 @@ float preMenuInit()
 	return TRUE;
 }
 
+void Menu_ClearVars()
+{
+	registercvar("_voting_allowed", "0", 0);
+	cvar_set("_voting_allowed", "0");
+	
+	registercvar("_vote_commands", "", 0);
+	cvar_set("_vote_commands", "");
+	
+	registercvar("_rm_server", "", 0);
+	cvar_set("_rm_server", "0");
+}
+
 void Event_Connect()
 {
+	Menu_ClearVars();
 	print("^5Connected to server\n");
-	cvar_set("_voting_allowed", "0");
-	localcmd("cmd menu_request voting\n"); // For upcoming vcall dialog
+	localcmd("cmd menu_request\n");
 }
 
 void Event_Disconnect()
 {
+	Menu_ClearVars();
 	print("^1Disconnected from server\n");
-	cvar_set("_voting_allowed", "0");
 }
 
 string campaign_name_previous;
 float campaign_won_previous;
+
+float map_nextcheck;
+float map_crc;
+float map_crc_old;
+
 void postMenuDraw()
 {
 	gamestat = (gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
@@ -335,6 +352,21 @@ void postMenuDraw()
 			Event_Disconnect();
 		
 		gamestat_previous = gamestat;
+	}
+	else if(gamestat)
+	{
+		if(time >= map_nextcheck)
+		{
+			map_crc = crc16(FALSE, cvar_string("cl_worldbasename"));
+			
+			if(map_crc != map_crc_old)
+			{
+				Event_Connect();
+				map_crc_old = map_crc;
+			}
+			
+			map_nextcheck = time + 2;
+		}
 	}
 }
 void preMenuDraw()

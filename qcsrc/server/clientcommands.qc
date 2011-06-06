@@ -178,6 +178,7 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "hudinfo")
 	if(cmd != "fovreport")
 	if(cmd != "zoomreport")
+	if(cmd != "menu_request")
 	{
 		if(cmd_floodcheck())
 			return;
@@ -200,6 +201,16 @@ void SV_ParseClientCommand(string s) {
 			return;
 		
 		self.rmcfgreport = strzone(s);
+	} else if(cmd == "menu_request"){
+		// Report that this server is running RM
+		stuffcmd(self, "set _rm_server 1\n");
+		
+		// Report available votes
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
+		
+		// Update all necessary dialogs
+		stuffcmd(self, "menu_cmd update_rmvars\n");
 	} else if(cmd == "spyrmcfg") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
 		
