@@ -690,6 +690,7 @@ void() m_toggle =
 	else
 	{
 		if(gamestatus & (GAME_ISSERVER | GAME_CONNECTED))
+		if(!cvar("rm_nogamemenu"))
 			m_activate_window(main.gameMenuDialog);
 		m_display();
 	}
