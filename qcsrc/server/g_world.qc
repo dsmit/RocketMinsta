@@ -761,6 +761,7 @@ void spawnfunc_worldspawn (void)
 		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
 	}
 
+
 /*
 	-- Not needed anymore --
 	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
@@ -774,7 +775,7 @@ void spawnfunc_worldspawn (void)
 	InfoMessages_Init();
 	IP2C_Init();
 	
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((RM_BUILD_SUFFIX != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
 
 void spawnfunc_light (void)
