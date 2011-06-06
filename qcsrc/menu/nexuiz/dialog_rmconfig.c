@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 15)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 16)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -42,6 +42,8 @@ void fillNexuizRMConfigDialog(entity me)
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "noflags", "Country flags in scoreboard"));
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nogamemenu", "Enable the Game Menu"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
 	me.TR(me);
