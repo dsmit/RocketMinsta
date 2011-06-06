@@ -83,6 +83,9 @@ void GameCommand(string theCommand)
 			
 		for(v = world; (v = findfloat(v, instanceOfRMHudSkinList, 1)); )
 			v.updateSkinList(v);
+			
+		for(v = world; (v = findfloat(v, instanceOfNexuizVoteList, 1)); )
+			v.loadCvars(v);
 		return;
 	}
 

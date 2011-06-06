@@ -308,17 +308,26 @@ float preMenuInit()
 	return TRUE;
 }
 
+void Menu_ClearVars()
+{
+	registercvar("_voting_allowed", "0", 0);
+	cvar_set("_voting_allowed", "0");
+	
+	registercvar("_vote_commands", "", 0);
+	cvar_set("_vote_commands", "");
+}
+
 void Event_Connect()
 {
+	Menu_ClearVars();
 	print("^5Connected to server\n");
-	cvar_set("_voting_allowed", "0");
-	localcmd("cmd menu_request voting\n"); // For upcoming vcall dialog
+	localcmd("cmd menu_request\n");
 }
 
 void Event_Disconnect()
 {
+	Menu_ClearVars();
 	print("^1Disconnected from server\n");
-	cvar_set("_voting_allowed", "0");
 }
 
 string campaign_name_previous;
