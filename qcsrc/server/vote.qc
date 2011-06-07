@@ -138,13 +138,7 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 
-			if (! cvar ("g_explosive_gametypevote_call"))
-			{
-				sprint (e, "^1Gametype voting is not allowed.\n");
-				return FALSE;
-			}
-
-			RemapVote_vote = strzone(strcat("gametype ", s, "; ", vote));
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 			
 			return TRUE;
