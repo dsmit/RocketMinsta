@@ -4,7 +4,7 @@ CLASS(NexuizGameMenuDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizGameMenuDialog, title, string, "Game Menu")
 	ATTRIB(NexuizGameMenuDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.2)
-	ATTRIB(NexuizGameMenuDialog, rows, float, 11)
+	ATTRIB(NexuizGameMenuDialog, rows, float, 12)
 	ATTRIB(NexuizGameMenuDialog, columns, float, 10)
 	ATTRIB(NexuizGameMenuDialog, name, string, "GameMenu")
 ENDCLASS(NexuizGameMenuDialog)
@@ -24,6 +24,14 @@ void fillNexuizGameMenuDialog(entity me)
 {
 	entity e;
 	me.TR(me);
+		me.TD(me, 1, me.columns, e = makeNexuizButton("Main menu", '0 0 0'));
+			e.onClick = GotoMainMenu;
+			e.onClickEntity = me;
+	me.TR(me);
+		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("RM Options", '0 0 0', "menu_cmd directmenu RMConfig;", COMMANDBUTTON_CLOSE));
+		setDependent(e, "_rm_server", 1, 1);
+	me.TR(me);
+	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Join", '0 0 0', "cmd join;", COMMANDBUTTON_CLOSE));
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Switch team", '0 0 0', "menu_cmd directmenu TeamSelect;", COMMANDBUTTON_CLOSE));
@@ -39,13 +47,6 @@ void fillNexuizGameMenuDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Reconnect", '0 0 0', "disconnect; reconnect;", COMMANDBUTTON_CLOSE));
 	me.TR(me);
-	me.TR(me);
-		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("RM Options", '0 0 0', "menu_cmd directmenu RMConfig;", COMMANDBUTTON_CLOSE));
-		setDependent(e, "_rm_server", 1, 1);
-	me.TR(me);
-		me.TD(me, 1, me.columns, e = makeNexuizButton("Main menu", '0 0 0'));
-			e.onClick = GotoMainMenu;
-			e.onClickEntity = me;
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizButton("Return to game", '0 0 0'));
 			e.onClick = Dialog_Close;
