@@ -279,12 +279,27 @@ SelectSpawnPoint
 Finds a point to respawn
 =============
 */
+
+entity global_spawnpoint;
+
 entity SelectSpawnPoint (float anypoint)
 {
 	local float teamcheck;
 	local entity firstspot_new;
 	local entity spot, firstspot, playerlist;
 
+	local float randspawns;
+	randspawns = cvar("g_explosive_randomspawns");
+	
+	if(!global_spawnpoint)
+		global_spawnpoint = spawn();
+
+	if(randspawns == 2)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		return global_spawnpoint;
+	}
+	
 	spot = find (world, classname, "testplayerstart");
 	if (spot)
 		return spot;
@@ -336,6 +351,12 @@ entity SelectSpawnPoint (float anypoint)
 			for(e = firstspot; e; e = e.chain)
 				if(e.team != teamcheck)
 					error("invalid spawn found");
+	}
+
+	if(!spot) if(randspawns)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		spot = global_spawnpoint;
 	}
 
 	if (!spot)
@@ -2127,6 +2148,10 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(!cvar("g_explosive_showspecs"))
 		return;
 	
+	if(player == of)
+	if(player.classname == "spectator") // What the fuck?
+		return;
+	
 	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
 	
 	local entity spec;
@@ -2134,7 +2159,7 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	local float a = cvar("g_explosive_anonspecs");
 	
 	FOR_EACH_SPECOF(of, spec, a) specs++;
-	
+
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);

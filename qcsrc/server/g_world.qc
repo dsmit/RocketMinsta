@@ -763,6 +763,7 @@ void spawnfunc_worldspawn (void)
 		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
 	}
 
+
 /*
 	-- Not needed anymore --
 	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
@@ -776,7 +777,7 @@ void spawnfunc_worldspawn (void)
 	InfoMessages_Init();
 	IP2C_Init();
 	
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((RM_BUILD_SUFFIX != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
 
 void spawnfunc_light (void)
@@ -1093,57 +1094,6 @@ string GetNextMap()
 	}
 
 	return "";
-};
-
-float DoNextMapOverride()
-{
-	if(cvar("g_campaign"))
-	{
-		CampaignPostIntermission();
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if(cvar("quit_when_empty"))
-	{
-		if(player_count <= currentbots)
-		{
-			localcmd("quit\n");
-			alreadychangedlevel = TRUE;
-			return TRUE;
-		}
-	}
-	if(cvar_string("quit_and_redirect") != "")
-	{
-		redirection_target = strzone(cvar_string("quit_and_redirect"));
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if (cvar("samelevel")) // if samelevel is set, stay on same level
-	{
-		// this does not work because it tries to exec maps/nexdm01.mapcfg (which doesn't exist, it should be trying maps/dm_nexdm01.mapcfg for example)
-		//localcmd(strcat("exec \"maps/", mapname, ".mapcfg\"\n"));
-		// so instead just restart the current map using the restart command (DOES NOT WORK PROPERLY WITH exit_cfg STUFF)
-		localcmd("restart\n");
-		//changelevel (mapname);
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if(cvar_string("nextmap") != "")
-		if(MapInfo_CheckMap(cvar_string("nextmap")))
-		{
-			Map_Goto_SetStr(cvar_string("nextmap"));
-			Map_Goto();
-			alreadychangedlevel = TRUE;
-			return TRUE;
-		}
-	if(cvar("lastlevel"))
-	{
-		GameResetCfg();
-		localcmd("set lastlevel 0\ntogglemenu\n");
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	return FALSE;
 };
 
 void GotoNextMap()
@@ -2190,6 +2140,75 @@ string choosenmap;
 void MapVote_AddVotable(string, float);
 void GameTypeVote_Start();
 float GameTypeVote_Finished(float);
+float GameTypeVote_AvailabilityStatus(string);
+
+float DoNextMapOverride()
+{
+	if(cvar("g_campaign"))
+	{
+		CampaignPostIntermission();
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if(cvar("quit_when_empty"))
+	{
+		if(player_count <= currentbots)
+		{
+			localcmd("quit\n");
+			alreadychangedlevel = TRUE;
+			return TRUE;
+		}
+	}
+	if(cvar_string("quit_and_redirect") != "")
+	{
+		redirection_target = strzone(cvar_string("quit_and_redirect"));
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if (cvar("samelevel")) // if samelevel is set, stay on same level
+	{
+		// this does not work because it tries to exec maps/nexdm01.mapcfg (which doesn't exist, it should be trying maps/dm_nexdm01.mapcfg for example)
+		//localcmd(strcat("exec \"maps/", mapname, ".mapcfg\"\n"));
+		// so instead just restart the current map using the restart command (DOES NOT WORK PROPERLY WITH exit_cfg STUFF)
+		localcmd("restart\n");
+		//changelevel (mapname);
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if(cvar_string("nextmap") != "")
+		if(MapInfo_CheckMap(cvar_string("nextmap")))
+		{
+			if(gametypevote)
+				return FALSE;
+			
+			Map_Goto_SetStr(cvar_string("nextmap"));
+			
+			if(mapvote_initialized)
+			{
+				if(cvar("g_explosive_gametypevote")) if(cvar("g_explosive_gametypevote_overplayed_strict"))
+				{
+					if(GameTypeVote_AvailabilityStatus(GametypeNameFromType(gametypetoset)) != GTV_AVAILABLE)
+					{
+						choosenmap = strzone(cvar_string("nextmap"));
+						//GameTypeVote_Start();
+						return FALSE;
+					}
+				}
+			}
+			
+			alreadychangedlevel = TRUE;
+			Map_Goto();
+			return TRUE;
+		}
+	if(cvar("lastlevel"))
+	{
+		GameResetCfg();
+		localcmd("set lastlevel 0\ntogglemenu\n");
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	return FALSE;
+};
 
 void MapVote_ClearAllVotes()
 {
@@ -2480,8 +2499,11 @@ float MapVote_Finished(float mappos)
 	{
 		if(!gametypevote)
 		{
-			Map_Goto_SetStr(mapvote_maps[mappos]);
-			choosenmap = strzone(mapvote_maps[mappos]);
+			if(cvar_string("nextmap") == "")
+			{
+				Map_Goto_SetStr(mapvote_maps[mappos]);
+				choosenmap = strzone(mapvote_maps[mappos]);
+			}
 			GameTypeVote_Start();
 			return FALSE;
 		}
@@ -2519,6 +2541,9 @@ float MapVote_CheckRules_2()
 	float firstPlaceVotes, secondPlaceVotes;
 	float mapvote_voters_real;
 	string result;
+
+	if(cvar_string("nextmap") != "" && !gametypevote)
+		return MapVote_Finished(0);
 
 	if(mapvote_count_real == 1)
 		return MapVote_Finished(0);
@@ -2654,6 +2679,21 @@ void MapVote_Start()
 	if(MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
 }
+
+float GameTypeVote_AvailabilityStatus(string gtname)
+{
+	if not(cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_AVAILABLE;
+	
+	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_OVERPLAYED;
+	
+	if (! GameTypeFilter_Allowed (getmapname_stored, gtname))
+		return GTV_FORBIDDEN;
+	
+	return GTV_AVAILABLE;
+}
+
 void MapVote_Think()
 {
 	if(!mapvote_run)
@@ -2683,20 +2723,6 @@ void MapVote_Think()
 
 	MapVote_Tick();
 };
-
-float GameTypeVote_AvailabilityStatus(string gtname)
-{
-	if (! GameTypeFilter_Allowed (getmapname_stored, gtname))
-		return GTV_FORBIDDEN;
-
-	if not(cvar("g_explosive_gametypevote_maxmaps"))
-		return GTV_AVAILABLE;
-	
-	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
-		return GTV_OVERPLAYED;
-
-	return GTV_AVAILABLE;
-}
 
 string GameTypeVote_GetOptions()
 {
@@ -2737,6 +2763,8 @@ float GameTypeVote_Finished(float pos)
 		return FALSE;
 	
 	localcmd("gametype ", mapvote_maps[pos], "\n");
+	if(cvar_string("nextmap") != "")
+		Map_Goto_SetStr(cvar_string("nextmap"));
 	Map_Goto();
 	alreadychangedlevel = TRUE;
 	return TRUE;

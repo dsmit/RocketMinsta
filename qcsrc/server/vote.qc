@@ -138,13 +138,7 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 
-			if (! cvar ("g_explosive_gametypevote_call"))
-			{
-				sprint (e, "^1Gametype voting is not allowed.\n");
-				return FALSE;
-			}
-
-			RemapVote_vote = strzone(strcat("gametype ", s, "; ", vote));
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
 			
 			return TRUE;
@@ -158,7 +152,9 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
+			// Akari: not needed, will show a gametype voting screen instead
 			
+			/*
 			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
 			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
 			{
@@ -168,6 +164,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "\n");
 				return FALSE;
 			}
+			*/
 		}
 	}
     if(argv(0) == "endround")
@@ -213,11 +210,33 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		
+		local float v;
+		v = cvar("g_explosive_rmcustom_votable_restrict");
+		local string r;
+		r = cvar_string("g_explosive_rmcustom_votable_restrictions");
+		
 		for(i = 0; i < globsize; ++i)
 		{
 			tmpname = search_getfilename(rmglob, i);
 			tmpname = substring(tmpname, strlen("rm-custom/"), strlen(tmpname));
 			tmpname = substring(tmpname, 0, strlen(tmpname) - 4);
+			
+			// Apply restriction rules
+			local float restricted;
+			switch(v)
+			{
+				case 0:
+					restricted =  FALSE;							break;
+				
+				case 1:
+					restricted = !ListContains(r, tmpname, " ");	break;
+				
+				case 2:
+					restricted =  ListContains(r, tmpname, " ");	break;
+			}
+			
+			if(restricted) continue;
+			
 			if(tmpname == cfgname)
 			{
 				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
