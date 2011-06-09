@@ -788,6 +788,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
         damage_attacker = attacker;
 		attacker_save = attacker;
 
+	local float took_extra;
+
 	if(targ.classname == "player")
 		if(targ.hook)
 			if(targ.hook.aiment)
@@ -931,6 +933,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			{
 				if(!ex || !ex_armor)
 				{
+					took_extra = 1;
 					targ.armorvalue -= 1;
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
 					damage = 0;
@@ -1221,13 +1224,18 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		damage = min(damage, t_oldhealth);
 		armordamage = min(armordamage, t_oldarmor);
 
+		if(took_extra)
+			armordamage = 100;
+
 		if(attacker.classname == "player")
 		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
 		{
 			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
 
-			//TODO: make it work for extralives
-			PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
+			if(took_extra)
+				PlayerScore_Add(attacker, SP_SCORE, (armordamage * 0.1));
+			else
+				PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
 
 			if(attacker != targ) if(damage || armordamage)
 				hudflash_teamcolor_default_spec(attacker);

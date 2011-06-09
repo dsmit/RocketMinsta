@@ -2185,7 +2185,7 @@ float DoNextMapOverride()
 			{
 				if(cvar("g_explosive_gametypevote")) if(cvar("g_explosive_gametypevote_overplayed_strict"))
 				{
-					if(GameTypeVote_AvailabilityStatus(GetGametype()) != GTV_AVAILABLE)
+					if(GameTypeVote_AvailabilityStatus(GametypeNameFromType(gametypetoset)) != GTV_AVAILABLE)
 					{
 						choosenmap = strzone(cvar_string("nextmap"));
 						//GameTypeVote_Start();

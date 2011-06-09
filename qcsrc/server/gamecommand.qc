@@ -640,8 +640,15 @@ void GameCommand(string command)
 		return;
 	}
 
-	if(argv(0) == "gotomap") if(argc == 2)
+	if(argv(0) == "gotomap") if(argc >= 2)
 	{
+		// might fail but screw it
+		if(argc > 2)
+		{
+			localcmd("gametype ", argv(2), "\n");
+			gametypetoset = GametypeIDFromName(argv(2));
+		}
+		
 		print(GotoMap(argv(1)), "\n");
 		return;
 	}
