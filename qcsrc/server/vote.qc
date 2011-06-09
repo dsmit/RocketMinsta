@@ -210,11 +210,33 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		
+		local float v;
+		v = cvar("g_explosive_rmcustom_votable_restrict");
+		local string r;
+		r = cvar_string("g_explosive_rmcustom_votable_restrictions");
+		
 		for(i = 0; i < globsize; ++i)
 		{
 			tmpname = search_getfilename(rmglob, i);
 			tmpname = substring(tmpname, strlen("rm-custom/"), strlen(tmpname));
 			tmpname = substring(tmpname, 0, strlen(tmpname) - 4);
+			
+			// Apply restriction rules
+			local float restricted;
+			switch(v)
+			{
+				case 0:
+					restricted =  FALSE;							break;
+				
+				case 1:
+					restricted = !ListContains(r, tmpname, " ");	break;
+				
+				case 2:
+					restricted =  ListContains(r, tmpname, " ");	break;
+			}
+			
+			if(restricted) continue;
+			
 			if(tmpname == cfgname)
 			{
 				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
