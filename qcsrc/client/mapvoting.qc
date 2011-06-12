@@ -49,6 +49,7 @@ vector MapVote_RGB(float id)
 
 string GameTypeVote_GameTypeName(string gtype)
 {
+	/*
 	switch(gtype)
 	{
 		case "ctf":
@@ -70,6 +71,9 @@ string GameTypeVote_GameTypeName(string gtype)
 	}
 
 	return strcat(gtype, " (unknown gametype?!)");
+	*/
+	
+	return GametypeFullNameFromName(gtype);
 }
 
 string GameTypeVote_GameTypeDescription(string gtype)

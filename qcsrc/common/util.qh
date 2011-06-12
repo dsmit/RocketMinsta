@@ -196,3 +196,4 @@ void WriteInt24_t(float dest, float val);
 #endif
 
 string GametypeFullNameFromName(string);
+string mmss(float tenths);
