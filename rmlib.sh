@@ -57,7 +57,7 @@ function rconsendto
 
 function rm-version-checkformat
 {
-    grep -P '^v\d+\.\d+\.\d+[a-zA-Z\d]*$'
+    perlgrep '^v\d+\.\d+\.\d+[a-zA-Z\d]*$'
 }
 
 function rm-version
@@ -90,12 +90,24 @@ function warn-oldconfig
     sleep 1 #little annoyance
 }
 
+PERLGREP="grep -P"
+function perlgrep
+{
+    $PERLGREP "$@"
+}
+
 function require
 {
     local req="$RMLIB_REQUIRED $*"
     local lacking=""
 
     echo "rmlib is checking for required utilities..."
+
+    if ! echo a | grep -Pq a; then
+        echo "WARNING: grep doesn't support -P switch! Will attempt to use pcregrep instead"
+        req="$req pcregrep"
+        PERLGREP="pcregrep"
+    fi
 
     for i in $req; do
         echo -n " - $i... "
