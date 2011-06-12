@@ -177,7 +177,7 @@ function makedata-all
     local desc="$2"
     
     #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
-    for line in $(ls | grep -P "\.pk3dir/?$"); do
+    for line in $(ls | perlgrep "\.pk3dir/?$"); do
         is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
         makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
     done
