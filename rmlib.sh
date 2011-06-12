@@ -43,10 +43,16 @@ function rconopen
     RCON_PASSWORD="$3"
 }
 
+RCON_USE_NETCAT=0
 function rconsend
 {
     echo " --:> $1"
-    printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT
+    
+    if [ $RCON_USE_NETCAT != 0 ]; then
+        printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" | netcat -uc $RCON_ADDRESS $RCON_PORT
+    else
+        printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT
+    fi
 }
 
 function rconsendto
@@ -107,6 +113,12 @@ function require
         echo "WARNING: grep doesn't support -P switch! Will attempt to use pcregrep instead"
         req="$req pcregrep"
         PERLGREP="pcregrep"
+    fi
+
+    if ! echo a > /dev/udp/localhost/1; then
+        echo "WARNING: shell doesn't support /dev/udp! Will attempt to use netcat instead"
+        req="$req netcat"
+        RCON_USE_NETCAT=1
     fi
 
     for i in $req; do
