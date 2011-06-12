@@ -213,9 +213,16 @@ void W_BallisticBullet_Hit (void)
 		if(self.dmg_edge != 0)
 		{
 			if(headshot)
+			{
 				announce(self.owner, "announcer/male/headshot.wav");
+				bigprint_spec(self.owner, "^1head^7shot!", "", 1);
+			}
+			
 			if(yoda)
+			{
 				announce(self.owner, "announcer/male/awesome.wav");
+				bigprint_spec(self.owner, "^5awesome!", "", 1);
+			}
 		}
 
 		//calculate hits for ballistic weapons

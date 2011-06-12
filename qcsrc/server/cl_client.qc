@@ -1531,6 +1531,7 @@ void ClientConnect (void)
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
 	
+	self.g_minstagib_stat = g_minstagib;
 	SendSpeedRecord(self);
 	IP2C_SetCountry(self);
 }
@@ -1969,6 +1970,10 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod;
+	
+	if(g_vip) if(ISVIP(self))
+		return;
+	
 	maxh = cvar("g_balance_health_rotstable");
 	maxa = cvar("g_balance_armor_rotstable");
 	maxf = cvar("g_balance_fuel_rotstable");

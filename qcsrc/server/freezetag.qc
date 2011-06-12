@@ -395,7 +395,10 @@ float freezetag_PlayerDies()
 	}*/
 
 	frag_target.health = 100; // "respawn" the player :P
-	W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
+	
+	if(g_minstagib)
+		W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
+		
 	freezetag_CheckWinner();
 
 	return 1;
