@@ -352,7 +352,7 @@ const float STAT_MINSTA = 113;
  */
  
 //<akari>
-#define MAX_SCORE 16
+#define MAX_SCORE 17
 //</akari>
 #define MAX_TEAMSCORE 2
 
@@ -362,14 +362,13 @@ const float STAT_MINSTA = 113;
 #define SP_SUICIDES 2
 #define SP_SCORE 3
 
-//<akari>
 #define SP_HOOKFRAGS 10
 #define SP_FREEZETAG_FROZENSTATUS 11
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
-#define SP_CN_CHAR0 14
-#define SP_CN_CHAR1 15
-//</akari>
+#define SP_JOINTIME 14
+#define SP_CN_CHAR0 15
+#define SP_CN_CHAR1 16
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 

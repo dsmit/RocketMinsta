@@ -521,6 +521,18 @@ float ListContains(string source, string key, string sep)
 	return 0;
 }
 
+
+string mmss(float tenths)
+{
+	float minutes;
+	string s;
+	tenths = floor(tenths + 0.5);
+	minutes = floor(tenths / 600);
+	tenths -= minutes * 600;
+	s = ftos(1000 + tenths);
+	return strcat(ftos(minutes), ":", substring(s, 1, 2));
+}
+
 string mmsss(float tenths)
 {
 	float minutes;

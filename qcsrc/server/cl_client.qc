@@ -1534,6 +1534,14 @@ void ClientConnect (void)
 	self.g_minstagib_stat = g_minstagib;
 	SendSpeedRecord(self);
 	IP2C_SetCountry(self);
+	
+	if(self.scorekeeper)
+	{
+		self.scorekeeper.SendFlags |= pow(2, SP_JOINTIME);
+		self.scorekeeper.(scores[SP_JOINTIME]) = time;
+	}
+	else
+		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 }
 
 /*

@@ -465,7 +465,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl cn name |", (g_minstagib? " hfrags" : ""), " +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
+		strcat("ping pl time cn name |", (g_minstagib? " hfrags" : ""), " +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
 		"+lms/lives +lms/rank +vip/vipkills +vip/survivals ",
@@ -559,6 +559,8 @@ void Cmd_Sbar_SetFields(float argc)
 			have_separator = 1;
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
+		} else if(str == "time") {
+			sbar_field[sbar_num_fields] = SP_JOINTIME;
 		} else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -699,6 +701,11 @@ string Sbar_GetField(entity pl, float field)
 				return "";
 
 			return strcat(chr2str(char0), chr2str(char1));
+
+		case SP_JOINTIME:
+			local float jt;
+			jt = pl.(scores[field]);
+			return mmss((time - jt) * 10);
 
 		case SP_PING:
 			if not(pl.gotscores)

@@ -1160,13 +1160,29 @@ void Ent_ReadPlayerScore()
 	float oldscore = o.(scores[SP_SCORE]);
 	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+	{
 		if(sf & p)
 		{
-			if(lf & p)
+			if(i == SP_JOINTIME)
+			{
+				local float srvtime;
+				srvtime = stof(ReadString());
+				
+				local float offs;
+				offs = srvtime - time;
+				
+				o.(scores[i]) = stof(ReadString()) - offs;
+			}
+			else if(lf & p)
+			{
 				o.(scores[i]) = ReadInt24_t();
+			}
 			else
+			{
 				o.(scores[i]) = ReadChar();
+			}
 		}
+	}
 
 	float newscore = o.(scores[SP_SCORE]);
 	
