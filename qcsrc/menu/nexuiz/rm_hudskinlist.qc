@@ -12,6 +12,8 @@ CLASS(RMHudSkinList) EXTENDS(NexuizListBox)
 	METHOD(RMHudSkinList, keyDown, float(entity, float, float, float))
 	METHOD(RMHudSkinList, mouseDrag, float(entity, vector))
 	METHOD(RMHudSkinList, updateSkinList, void(entity))
+	METHOD(RMHudSkinList, RMUpdate, void(entity))
+	ATTRIB(RMHudSkinList, RMUpdatable, float, TRUE)
 	ATTRIB(RMHudSkinList, color, vector, SKINCOLOR_SCROLLBAR_N)
 	ATTRIB(RMHudSkinList, colorF, vector, SKINCOLOR_SCROLLBAR_F)
 	ATTRIB(RMHudSkinList, color2, vector, SKINCOLOR_SCROLLBAR_S)
@@ -29,6 +31,11 @@ entity makeRMHudSkinList()
 	me = spawnRMHudSkinList();
 	me.configureRMHudSkinList(me);
 	return me;
+}
+
+void RMUpdateRMHudSkinList(entity me)
+{
+	me.updateSkinList(me);
 }
 
 void setSelectedRMHudSkinList(entity me, float i)

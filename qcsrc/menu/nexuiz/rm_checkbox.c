@@ -2,12 +2,19 @@
 CLASS(RMCheckBox) EXTENDS(NexuizCheckBox)
 	METHOD(RMCheckBox, loadCvars, void(entity))
 	METHOD(RMCheckBox, saveCvars, void(entity))
+	METHOD(RMCheckBox, RMUpdate, void(entity))
+	ATTRIB(RMCheckBox, RMUpdatable, float, TRUE)
 ENDCLASS(RMCheckBox)
 entity makeRMCheckBox(float, string, string);
 entity makeRMCheckBoxEx(float, float, string, string);
 #endif
 
 #ifdef IMPLEMENTATION
+
+void RMUpdateRMCheckBox(entity me)
+{
+	me.loadCvars(me);
+}
 
 entity makeRMCheckBox(float isInverted, string theCvar, string theText)
 {
