@@ -2788,7 +2788,7 @@ void Sbar_Draw (void)
 	bottomleft_y = vid_conheight;
 	bottomleft_z = 0;
 
-	sbar_alpha_bg = cvar("sbar_alpha_bg") * (1 - cvar("_menu_alpha"));
+	sbar_alpha_bg = cvar("sbar_alpha_bg") /* * (1 - cvar("_menu_alpha"))*/;
 	sbar_border_thickness = bound(0, cvar("sbar_border_thickness"), 5);
 	sbar_color_bg_team = cvar("sbar_color_bg_team");
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg");
@@ -3208,6 +3208,7 @@ void Sbar_Draw (void)
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
 
+#if 0
 	if(time < rm_helptime)
 	{
 		local float halpha = bound(0, 1 - 4 * (time - (rm_helptime - 1)), 1);
@@ -3220,6 +3221,7 @@ void Sbar_Draw (void)
 			o2 = Sbar_DrawCenterNoteLineA(o2, strcat("This message will disappear in ", ftos(-floor(time - rm_helptime)), " seconds"), halpha);
 		}
 	}
+#endif
 
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)
@@ -4135,7 +4137,25 @@ void Sbar_Draw (void)
 		position_y = vid_conheight;
 		drawfill('0 0 0', position, '1 0 0', bound(0, 1 - 4 * (time - (tmpmadoka_fadetime- 1)), 0.5), DRAWFLAG_ADDITIVE);
 	}
-
+	
+	if(gui_reloading)
+	{
+		local vector position;
+		position_x = vid_conwidth;
+		position_y = vid_conheight;
+		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);
+		
+		position_x = 0;
+		position_y = vid_conheight / 3;
+		drawcolorcodedstringcenter(
+			position,
+			"Reloading GUI, this will take some time... Please be patient.",
+			sbar_fontsize * 1.5,
+			1,
+			DRAWFLAG_NORMAL
+		);
+	}
+	
 	return;
 }
 

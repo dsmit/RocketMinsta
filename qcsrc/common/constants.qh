@@ -554,9 +554,11 @@ float MAX_SHOT_DISTANCE = 32768;
 #define autocvar_hud_shownames_mindistance 1000
 #define autocvar_hud_shownames_maxdistance 2500
 
+#ifndef MENUQC
 const vector eX = '1 0 0';
 const vector eY = '0 1 0';
 const vector eZ = '0 0 1';
+#endif
 
 #define GTV_AVAILABLE 0
 #define GTV_OVERPLAYED 1

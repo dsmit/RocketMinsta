@@ -13,6 +13,7 @@ BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
 COMMONSUM=""
+MENUSUM=""
 
 function buildall
 {
@@ -21,9 +22,13 @@ function buildall
     
     USEQCC="$(getqcc)"
 
+    echo " -- Calculating sum of menu/..."
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')$COMMONSUM"
+
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     
     if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
@@ -43,6 +48,11 @@ function buildall
     buildqc client/
     mv -v csprogs.dat "$CSPROGS"
 
+    buildqc menu/
+    mv -v menu.dat "menu.pk3dir/menu.dat"
+    makedata menu "$1" "$2"
+    rm -v "menu.pk3dir"/*.dat
+
     rm -v "$QCSOURCE"/common/rm_auto.qh
 }
 
@@ -58,9 +68,14 @@ function makedata
     pushd "$rmdata.pk3dir"
     rmdata="zzz-rm-$rmdata"
     
-    echo "   -- Calculating md5 sums"
-    find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
-    local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    local sum=""
+    if [ "$rmdata" != "zzz-rm-menu" ]; then
+        echo "   -- Calculating md5 sums"
+        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    else
+        sum="$MENUSUM"
+    fi
     
     if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
@@ -109,6 +124,8 @@ function buildqc
         progname="progs"
     elif [ "$1" = "client/" ]; then
         progname="csprogs"
+    elif [ "$1" = "menu/" ]; then
+        progname="menu"
     else
         error "$1 is unknown"
     fi
@@ -117,6 +134,10 @@ function buildqc
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
         sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        
+        if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
+            sum="$sum.$MENUSUM"
+        fi
         
         if [ -e "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
             echo " -- Found a cached build of $1, using it"
@@ -146,6 +167,11 @@ function buildqc
 
 function is-included
 {
+    # special rule: menu package gets built after menu QC
+    if [ $1 = "menu" ]; then
+        return 1;
+    fi
+    
     if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
         # Not a prefixed package, checking if ignored
         for i in $IGNOREPKG; do

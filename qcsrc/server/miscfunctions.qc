@@ -3024,3 +3024,20 @@ float GameTypeFilter_Allowed (string map, string gametype)
 		if (argv (i) == gametype) return 0;
 	return 1;
 }
+
+string GetVoteList()
+{
+	return cvar_string("sv_vote_commands");
+}
+
+string GetVoteList_Filtered()
+{
+	local string votes;
+	local float i, n = tokenizebyseparator(GetVoteList(), " ");
+	
+	for(i = 0; i < n; ++i)
+		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
+			votes = strcat(votes, argv(i), " ");
+	
+	return votes;
+}

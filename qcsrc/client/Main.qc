@@ -364,6 +364,35 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void ReloadMenu_f()
+{
+	if(!self.cnt)
+	{
+		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
+		localcmd("menu_restart\n");
+		self.cnt = 1;
+		self.nextthink = time + 1;
+	}
+	else
+	{
+		if(rm_helptime)
+			localcmd("menu_cmd directmenu RMConfig\n");
+			
+		gui_reloading = 0;
+		remove(self);
+	}
+}
+
+void ReloadMenu()
+{
+	vector pos;
+	pos_y = vid_conheight / 3;
+	gui_reloading = 1;
+	entity e = spawn();
+	e.think = ReloadMenu_f;
+	e.nextthink = time + 1;
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -429,11 +458,12 @@ void PostInit(void)
 			localcmd("seta rm_noflags 0; noflags 0\n");
 		case 24:
 			localcmd("seta rm_hudskin \"default\"\n");
-		case 25:
+		case 25:	// yep, nothing here
 		case 26:
 		case 27:
 		case 28:
 		case 29:
+			localcmd("seta rm_nogamemenu 0; nogamemenu 0\n");
 		case 30:
 			localcmd("seta rm_notimer 0; notimer 0\n");
 		
@@ -444,6 +474,7 @@ void PostInit(void)
 	}
 	
 	localcmd("alias afk \"cmd afk\"\n");
+	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
@@ -481,7 +512,11 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
+<<<<<<< HEAD
 	registercmd("notimer");
+=======
+	registercmd("nogamemenu");
+>>>>>>> menu_support
 	// -- //
 	registercmd("hudskin");
 	
@@ -508,6 +543,13 @@ void PostInit(void)
 	
 	screenfade = time + 0.1;
 	fovlock = -1;
+	
+	registercvar("rm_loadedmenu", "");
+	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
+		ReloadMenu();
+	else if(rm_helptime)
+		localcmd("menu_cmd directmenu RMConfig\n");
+		
 	postinit = true;
 }
 
@@ -537,7 +579,7 @@ void SendRMCFGReport()
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n"));
+#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -604,8 +646,13 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
+<<<<<<< HEAD
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
+=======
+		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags\n");
+		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
+>>>>>>> menu_support
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -632,7 +679,11 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "oldhud"				||
 		strCmd == "althud"				||
 		strCmd == "noflags"				||
+<<<<<<< HEAD
 		strCmd == "notimer"				 )
+=======
+		strCmd == "nogamemenu"			 )
+>>>>>>> menu_support
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -763,6 +814,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
 			SendRMCFGReport();
+			localcmd("menu_cmd update_rmvars\n");
 			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 		}
 		else
