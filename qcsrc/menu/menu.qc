@@ -41,6 +41,8 @@ void() m_init =
 			print(s, ": ", getgamedirinfo(i, GETGAMEDIRINFO_DESCRIPTION));
 		}
 	}
+	
+	IP2C_Init();
 }
 
 void UpdateConWidthHeight()
@@ -700,6 +702,8 @@ void() m_shutdown =
 {
 	entity e;
 
+	IP2C_Shutdown();
+
 	m_hide();
 	for(e = NULL; (e = nextent(e)) != NULL; )
 	{
@@ -796,4 +800,13 @@ void() m_goto_skin_selector =
 		return;
 	// TODO add code to switch back to the skin selector (no idea how to do it now)
 	m_goto("skinselector");
+}
+
+void URI_Get_Callback(float id, float status, string data)
+{
+	if(id == URI_GET_IP2C)
+	{
+		IP2C_URI_Get_Callback(id, status, data);
+		return;
+	}
 }

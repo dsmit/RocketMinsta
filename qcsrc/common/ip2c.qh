@@ -1,0 +1,25 @@
+void IP2C_Init();
+void IP2C_Shutdown();
+void IP2C_Lookup(string ip, void(string, string, entity) callback, entity callbackentity);
+void IP2C_URI_Get_Callback(float id, float status, string data);
+
+typedef void(string, string, entity) ip2c_callback_t;
+ip2c_callback_t IP2C_Callback_DumpToConsole;
+
+#ifdef SVQC
+	#define IP2C_REGISTERVARS()
+	#define IP2C_DBNAME "ipcache.db"
+#endif
+
+#ifdef CSQC
+	#define IP2C_REGISTERVARS() registercvar("g_explosive_ip2country_server", "http://dbc.1gb.ua/rm-mirror/cgi/ip2c.pl?ip=", CVAR_SAVE);
+	#define IP2C_DBNAME "ipcache_csqc.db"
+#endif
+
+#ifdef MENUQC
+	#define IP2C_REGISTERVARS() registercvar("g_explosive_ip2country_server", "http://dbc.1gb.ua/rm-mirror/cgi/ip2c.pl?ip=", CVAR_SAVE);
+	#define IP2C_DBNAME "ipcache_menuqc.db"
+	#define find findstring
+#endif
+
+float URI_GET_IP2C = 17;

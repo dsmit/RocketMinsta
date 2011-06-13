@@ -168,6 +168,8 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
+	
+	IP2C_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -181,6 +183,7 @@ void CSQC_Shutdown(void)
 #endif
 
 	HUDSkin_Unload();
+	IP2C_Shutdown();
 
 	remove(teams);
 	remove(players);

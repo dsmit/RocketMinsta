@@ -2007,7 +2007,7 @@ float MAX_IPBAN_URIS = 16;
 float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
-float URI_GET_IP2C = 17;
+//float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
 
 void URI_Get_Callback(float id, float status, string data)
 {

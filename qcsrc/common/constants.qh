@@ -564,3 +564,5 @@ const vector eZ = '0 0 1';
 #define GTV_OVERPLAYED 1
 // for later use in per-map gametype filtering
 #define GTV_FORBIDDEN 2
+
+float(string url, float id) uri_get = #513;
