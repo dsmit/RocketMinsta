@@ -512,11 +512,8 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
-<<<<<<< HEAD
 	registercmd("notimer");
-=======
 	registercmd("nogamemenu");
->>>>>>> menu_support
 	// -- //
 	registercmd("hudskin");
 	
@@ -646,13 +643,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
-<<<<<<< HEAD
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
-=======
-		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
->>>>>>> menu_support
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
@@ -679,11 +672,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "oldhud"				||
 		strCmd == "althud"				||
 		strCmd == "noflags"				||
-<<<<<<< HEAD
-		strCmd == "notimer"				 )
-=======
+		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			 )
->>>>>>> menu_support
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
