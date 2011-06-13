@@ -534,7 +534,6 @@ void clickListBoxItemNexuizServerList(entity me, float i, vector where)
 
 void ServerList_StoreCN(string ip, string cn, entity me)
 {
-	print("Stored CN ", cn, " for IP ", ip, " in serverlist\n");
 	db_put(me.ip2c_localdb, ip, cn);
 }
 
