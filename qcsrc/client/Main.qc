@@ -464,9 +464,11 @@ void PostInit(void)
 		case 28:
 		case 29:
 			localcmd("seta rm_nogamemenu 0; nogamemenu 0\n");
+		case 30:
+			localcmd("seta rm_notimer 0; notimer 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 30\n");
+		localcmd("seta rm_initialized 31\n");
 		RM_OUTDATED
 		break;
 	}
@@ -510,6 +512,7 @@ void PostInit(void)
 	registercmd("oldhud");
 	registercmd("althud");
 	registercmd("noflags");
+	registercmd("notimer");
 	registercmd("nogamemenu");
 	// -- //
 	registercmd("hudskin");
@@ -640,7 +643,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
-		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags\n");
+		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
@@ -668,6 +672,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "oldhud"				||
 		strCmd == "althud"				||
 		strCmd == "noflags"				||
+		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			 )
 	{
 		VALUEREQUIRED
@@ -699,6 +704,8 @@ float CSQC_ConsoleCommand(string strMessage)
 				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 			}
 		}
+		else if(strCmd == "notimer")
+			localcmd("cl_cmd sbar_columns_set default\n");
 		
 		SendRMCFGReport();
 		RMSETTINGREPORT
