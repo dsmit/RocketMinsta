@@ -168,6 +168,8 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
+	
+	IP2C_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -181,6 +183,7 @@ void CSQC_Shutdown(void)
 #endif
 
 	HUDSkin_Unload();
+	IP2C_Shutdown();
 
 	remove(teams);
 	remove(players);
@@ -647,8 +650,10 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
 		#ifdef RM_SUPPORT_MADOKA
+		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+		#endif
 		#endif
 		
 		print("\nIn addition, these commands are available:\n");

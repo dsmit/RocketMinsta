@@ -57,6 +57,7 @@ void GameCommand(string theCommand)
 	if(argv(0) == "directmenu") if(argc == 2)
 	{
 		// switch to a menu item
+		if not(substring(cvar_string("g_nexuizversion"), 0, strlen("2.5.1")) == "2.5.1")
 		if(!isdemo()) // don't allow this command in demos
 			m_goto(argv(1));
 		return;
@@ -78,14 +79,9 @@ void GameCommand(string theCommand)
 	if(argv(0) == "update_rmvars")
 	{
 		local entity v;
-		for(v = world; (v = findfloat(v, instanceOfRMCheckBox, 1)); )
-			v.loadCvars(v);
-			
-		for(v = world; (v = findfloat(v, instanceOfRMHudSkinList, 1)); )
-			v.updateSkinList(v);
-			
-		for(v = world; (v = findfloat(v, instanceOfNexuizVoteList, 1)); )
-			v.loadCvars(v);
+		for(v = world; (v = findfloat(v, RMUpdatable, TRUE)); )
+			if(v.RMUpdate)
+				v.RMUpdate(v);
 		return;
 	}
 

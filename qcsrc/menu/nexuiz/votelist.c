@@ -4,7 +4,9 @@ CLASS(NexuizVoteList) EXTENDS(NexuizListBox)
 	METHOD(NexuizVoteList, drawListBoxItem, void(entity, float, vector, float))
 	METHOD(NexuizVoteList, loadCvars, void(entity))
 	METHOD(NexuizVoteList, setSelected, void(entity, float))
-	METHOD(RMHudSkinList, resizeNotify, void(entity, vector, vector, vector, vector))
+	METHOD(NexuizVoteList, resizeNotify, void(entity, vector, vector, vector, vector))
+	METHOD(NexuizVoteList, RMUpdate, void(entity))
+	ATTRIB(NexuizVoteList, RMUpdatable, float, TRUE)
 	ATTRIB(NexuizVoteList, textBox, entity, NULL)
 ENDCLASS(NexuizVoteList)
 entity makeNexuizVoteList();
@@ -15,6 +17,11 @@ entity makeNexuizVoteList();
 #define MAX_VOTES 100
 string votelist[MAX_VOTES];
 float numvotes;
+
+void RMUpdateNexuizVoteList(entity me)
+{
+	me.loadCvars(me);
+}
 
 entity makeNexuizVoteList(void)
 {

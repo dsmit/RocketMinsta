@@ -72,6 +72,18 @@ void draw_Picture(vector theOrigin, string pic, vector theSize, vector theColor,
 	drawpic(boxToGlobal(theOrigin, draw_shift, draw_scale), pic, boxToGlobalSize(theSize, draw_scale), theColor, theAlpha * draw_alpha, 0);
 }
 
+void draw_Picture_Unskinned(vector theOrigin, string pic, vector theSize, vector theColor, float theAlpha)
+{
+	// holy shit!
+	local vector d;
+	d = draw_scale;
+	local float s
+	s = d_y / 11;
+	d_x = 16 * s;
+	
+	drawpic(boxToGlobal(theOrigin, draw_shift, draw_scale), pic, boxToGlobalSize(theSize, d), theColor, theAlpha * draw_alpha, 0);
+}
+
 vector draw_PictureSize(string pic)
 {
 	pic = draw_UseSkinFor(pic);

@@ -47,6 +47,7 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizServerList, currentSortField, float, -1)
 	ATTRIB(NexuizServerList, lastClickedServer, float, -1)
 	ATTRIB(NexuizServerList, lastClickedTime, float, 0)
+	ATTRIB(NexuizServerList, ip2c_localdb, float, -1)
 
 	ATTRIB(NexuizServerList, ipAddressBoxFocused, float, -1)
 ENDCLASS(NexuizServerList)
@@ -147,6 +148,10 @@ void configureNexuizServerListNexuizServerList(entity me)
 {
 	me.configureNexuizListBox(me);
 
+	if(me.ip2c_localdb > -1)
+		db_close(me.ip2c_localdb);
+	me.ip2c_localdb = db_create();
+	
 	ServerList_UpdateFieldIDs();
 
 	me.nItems = 0;
@@ -526,6 +531,13 @@ void clickListBoxItemNexuizServerList(entity me, float i, vector where)
 	me.lastClickedServer = i;
 	me.lastClickedTime = time;
 }
+
+void ServerList_StoreCN(string ip, string cn, entity me)
+{
+	db_put(me.ip2c_localdb, ip, cn);
+}
+
+string(string s) strtolower = #480;
 void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float isSelected)
 {
 	// layout: Ping, Server name, Map name, NP, TP, MP
@@ -569,6 +581,16 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		theAlpha = theAlpha * (1 - SKINALPHA_SERVERLIST_FAVORITE) + SKINALPHA_SERVERLIST_FAVORITE;
 	}
 
+	local string cn;
+	local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
+	ip = substring(ip, 0, strstrofs(ip, ":", 0));
+	cn = db_get(me.ip2c_localdb, ip);
+	if(cn == "")
+	{
+		db_put(me.ip2c_localdb, ip, "--");
+		IP2C_Lookup(ip, ServerList_StoreCN, me);
+	}
+	
 	s = ftos(p);
 	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0);
@@ -577,13 +599,23 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
 	o_x -= me.realFontSize_x / 1.5;
 	
-	draw_Text(me.realUpperMargin * eY + me.columnNameOrigin * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	if(strstrofs(s, "_rm-", 0) >= 0)
+		draw_Text(o, "*", me.realFontSize, theColor, theAlpha, 0);
+	
+	o_x += me.realFontSize_x / 1.5;
+	local float scale = me.realFontSize_x / 11;
+	local vector picsize;
+	picsize = '16 11 0' * scale;
+
+	if(cn != "--")
+		draw_Picture_Unskinned(o, strcat("gfx/flags/", strtolower(cn)), '1 1 0', '1 1 1', 1);
+	
+	o_x += picsize_x + me.realFontSize_x/2;
+	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0);
 	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
 	
-	if(strstrofs(s, "_rm-", 0) >= 0)
-		draw_Text(o, "*", me.realFontSize, theColor, theAlpha, 0);
 	
 	p = strstrofs(s, ":", 0);
 	if(p >= 0)

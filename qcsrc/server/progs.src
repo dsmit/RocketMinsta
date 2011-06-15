@@ -22,6 +22,7 @@ campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
 ../common/util.qc
+../common/ip2c.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qc
@@ -170,6 +171,7 @@ target_spawn.qc
 func_breakable.qc
 
 ../common/items.qc
+../common/ip2c.qc
 ip2c.qc
 monsters/defs.qc
 monsters/fight.qc

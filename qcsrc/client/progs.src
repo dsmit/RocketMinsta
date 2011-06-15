@@ -9,6 +9,7 @@ csqc_constants.qc
 csqc_builtins.qc
 ../common/util.qh
 ../common/items.qh
+../common/ip2c.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -60,3 +61,4 @@ bgmscript.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc
 ../common/items.qc
+../common/ip2c.qc

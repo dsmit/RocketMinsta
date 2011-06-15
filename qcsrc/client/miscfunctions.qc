@@ -430,3 +430,12 @@ void loadfont(string slot, string font)
 	
 	localcmd("loadfont ", slot, " gfx/", font, "\n");
 }
+
+void URI_Get_Callback(float id, float status, string data)
+{
+	if(id == URI_GET_IP2C)
+	{
+		IP2C_URI_Get_Callback(id, status, data);
+		return;
+	}
+}
