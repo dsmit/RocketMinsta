@@ -83,7 +83,7 @@ string GameTypeVote_GameTypeDescription(string gtype)
 		case "ctf":
 			return "Each team has a flag placed on their base.\nYou must steal the enemy flag and bring it to yours to score.";
 		case "kh":
-			return "Each team posseses a key of it's color.\nYour team must steal all the keys and connect them to score.";
+			return "Each team starts off with one key.\nYour team must steal all the keys and bring them together to score.";
 		case "ft":
 			return "Frag your opponenets to turn them into iceblocks.\nFreeze the whole opposite team to win the round.\nYou can revive your frozen teammates by standing nearby them.";
 		case "dom":
