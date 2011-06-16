@@ -1296,7 +1296,7 @@ void Sbar_DrawScoreboard()
 
 	if(speedrecord_string)
 	{
-		pos_y = ymax + sbar_fontsize_y;
+		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
 		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, 0.8, DRAWFLAG_NORMAL);
 	}
 }
