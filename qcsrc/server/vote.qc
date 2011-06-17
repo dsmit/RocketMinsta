@@ -77,6 +77,12 @@ float RemapVote(string vote, string cmd, entity e)
 	vote_argc = tokenize_console(vote);
 	local string s;
 
+	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
+	{
+		sprint (e, strcat ("^1You cannot call votes this often. Please wait for another ^2", ftos (time - cvar ("_sv_rm_lastvote")), " ^1second(s) and try again.\n"));
+		return FALSE;
+	}
+
 	if(!VoteAllowed(argv(0), cmd))
 		return FALSE;
 
@@ -85,7 +91,7 @@ float RemapVote(string vote, string cmd, entity e)
 
 	// remap chmap to gotomap (forces intermission)
 	if(vote_argc < 2)
-		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban") // won't work without arguments
+		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban" || argv (0) == "nickban") // won't work without arguments
 			return FALSE;
 	if(argv(0) == "chmap")
 	{
@@ -177,11 +183,11 @@ float RemapVote(string vote, string cmd, entity e)
     }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
-		
+
 		if(argv(0) == "kill" && victim.classname != "player")
 		{
 			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));
@@ -329,6 +335,8 @@ float RemapVote(string vote, string cmd, entity e)
 		keeptopic = TRUE;
 		cvar_set("_sv_explosive_topicby", e.netname);
 	}
+
+	cvar_set ("_sv_rm_lastvote", ftos (time));
 
 	return TRUE;
 }
