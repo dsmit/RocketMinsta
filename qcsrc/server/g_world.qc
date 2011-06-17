@@ -781,7 +781,7 @@ void spawnfunc_worldspawn (void)
 	InfoMessages_Init();
 	IP2C_Init();
 	
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((RM_BUILD_SUFFIX != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
 
 void spawnfunc_light (void)
