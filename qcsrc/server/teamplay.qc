@@ -259,6 +259,8 @@ void ReadGameCvars()
     printcvar("g_keyhunt");
     printcvar("g_domination");
     printcvar("g_total_domination");
+    printcvar("g_dm");
+    printcvar("g_tdm");
 
 	//if(!found)
 	//	g_dm = 1;
