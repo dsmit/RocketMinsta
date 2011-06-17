@@ -46,7 +46,7 @@ void IP2C_AddCallback(string ip, ip2c_callback_t callback, entity callbackentity
 void IP2C_ExecCallbacks(string ip, string cn)
 {
     local entity e;
-    for(e = world; e = find(e, classname, "ip2c_callbackprovider"); )
+    for(e = world; (e = find(e, classname, "ip2c_callbackprovider")); )
     if(e.ip2c_callbackip == ip)
     {
         e.ip2c_callbackfunction(ip, cn, e.ip2c_callbackentity);

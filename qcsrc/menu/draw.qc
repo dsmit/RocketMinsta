@@ -77,7 +77,7 @@ void draw_Picture_Unskinned(vector theOrigin, string pic, vector theSize, vector
 	// holy shit!
 	local vector d;
 	d = draw_scale;
-	local float s
+	local float s;
 	s = d_y / 11;
 	d_x = 16 * s;
 	

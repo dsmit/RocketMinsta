@@ -388,8 +388,6 @@ void ReloadMenu_f()
 
 void ReloadMenu()
 {
-	vector pos;
-	pos_y = vid_conheight / 3;
 	gui_reloading = 1;
 	entity e = spawn();
 	e.think = ReloadMenu_f;

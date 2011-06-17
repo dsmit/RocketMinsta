@@ -705,7 +705,7 @@ void() m_shutdown =
 	IP2C_Shutdown();
 
 
-	for(e = world; e = findfloat(e, instanceOfNexuizServerList, TRUE); )
+	for(e = world; (e = findfloat(e, instanceOfNexuizServerList, TRUE)); )
 		if(e.ip2c_localdb > -1)
 			db_close(e.ip2c_localdb);
 

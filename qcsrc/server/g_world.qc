@@ -448,6 +448,10 @@ void spawnfunc_worldspawn (void)
 */
     registercvar("_g_explosive_infomessages_count", "0");
 
+	registercvar ("_sv_rm_lastvote", "0");
+	registercvar ("_sv_rm_lastservertime", "0");
+	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
+
 	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)
@@ -777,7 +781,7 @@ void spawnfunc_worldspawn (void)
 	InfoMessages_Init();
 	IP2C_Init();
 	
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((RM_BUILD_SUFFIX != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
 
 void spawnfunc_light (void)
@@ -2948,6 +2952,8 @@ void RestoreGame()
 
 void SV_Shutdown()
 {
+	cvar_set ("_sv_rm_lastservertime", ftos (time));
+
 	if(gameover > 1) // shutting down already?
 		return;
 

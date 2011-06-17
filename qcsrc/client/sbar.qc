@@ -1296,7 +1296,7 @@ void Sbar_DrawScoreboard()
 
 	if(speedrecord_string)
 	{
-		pos_y = ymax + sbar_fontsize_y;
+		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
 		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, 0.8, DRAWFLAG_NORMAL);
 	}
 }
@@ -2684,6 +2684,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	fillsize_y -= hudskin_sector_padding_top;
 	fillsize_y -= hudskin_sector_padding_bottom;
 	
+	local vector size_left, size_center, size_right;
 	local float factor;
 	switch(hudskin_sector_fill)
 	{
@@ -2692,7 +2693,6 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			break;
 		
 		case FILL_TILE:
-			local vector size_left, size_center, size_right;
 			size_left = hudskin_size_sector_fill_left;
 			size_right = hudskin_size_sector_fill_right;
 			size_center = hudskin_size_sector_fill_center;
@@ -2733,8 +2733,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
 	}
 	
-	vector size_left, size_right,
-		   pos_left,  pos_right;
+	vector pos_left, pos_right;
 	
 	if(hudskin_border_simple)
 		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
@@ -3222,136 +3221,6 @@ void Sbar_Draw (void)
 		}
 	}
 #endif
-
-	#ifdef RM_SUPPORT_VOTEGFX
-	if(rm_legacyvote || oldengine)
-	{
-	#endif
-		if(vote_waiting)
-		{
-			//s = strcat("^2A vote has been called for ^1", vote_called_vote);
-			//o = Sbar_DrawNoteLine(o, s);
-
-			if(vote_waiting_for_me)
-			{
-				o2 = Sbar_DrawCenterNoteLine(o2, "");
-
-				s = strcat("^2Vote now! ^1", vote_called_vote);
-				o2 = Sbar_DrawCenterNoteLine(o2, s);
-
-				/*s = strcat(blinkcolor, "Press ^3", getcommandkey("vote yes", "vyes"), blinkcolor, " to accept");
-				o = Sbar_DrawNoteLine(o, s);
-
-				s = strcat(blinkcolor, "Press ^3", getcommandkey("vote no", "vno"), blinkcolor, " to reject");
-				o = Sbar_DrawNoteLine(o, s);
-
-				s = strcat(blinkcolor, "Press ^3", getcommandkey("vote abstain", "vabstain"), blinkcolor, " to abstain");
-				o = Sbar_DrawNoteLine(o, s);*/
-
-				s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to accept, ^3", getcommandkey("vote no", "vno"), "^2 to reject");
-				o2 = Sbar_DrawCenterNoteLine(o2, s);
-
-				s = vote_statstring;
-				o2 = Sbar_DrawCenterNoteLine(o2, s);
-			}
-			else
-			{
-				s = strcat("^2Vote: ^1", vote_called_vote);
-				o = Sbar_DrawNoteLine(o, s);
-
-				s = vote_statstring;
-				o = Sbar_DrawNoteLine(o, s);
-			}
-		}
-	#ifdef RM_SUPPORT_VOTEGFX
-	}
-	else
-	{
-		if(vote_active != vote_prev) {
-			//print("vote_active != vote_prev\n");
-			vote_change = time;
-			vote_prev = bound(0, vote_active, 1);
-		}
-
-		if(vote_active)
-		{
-			//print("vote_active\n");
-			vote_alpha = bound(0, (time - vote_change) * 2, 1);
-		}
-		else
-		{
-			//print("!vote_active\n");
-			vote_alpha = bound(0, 1 - (time - vote_change) * 2, 1);
-		}
-
-		if(vote_alpha) {
-			//print("DRAWING VOTE, alpha = ", ftos(vote_alpha), "\n");
-
-			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
-
-			/*
-			if (teamplay)
-				color =  GetTeamRGB(myteam) * sbar_color_bg_team;
-			else {
-				color_x = 1;
-				color_y = 1;
-				color_z = 0;
-			}*/
-
-			color = colormapPaletteColor(15, 0);
-
-			vector voteorigin; // = bottomright - '290 135 0';
-
-			if(vote_highlighted)
-			{
-				s = strcat(ftos(vote_needed), " votes required");
-				voteorigin = bottomright - '290 135 0';
-			}
-			else
-			{
-				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
-				voteorigin_x = vid_conwidth / 2 - 145;
-				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37;
-			}
-
-			vector votesize = '290 70 0';
-			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
-
-
-			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			s = textShortenToWidth_svn(vote_called_vote, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
-			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-
-			// print the yes/no counts
-			s = strcat("Yes: ", ftos(vote_yescount));
-			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			s = strcat("No: ", ftos(vote_nocount));
-			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth_svn(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-
-			// draw the progress bars
-			drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5 * (vote_yescount/vote_needed), votesize_y);
-			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-
-			drawsetcliparea(voteorigin_x + votesize_x - votesize_x * 0.5 * (vote_nocount/vote_needed), voteorigin_y, votesize_x * 0.5, votesize_y);
-			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-
-			// draw the highlights
-			if(vote_highlighted == 1) {
-				drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5, votesize_y);
-				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			}
-			else if(vote_highlighted == 2) {
-				drawsetcliparea(voteorigin_x + 0.5 * votesize_x, voteorigin_y, votesize_x * 0.5, votesize_y);
-				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			}
-
-			drawresetcliparea();
-		}
-		else if(!vote_active) {
-			vote_highlighted = 0;
-		}
-	}
-	#endif
 
 	if(teamplay && !intermission && !spectatee_status)
 	{
@@ -4121,6 +3990,137 @@ void Sbar_Draw (void)
 			CSQC_vip_hud(teamhud_pos);
 	}
 
+	
+	#ifdef RM_SUPPORT_VOTEGFX
+	if(rm_legacyvote || oldengine)
+	{
+	#endif
+		if(vote_waiting)
+		{
+			//s = strcat("^2A vote has been called for ^1", vote_called_vote);
+			//o = Sbar_DrawNoteLine(o, s);
+
+			if(vote_waiting_for_me)
+			{
+				o2 = Sbar_DrawCenterNoteLine(o2, "");
+
+				s = strcat("^2Vote now! ^1", vote_called_vote);
+				o2 = Sbar_DrawCenterNoteLine(o2, s);
+
+				/*s = strcat(blinkcolor, "Press ^3", getcommandkey("vote yes", "vyes"), blinkcolor, " to accept");
+				o = Sbar_DrawNoteLine(o, s);
+
+				s = strcat(blinkcolor, "Press ^3", getcommandkey("vote no", "vno"), blinkcolor, " to reject");
+				o = Sbar_DrawNoteLine(o, s);
+
+				s = strcat(blinkcolor, "Press ^3", getcommandkey("vote abstain", "vabstain"), blinkcolor, " to abstain");
+				o = Sbar_DrawNoteLine(o, s);*/
+
+				s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to accept, ^3", getcommandkey("vote no", "vno"), "^2 to reject");
+				o2 = Sbar_DrawCenterNoteLine(o2, s);
+
+				s = vote_statstring;
+				o2 = Sbar_DrawCenterNoteLine(o2, s);
+			}
+			else
+			{
+				s = strcat("^2Vote: ^1", vote_called_vote);
+				o = Sbar_DrawNoteLine(o, s);
+
+				s = vote_statstring;
+				o = Sbar_DrawNoteLine(o, s);
+			}
+		}
+	#ifdef RM_SUPPORT_VOTEGFX
+	}
+	else
+	{
+		if(vote_active != vote_prev) {
+			//print("vote_active != vote_prev\n");
+			vote_change = time;
+			vote_prev = bound(0, vote_active, 1);
+		}
+
+		if(vote_active)
+		{
+			//print("vote_active\n");
+			vote_alpha = bound(0, (time - vote_change) * 2, 1);
+		}
+		else
+		{
+			//print("!vote_active\n");
+			vote_alpha = bound(0, 1 - (time - vote_change) * 2, 1);
+		}
+
+		if(vote_alpha) {
+			//print("DRAWING VOTE, alpha = ", ftos(vote_alpha), "\n");
+
+			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
+
+			/*
+			if (teamplay)
+				color =  GetTeamRGB(myteam) * sbar_color_bg_team;
+			else {
+				color_x = 1;
+				color_y = 1;
+				color_z = 0;
+			}*/
+
+			color = colormapPaletteColor(15, 0);
+
+			vector voteorigin; // = bottomright - '290 135 0';
+
+			if(vote_highlighted)
+			{
+				s = strcat(ftos(vote_needed), " votes required");
+				voteorigin = bottomright - '290 135 0';
+			}
+			else
+			{
+				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
+				voteorigin_x = vid_conwidth / 2 - 145;
+				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37;
+			}
+
+			vector votesize = '290 70 0';
+			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
+
+
+			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			s = textShortenToWidth_svn(vote_called_vote, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
+			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+			// print the yes/no counts
+			s = strcat("Yes: ", ftos(vote_yescount));
+			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			s = strcat("No: ", ftos(vote_nocount));
+			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth_svn(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+			// draw the progress bars
+			drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5 * (vote_yescount/vote_needed), votesize_y);
+			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+			drawsetcliparea(voteorigin_x + votesize_x - votesize_x * 0.5 * (vote_nocount/vote_needed), voteorigin_y, votesize_x * 0.5, votesize_y);
+			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+			// draw the highlights
+			if(vote_highlighted == 1) {
+				drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5, votesize_y);
+				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			}
+			else if(vote_highlighted == 2) {
+				drawsetcliparea(voteorigin_x + 0.5 * votesize_x, voteorigin_y, votesize_x * 0.5, votesize_y);
+				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			}
+
+			drawresetcliparea();
+		}
+		else if(!vote_active) {
+			vote_highlighted = 0;
+		}
+	}
+	#endif
+
 	if(!rm_hidewatermark)
 	{
 		vector position;
@@ -4140,7 +4140,6 @@ void Sbar_Draw (void)
 	
 	if(gui_reloading)
 	{
-		local vector position;
 		position_x = vid_conwidth;
 		position_y = vid_conheight;
 		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);
