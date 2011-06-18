@@ -289,6 +289,17 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
+		if(!cvar("g_explosive_allow_fakeflag"))
+		{
+			sprint(self, "^1'fakeflag' is forbidden on this server.");
+			
+			if(strtoupper(argv(1)) == "JP")
+				sprint(self, " You weeaboo.");
+			sprint(self, "\n");
+			
+			return;
+		}
+		
 		if(strlen(argv(1)) != 2)
 			return;
 		
