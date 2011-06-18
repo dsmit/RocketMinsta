@@ -1568,7 +1568,7 @@ void VoiceMessage(string type, string msg)
 		self.flood_field = flood = 0;
 
 	if (msg != "")
-		Say(self, ownteam, world, msg, 0);
+		Say(self, ownteam, world, msg, 1);
 
 	if (!flood)
 		PlayerSound(sample, CHAN_VOICE, voicetype);

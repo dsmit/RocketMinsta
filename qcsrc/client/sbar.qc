@@ -2684,6 +2684,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	fillsize_y -= hudskin_sector_padding_top;
 	fillsize_y -= hudskin_sector_padding_bottom;
 	
+	local vector size_left, size_center, size_right;
 	local float factor;
 	switch(hudskin_sector_fill)
 	{
@@ -2692,7 +2693,6 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			break;
 		
 		case FILL_TILE:
-			local vector size_left, size_center, size_right;
 			size_left = hudskin_size_sector_fill_left;
 			size_right = hudskin_size_sector_fill_right;
 			size_center = hudskin_size_sector_fill_center;
@@ -2733,8 +2733,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
 	}
 	
-	vector size_left, size_right,
-		   pos_left,  pos_right;
+	vector pos_left, pos_right;
 	
 	if(hudskin_border_simple)
 		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
@@ -4141,7 +4140,6 @@ void Sbar_Draw (void)
 	
 	if(gui_reloading)
 	{
-		local vector position;
 		position_x = vid_conwidth;
 		position_y = vid_conheight;
 		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);

@@ -3025,7 +3025,31 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	return 1;
 }
 
-string GetVoteList()
+float Banning_IsNameBanned (string name)
+{
+	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
+}
+
+float Banning_BanPlayerByName (string name, string reason)
+{
+	if (Banning_IsNameBanned (name))
+		return 0;
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "1");
+	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), reason);
+	return 1;
+}
+
+float Banning_UnbanPlayerByName (string name)
+{
+	if (! Banning_IsNameBanned (name))
+		return 0;
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "0");
+//	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), "");
+//	leave the reason so we can know why was the chap banned in the first place
+	return 1;
+}
+
+string GetVoteList_All()
 {
 	return cvar_string("sv_vote_commands");
 }
@@ -3033,11 +3057,26 @@ string GetVoteList()
 string GetVoteList_Filtered()
 {
 	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList(), " ");
+	local float i, n = tokenizebyseparator(GetVoteList_All(), " ");
 	
 	for(i = 0; i < n; ++i)
-		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
+	{
+		float c = ListContains(cvar_string("g_explosive_secretvotes"), argv(i), " ");
+		
+		// ListContains tokenizes
+		n = tokenizebyseparator(GetVoteList_All(), " ");
+		
+		if not(c)
 			votes = strcat(votes, argv(i), " ");
+	}
 	
 	return votes;
+}
+
+string GetVoteList()
+{
+	if(cvar("g_explosive_secretvotes_enabled"))
+		return GetVoteList_All();
+	else
+		return GetVoteList_Filtered();
 }

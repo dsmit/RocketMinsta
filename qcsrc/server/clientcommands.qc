@@ -261,7 +261,10 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		self.madoka = stof(argv(1));
+		if(cvar("g_explosive_allowmadoka"))
+			self.madoka = stof(argv(1));
+		else
+			self.madoka = 0;
 		
 		if(!self)
 			return;
@@ -288,6 +291,17 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "fakeflag") {
 		if(!self)
 			return;
+		
+		if(!cvar("g_explosive_allow_fakeflag"))
+		{
+			sprint(self, "^1'fakeflag' is forbidden on this server.");
+			
+			if(strtoupper(argv(1)) == "JP")
+				sprint(self, " You weeaboo.");
+			sprint(self, "\n");
+			
+			return;
+		}
 		
 		if(strlen(argv(1)) != 2)
 			return;

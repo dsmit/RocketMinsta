@@ -275,7 +275,6 @@ float vip_blue_health;
 float vip_blue_maxhealth;
 string vip_blue_name;
 
-float svn_workaround;
 float screenfade;
 
 float fovlock;

@@ -30,7 +30,7 @@ float hudskin_line_full;
 vector hudskin_sector_teamcolor_mod;
 vector hudskin_sector_teamcolor_mod_red;
 vector hudskin_sector_teamcolor_mod_blue;
-vector hudskin_sector_teamcolor_mod_yellow
+vector hudskin_sector_teamcolor_mod_yellow;
 vector hudskin_sector_teamcolor_mod_pink;
 vector hudskin_border_teamcolor_mod;
 vector hudskin_border_teamcolor_mod_red;

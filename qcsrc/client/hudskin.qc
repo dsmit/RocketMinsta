@@ -401,35 +401,35 @@ float HUDSkin_Eval(string cmd)
     }
 }
 
-float HUDSkin_Load(string skin)
+float HUDSkin_Load(string skin_name)
 {
     HUDSkin_Unload();
     
-    local float fh, n, err;
+    local float fh, err;
     local string s;
     
-    fh = fopen(strcat("gfx/hud/skins/", skin, "/skininfo"), FILE_READ);
+    fh = fopen(strcat("gfx/hud/skins/", skin_name, "/skininfo"), FILE_READ);
     if(fh < 0)
     {
-        if(skin == HUDSKIN_DEFAULT)
+        if(skin_name == HUDSKIN_DEFAULT)
         {
-            print("Failed to load skininfo for the default HUD skin '", skin, "', something is really screwed up\n");
+            print("Failed to load skininfo for the default HUD skin '", skin_name, "', something is really screwed up\n");
             return FALSE;
         }
         else
         {
-            print("Failed to load skininfo for HUD skin '", skin, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
+            print("Failed to load skininfo for HUD skin '", skin_name, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
             HUDSkin_Load(HUDSKIN_DEFAULT);
             return FALSE;
         }
     }
     
-    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin, "/border_left"));
-    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin, "/border_right"));
-    hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin, "/line_fill"));
-    hudskin_image_sector_fill_left = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_left"));
-    hudskin_image_sector_fill_center = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_center"));
-    hudskin_image_sector_fill_right = strzone(strcat("gfx/hud/skins/", skin, "/sector_fill_right"));
+    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin_name, "/border_left"));
+    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin_name, "/border_right"));
+    hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin_name, "/line_fill"));
+    hudskin_image_sector_fill_left = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_left"));
+    hudskin_image_sector_fill_center = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_center"));
+    hudskin_image_sector_fill_right = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_right"));
     
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
@@ -446,8 +446,8 @@ float HUDSkin_Load(string skin)
     hudskin_size_sector_fill_left = drawgetimagesize(hudskin_image_sector_fill_left);
     hudskin_size_sector_fill_right = drawgetimagesize(hudskin_image_sector_fill_right);
     
-    print("Loaded HUD skin '", skin, "'\n");
-    hudskin_name = strzone(skin);
+    print("Loaded HUD skin '", skin_name, "'\n");
+    hudskin_name = strzone(skin_name);
     localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", hudskin_name, "\n");
     
     return TRUE;
@@ -463,9 +463,9 @@ float HUDSkin_GetBorderWidth(float border)
     return hudskin_width_border_right;
 }
 
-vector HUDSkin_GetTeamColorMod_Sector(float color)
+vector HUDSkin_GetTeamColorMod_Sector(float colour)
 {
-    switch(color)
+    switch(colour)
     {
         default         : return '0 0 0';
         case COLOR_TEAM1: return hudskin_sector_teamcolor_mod_red;
@@ -475,9 +475,9 @@ vector HUDSkin_GetTeamColorMod_Sector(float color)
     }
 }
 
-vector HUDSkin_GetTeamColorMod_Border(float color)
+vector HUDSkin_GetTeamColorMod_Border(float colour)
 {
-    switch(color)
+    switch(colour)
     {
         default         : return '0 0 0';
         case COLOR_TEAM1: return hudskin_border_teamcolor_mod_red;

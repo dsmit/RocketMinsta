@@ -455,7 +455,7 @@ string GametypeFullNameFromType(float g)
 	return "Unknown";
 }
 
-float GametypeIDFromName(string name)
+float GametypeIDFromName(string gtname)
 {
 	local string s;
 	local float i;
@@ -464,23 +464,23 @@ float GametypeIDFromName(string name)
 	do
 	{
 		s = GametypeNameFromType(i);
-		if(name == s) return i;
+		if(gtname == s) return i;
 		++i;
 	} while(s != "");
 
 	return -1;
 }
 
-string GametypeFullNameFromName(string name)
+string GametypeFullNameFromName(string gtname)
 {
-	return(GametypeFullNameFromType(GametypeIDFromName(name)));
+	return(GametypeFullNameFromType(GametypeIDFromName(gtname)));
 }
 
 // this function expands possible aliases to real gametype names.
 // Update this code when adding new gametypes and/or builtin aliases to existing ones
-string NormalizeGametypeName(string name)
+string NormalizeGametypeName(string gtname)
 {
-	switch(name)
+	switch(gtname)
 	{
 		case "ft": case "freezetag":
 			return "ft";
