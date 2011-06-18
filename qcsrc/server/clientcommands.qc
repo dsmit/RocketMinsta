@@ -261,7 +261,10 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		self.madoka = stof(argv(1));
+		if(cvar("g_explosive_allowmadoka"))
+			self.madoka = stof(argv(1));
+		else
+			self.madoka = 0;
 		
 		if(!self)
 			return;
