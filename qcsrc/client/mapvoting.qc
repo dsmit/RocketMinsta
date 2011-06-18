@@ -85,7 +85,7 @@ string GameTypeVote_GameTypeDescription(string gtype)
 		case "kh":
 			return "Each team starts off with one key.\nYour team must steal all the keys and bring them together to score.";
 		case "ft":
-			return "Frag your opponenets to turn them into iceblocks.\nFreeze the whole opposite team to win the round.\nYou can revive your frozen teammates by standing nearby them.";
+			return "Frag your opponents to turn them into iceblocks.\nFreeze the whole opposite team to win the round.\nYou can revive your frozen teammates by standing nearby them.";
 		case "dom":
 			return "Several control points are placed on the map.\nYou can capture a contol point by walking over it.\nOnce captured, a control point repeatedly gives you score until the limit is reached.";
 		case "totaldom":
