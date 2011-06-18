@@ -345,10 +345,7 @@ float Ban_IsClientBanned(entity client, float idx)
 		return FALSE;
 
 	if (Banning_IsNameBanned (client.netname))
-	{
-		sprint (client, "^1You are banned, good job!\n");
 		return TRUE;
-	}
 
 	if(idx < 0)
 	{
