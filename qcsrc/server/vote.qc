@@ -712,7 +712,7 @@ float VoteCommandInList(string votecommand, string list)
 }
 
 float VoteAllowed(string votecommand, string cmd) {
-	if(VoteCommandInList(votecommand, cvar_string("sv_vote_commands")))
+	if(VoteCommandInList(votecommand, GetVoteList()))
 		return TRUE;
 
 	if(cmd == "vdo")
