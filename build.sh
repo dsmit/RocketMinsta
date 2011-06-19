@@ -31,13 +31,10 @@ function buildall
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        echo "#define RM_SUPPORT_CLIENTPKGS"          >> "$QCSOURCE"/common/rm_auto.qh
-
-        for i in $BUILT_PKGNAMES; do
-            echo "#define RM_SUPPORT_PKG_$i"          >> "$QCSOURCE"/common/rm_auto.qh
-        done
-    fi
+	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
+	for i in $BUILT_PKGNAMES; do
+		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
+	done
 
     echo " -- Calculating sum of common/..."
     COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
@@ -195,11 +192,6 @@ function is-included
 
 function makedata-all
 {
-    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        echo "Not building client packages: restricted by configuration"
-        return 0
-    fi
-    
     local suffix="$1"
     local desc="$2"
     
@@ -221,14 +213,12 @@ function finalize-install
 {
     cp -v "rocketminsta.cfg" "$NEXDATA"
 
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs
 $(for i in $BUILT_PKGINFOS; do
     echo "rm_putpackage $i"
 done)
 EOF
-    fi
 
     cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 
@@ -243,15 +233,19 @@ EOF
     fi
 }
 
+function clientpkg-test
+{
+	if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
+		error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
+	fi
+	
+	SUPPORT_CLIENTPKGS=1
+}
+
 ################################################################################
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
 . "config.sh" || error "Failed to read configuration"
-
-if [ -z "$SUPPORT_CLIENTPKGS" ]; then
-    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "1"
-    SUPPORT_CLIENTPKGS=0
-fi
 
 if [ -z $BUILDPKG_OPTIONAL ]; then
     warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
@@ -284,6 +278,8 @@ if [ "$1" = "cleancache" ]; then
     exit
 fi
 
+clientpkg-test
+
 if [ "$1" = "release" ]; then
     RELEASE=1
     
@@ -293,6 +289,8 @@ if [ "$1" = "release" ]; then
     
     [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
     . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
+    
+    clientpkg-test
     
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
@@ -353,19 +351,13 @@ EOF
 EOF
     fi
 
-    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat <<EOF >> "$NEXDATA/README.rmrelease"
-    3) Start the server and enjoy.
-EOF
-    else
-        cat <<EOF >> "$NEXDATA/README.rmrelease"
+    cat <<EOF >> "$NEXDATA/README.rmrelease"
     3) MAKE SURE that the following packages can be autodownloaded by clients:
         $BUILT_PACKAGES
         
         This package contains all of them
     4) Start the server and enjoy.
 EOF
-    fi
 
     cat <<EOF >> "$NEXDATA/README.rmrelease"
 
@@ -439,11 +431,8 @@ $(listcustom)
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
 
     (note: if you have sv_progs and csqc_progname variables changed
-    because of previous RocketMinsta installation, it's a good idea to remove them)
-EOF
+    because of a previous RocketMinsta installation, it's a good idea to remove them)
 
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat <<EOF
         
     In addition, these packages MUST be available on your download server:
         $BUILT_PACKAGES
@@ -452,11 +441,6 @@ EOF
         $NEXDATA
     
     They will be added to sv_curl_serverpackages automatically.
-    If you can't host these packages, please rebuild with SUPPORT_CLIENTPKGS=0
-EOF
-    fi
-
-cat <<EOF
 
 **************************************************
 EOF
