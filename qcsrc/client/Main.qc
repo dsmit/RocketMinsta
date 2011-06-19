@@ -620,10 +620,15 @@ float CSQC_ConsoleCommand(string strMessage)
 		return true;
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
-		bigprint("Accuracy statistics are disabled", "", 2);
+		
+		if(cvar("_g_balance_minstanex_explosive"))
+			bigprint("Accuracy statistics are disabled", "", 2);
+		else
+			sb_showaccuracy = true;
+			
 		return true;
 	} else if(strCmd == "-showaccuracy") {
-		//sb_showaccuracy = false;
+		sb_showaccuracy = false;
 		return true;
 	}
 	else if(strCmd == "rmhelp")
