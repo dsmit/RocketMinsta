@@ -81,21 +81,21 @@ string GameTypeVote_GameTypeDescription(string gtype)
 	switch(gtype)
 	{
 		case "ctf":
-			return "Each team has a flag placed on their base.\nYou must steal the enemy flag and bring it to yours to score.";
+			return "Each team has a flag located in its base.\nYou must steal the enemy flag and bring it to yours to score.";
 		case "kh":
-			return "Each team starts off with one key.\nYour team must steal all the keys and bring them together to score.";
+			return "Every team begins the round with one key.\nSteal all the keys and bring them together to score.";
 		case "ft":
-			return "Frag your opponents to turn them into iceblocks.\nFreeze the whole opposite team to win the round.\nYou can revive your frozen teammates by standing nearby them.";
+			return "Frag your opponents to turn them into ice blocks.\nFreeze the entire opposite team to win the round.\nYou can unfreeze your frozen teammates by standing next to them.";
 		case "dom":
-			return "Several control points are placed on the map.\nYou can capture a contol point by walking over it.\nOnce captured, a control point repeatedly gives you score until the limit is reached.";
+			return "Several control points are placed around the map.\nWalk over a control point to capture it.\nWhile captured, control points keep adding to your score until the limit is reached.";
 		case "totaldom":
-			return "A round based Domination spin-off.\nYou must overtake all of the control points on the map to win the round.";
+			return "A round-based Domination spin-off.\nYou must take over ALL of the control points on the map to win the round.";
 		case "vip":
 			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
 		case "dm":
-			return "Free for all: the one to get most frags wins.";
+			return "Free-for-all: the player who gets the most frags wins.";
 		case "tdm":
-			return "Team-based deathmatch: the team to get most frags wins.";
+			return "Team-based deathmatch: the team that gets the most frags wins.";
 	}
 
 	return "No description is available for this gametype";
