@@ -740,12 +740,8 @@ void spawnfunc_worldspawn (void)
 
 	localcmd("\n_sv_hook_gamestart ", GetGametype(), ";");
 
-
-	//<akari>
-	//Executes a config file for each map, special for ari
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
-	//</akari>
 
 	world_initialized = 1;
 	
@@ -767,6 +763,11 @@ void spawnfunc_worldspawn (void)
 		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
 	}
 
+	if(cvar("timelimit") < 0)
+		cvar_set("timelimit", "20");
+
+	if(cvar("fraglimit") < 0)
+		cvar_set("fraglimit", "10");
 
 /*
 	-- Not needed anymore --
