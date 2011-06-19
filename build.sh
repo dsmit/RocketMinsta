@@ -23,7 +23,7 @@ function buildall
     USEQCC="$(getqcc)"
 
     echo " -- Calculating sum of menu/..."
-    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')$COMMONSUM"
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
@@ -41,6 +41,7 @@ function buildall
 
     echo " -- Calculating sum of common/..."
     COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$MENUSUM$COMMONSUM"
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
