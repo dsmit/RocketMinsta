@@ -963,6 +963,7 @@ void ReadyRestart()
 	if(forbidrestart)
 	{
 		print("FIXME: tried to restart while restarts are forbidden\n");
+		backtrace("ReadyRestart traceback");
 		return;
 	}
 	
