@@ -960,6 +960,12 @@ void ReadyRestartForce()
 
 void ReadyRestart()
 {
+	if(forbidrestart)
+	{
+		print("FIXME: tried to restart while restarts are forbidden\n");
+		return;
+	}
+	
 	// no arena, assault support yet...
 	if(g_arena | g_assault | gameover | intermission_running | race_completing)
 		localcmd("restart\n");

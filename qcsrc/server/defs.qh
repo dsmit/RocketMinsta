@@ -667,3 +667,5 @@ float gametypetoset;
 
 #define DEPENDON(d) if(!(d)) return;
 #define DEPENDON_F(d,f) if(!(d)) return f;
+
+float forbidrestart;

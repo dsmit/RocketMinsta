@@ -383,6 +383,7 @@ void CTFCheck_Think()
 	if(cvar("g_ctf")) if(!find(world, classname, "item_flag_team"))
 	{
 		bprint("\x01^2 * ^1This map is not CTF-compatible! ^7Forced endmatch.\n");
+		forbidrestart = 1;
 		localcmd("endmatch\n");
 	}
 	
