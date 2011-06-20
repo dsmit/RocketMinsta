@@ -333,14 +333,15 @@ float Item_GiveTo(entity item, entity player)
 				if (item.ammo_cells)
 					player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
 
-				//<akari>
-				if(player.health < 100)
-					player.health = 100;
-				else if(cvar("g_explosive_health_overflow"))
-					if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
-						player.health += cvar("g_explosive_health_overflow");
+				if(cvar("g_balance_minstanex_explosive"))
+				{
+					if(player.health < 100)
+						player.health = 100;
+					else if(cvar("g_explosive_health_overflow"))
+						if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
+							player.health += cvar("g_explosive_health_overflow");
+				}
 
-				//</akari>
 			}
 
 			// extralife powerup

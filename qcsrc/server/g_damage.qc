@@ -1268,7 +1268,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					wpnstring = "^xFB0laser";
 				else if(deathtype == DEATH_NOAMMO)
+				{
+					if(attacker == targ)
+					if(attacker.ammo_cells <= 0)
+						continue;
+					
 					wpnstring = "^7hook";
+				}
 				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
 					wpnstring = "^5insta";
 				else 

@@ -1543,7 +1543,7 @@ void ClientConnect (void)
 	else
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
-	stuffcmd(self, "seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n");
+	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
 }
 
 /*
