@@ -3642,7 +3642,7 @@ void Sbar_Draw (void)
 					{
 						HUDLINE_SECTOR({
 							hud_sector_x = 103;
-							hud_sector_pos_x = next_sector; //- bw_right;
+							hud_sector_pos_x = next_sector - 2;
 							powerup_pos = hud_sector_pos;
 							sector_mod = '0 0 0';
 							sector_alphamod = pw_alpha;
@@ -3655,7 +3655,7 @@ void Sbar_Draw (void)
 
 					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
 					{
-						hud_sector_pos_x = next_sector; // - bw_right;
+						hud_sector_pos_x = next_sector - 2;
 						hud_sector_x = 103;
 						
 						HUDLINE_SLICE({
@@ -3669,7 +3669,7 @@ void Sbar_Draw (void)
 					// powerups | scores
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + offs;;
-						hudline_x = 10 - bw_right - bw_left - offs;
+						hudline_x = 10 - bw_right - bw_left - offs + 2;
 					})
 					
 					// scores
