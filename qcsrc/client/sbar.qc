@@ -3717,6 +3717,7 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
+				float low2 = vid_conwidth < 677;
 				
 				if(hudskin_line_full)
 				{
@@ -3803,8 +3804,41 @@ void Sbar_Draw (void)
 					s_health = hud_sector_pos;
 				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
+				// health-armor | powerups
+				HUDLINE_SLICE({
+					hudline_x = 8 - bw_left - bw_right;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+				})
+				
+				if(!low2)
+				{
+					// powerups
+					if(pw_alpha)
+					{
+						HUDLINE_SECTOR({
+							hud_sector_x = 103;
+							hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+							powerup_pos = hud_sector_pos;
+							sector_mod = '0 0 0';
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+					}
+					sector_alphamod = 1;
+					
+					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
+					{
+						hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+						hud_sector_x = -bw_right - bw_left;
+					}
+				}
+				else
+				{
+					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+					hud_sector_x = -bw_right - bw_left;
+				}
+				
 				// separator slice:
-				// 		health-armor | scores
+				// 		powerups | scores
 				next_sector = bottomright_x - 103 - 6;
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -3819,6 +3853,20 @@ void Sbar_Draw (void)
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
 				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+
+				if(low2)
+				{
+					if(pw_alpha)
+					{
+						// powerups (drawn above scores)
+						HUDLINE_SECTOR({
+							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+							powerup_pos = hud_sector_pos;
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+						sector_alphamod = 1;
+					}
+				}
 
 				// post-scores
 				HUDLINE_SLICE({
