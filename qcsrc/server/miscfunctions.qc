@@ -3082,9 +3082,19 @@ string GetVoteList()
 }
 
 void GameCommand(string);
+void ShuffleMaplist();
 void UpdateCTFBlacklist()
 {
 	registercvar("_g_rm_oldmaplist", "");
+	
+	if(cvar_string("g_maplist") == "")
+	{
+		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		if(cvar("g_maplist_shuffle"))
+			ShuffleMaplist();
+		localcmd("\nmenu_cmd sync\n");
+	}
 	
 	if(cvar_string("_g_rm_oldmaplist") == cvar_string("g_maplist"))
 		return;
