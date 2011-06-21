@@ -292,8 +292,17 @@ void freezetag_Freeze(entity attacker)
 	{
 		// got frozen by an enemy
 		// counted as "kill" and "death" already
-		PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
-		PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_freezetag_score_freeze"));
+		
+		if(attacker.team != self.team)
+		{
+			PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
+			PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_freezetag_score_freeze"));
+		}
+		else // teamkill
+		{
+			PlayerScore_Add(attacker, SP_SCORE, -cvar("g_explosive_freezetag_penalty_teamkill"));
+		}
+		
 	}
 	else
 	{
