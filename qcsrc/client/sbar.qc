@@ -4351,7 +4351,10 @@ void CSQC_ctf_hud(vector hudpos)
 	vector bottomleft, redflag_pos, blueflag_pos, sz;
 	float f; // every function should have that
 	bottomleft_x = 0;
-	bottomleft_y = vid_conheight - 10;
+	if(rm_oldhud)
+		bottom_y = 0;
+	else
+		bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;
 
 	float redflag, blueflag; // current status
