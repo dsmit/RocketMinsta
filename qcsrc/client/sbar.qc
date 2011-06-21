@@ -1719,8 +1719,10 @@ float Sbar_WouldDrawScoreboard() {
 	return 0;
 }
 
-void CSQC_Strength_Timer() {
-	vector pos;
+float pwhud_enabled;
+
+void CSQC_Strength_Timer(vector sectorpos) {
+	vector pos, numpos;
 	vector bottom;
 
 	bottom_x = vid_conwidth/2;
@@ -1735,6 +1737,8 @@ void CSQC_Strength_Timer() {
 			return;
 	*/
 
+	pwhud_enabled = FALSE;
+
 	if (getstati(STAT_HEALTH) <= 0)
 		return;
 
@@ -1742,18 +1746,30 @@ void CSQC_Strength_Timer() {
 	float strength_time, invincibility_time, countdown_fontsize;
 
 	picsize = '22 22 0';
-	countdown_fontsize = 18;
-
-	if (vid_conwidth >= 800)
-		pos = bottom + '192 -46 0';
+	
+	if(rm_oldhud)
+	{
+		if (vid_conwidth >= 800)
+			pos = bottom + '192 -46 0';
+		else
+			pos = bottom + '192 -94 0';
+		numpos = pos - '40 -2 0';
+		countdown_fontsize = 18;
+	}
 	else
-		pos = bottom + '192 -94 0';
+	{
+		pos = sectorpos;
+		pos_y -= 1;
+		numpos = pos + '8 10 0';
+		countdown_fontsize = 14;
+	}
 
 	//strength
 	strength_time = getstatf(STAT_STRENGTH_FINISHED);
 	invincibility_time = getstatf(STAT_INVINCIBLE_FINISHED);
 
-	if (strength_time) {
+	if (strength_time)
+	{
 		dt = strength_time - time;
 		if(dt > 0)
 		{
@@ -1766,13 +1782,30 @@ void CSQC_Strength_Timer() {
 			{
 				drawpic(pos, "gfx/hud/sb_str", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE);
 			}
-			Sbar_DrawXNum(pos - '40 -2 0', ceil(dt), 2, 0, countdown_fontsize, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			
+			if(!rm_oldhud)
+			if(ceil(dt) < 10)
+				numpos_x -= countdown_fontsize;
+			
+			Sbar_DrawXNum(numpos, ceil(dt), 2, 0, countdown_fontsize, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			pwhud_enabled = TRUE;
 		}
 		else if(dt > -1)
 		{
 			drawpic_expanding(pos, "gfx/hud/sb_str", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE,
 				bound(0, -dt / 0.5, 1));
 		}
+	}
+
+	if(rm_oldhud)
+	{
+		pos_y += 22;
+		numpos = pos - '40 -2 0';
+	}
+	else
+	{
+		pos_x += 80;
+		numpos = pos - '16 -10 0';
 	}
 
 	//invincibility
@@ -1782,18 +1815,19 @@ void CSQC_Strength_Timer() {
 		{
 			if(dt < 5)
 			{
-				drawpic_expanding_two(pos - '0 -22 0', "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE,
+				drawpic_expanding_two(pos, "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE,
 					bound(0, (ceil(dt) - dt) / 0.5, 1));
 			}
 			else
 			{
-				drawpic(pos - '0 -22 0', "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE);
+				drawpic(pos, "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE);
 			}
-			Sbar_DrawXNum(pos - '40 -24 0', ceil(dt), 2, 0, countdown_fontsize, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			Sbar_DrawXNum(numpos, ceil(dt), 2, 0, countdown_fontsize, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			pwhud_enabled = TRUE;
 		}
 		else if(dt > -1)
 		{
-			drawpic_expanding(pos - '0 -22 0', "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE,
+			drawpic_expanding(pos, "gfx/hud/sb_invinc", picsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_ADDITIVE,
 				bound(0, -dt / 0.5, 1));
 		}
 	}
@@ -2620,6 +2654,12 @@ float th_fadetime;
 float th_alpha;
 float teamhud_wide;
 
+float pw_state;
+float pw_finalstate;
+float pw_appeartime;
+float pw_fadetime;
+float pw_alpha;
+
 float ammo_last;
 
 #define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { DrawHUDLineSlice(hudline_pos, hudline, slice_basecolor, slice_basealpha); linedrawn = 1; }
@@ -3443,7 +3483,7 @@ void Sbar_Draw (void)
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
 
-			vector s_health, teamhud_pos;
+			vector s_health, teamhud_pos, powerup_pos;
 
 			if(teamhud_enabled != th_state)
 			{
@@ -3470,6 +3510,35 @@ void Sbar_Draw (void)
 
 					if(!th_alpha)
 						th_finalstate = th_state;
+				}
+			}
+
+			// same as above, but for powerups HUD
+			if(pwhud_enabled != pw_state)
+			{
+				if(pwhud_enabled)
+					pw_appeartime = time;
+				else
+					pw_fadetime = time;
+
+				pw_state = pwhud_enabled;
+			}
+
+			if(pw_state != pw_finalstate)
+			{
+				if(pw_state)
+				{
+					pw_alpha = 1 - bound(0, 1 - 4 * (time - pw_appeartime), 1);
+
+					if(pw_alpha >= 1)
+						pw_finalstate = pw_state;
+				}
+				else
+				{
+					pw_alpha = bound(0, 1 - 4 * (time - pw_fadetime), 1);
+
+					if(!pw_alpha)
+						pw_finalstate = pw_state;
 				}
 			}
 
@@ -3519,7 +3588,7 @@ void Sbar_Draw (void)
 				//		ammo | teamhud
 
 				if(vid_conwidth < 800)
-					next_sector = bottomright_x - 224;
+					next_sector = bottomright_x - 206 - 13;
 				else if(teamhud_wide)
 				{
 					if(vid_conwidth <= 900)
@@ -3544,8 +3613,6 @@ void Sbar_Draw (void)
 							hud_sector_x = 206;
 						else
 							hud_sector_x = 103;
-						//hud_sector_y = 51;
-						//hud_sector_pos_y = bottom_y - 27 - 14;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
@@ -3560,23 +3627,86 @@ void Sbar_Draw (void)
 				}
 
 				teamhud_pos = hud_sector_pos;
+				
+				if(vid_conwidth >= 800)
+				{
+					// teamhud | powerups
+					next_sector = bottomright_x - 206 - 13; //bottomright_x - 103 - 6;
+					HUDLINE_SLICE({
+						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+						hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
+					})
 
-				// teamhud | scores
-				next_sector = bottomright_x - 103 - 6;
-				HUDLINE_SLICE({
-					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
-					//hudline_x = 10;
-					hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
-				})
+					// powerups
+					if(pw_alpha)
+					{
+						HUDLINE_SECTOR({
+							hud_sector_x = 103;
+							hud_sector_pos_x = next_sector - 2;
+							powerup_pos = hud_sector_pos;
+							sector_mod = '0 0 0';
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+					}
+					sector_alphamod = 1;
 
-				// scores
-				HUDLINE_SECTOR({
-					hud_sector_x = 103;
-					//hud_sector_pos_x = hudline_pos_x + hudline_x;
-					hud_sector_pos_x = next_sector;
-					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+					local float offs;
+					offs = 0;
 
+					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
+					{
+						hud_sector_pos_x = next_sector - 2;
+						hud_sector_x = 103;
+						
+						HUDLINE_SLICE({
+							hudline_x = hud_sector_x + bw_right;
+							hudline_pos_x = hud_sector_pos_x - bw_right;
+						})
+					}
+					else
+						offs = bw_right;
+
+					// powerups | scores
+					HUDLINE_SLICE({
+						hudline_pos_x = hud_sector_pos_x + hud_sector_x + offs;;
+						hudline_x = 10 - bw_right - bw_left - offs + 2;
+					})
+					
+					// scores
+					HUDLINE_SECTOR({
+						hud_sector_x = 103;
+						hud_sector_pos_x = next_sector + 103 + 7;
+						sector_mod = '0 0 0';
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+				}
+				else // If we don't have enough space, display powerups above the scores sector
+				{
+					// teamhud | scores
+					next_sector = bottomright_x - 103 - 6;
+					HUDLINE_SLICE({
+						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+						hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
+					})
+
+					// scores
+					HUDLINE_SECTOR({
+						hud_sector_x = 103;
+						hud_sector_pos_x = next_sector;
+						sector_mod = '0 0 0';
+					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+					
+					if(pw_alpha)
+					{
+						// powerups (drawn above scores)
+						HUDLINE_SECTOR({
+							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+							powerup_pos = hud_sector_pos;
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+						sector_alphamod = 1;
+					}
+				}
+				
 				// post-scores
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -3587,6 +3717,7 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
+				float low2 = vid_conwidth < 677;
 				
 				if(hudskin_line_full)
 				{
@@ -3673,8 +3804,41 @@ void Sbar_Draw (void)
 					s_health = hud_sector_pos;
 				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
+				// health-armor | powerups
+				HUDLINE_SLICE({
+					hudline_x = 8 - bw_left - bw_right;
+					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+				})
+				
+				if(!low2)
+				{
+					// powerups
+					if(pw_alpha)
+					{
+						HUDLINE_SECTOR({
+							hud_sector_x = 103;
+							hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+							powerup_pos = hud_sector_pos;
+							sector_mod = '0 0 0';
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+					}
+					sector_alphamod = 1;
+					
+					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
+					{
+						hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+						hud_sector_x = -bw_right - bw_left;
+					}
+				}
+				else
+				{
+					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+					hud_sector_x = -bw_right - bw_left;
+				}
+				
 				// separator slice:
-				// 		health-armor | scores
+				// 		powerups | scores
 				next_sector = bottomright_x - 103 - 6;
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -3689,6 +3853,20 @@ void Sbar_Draw (void)
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
 				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+
+				if(low2)
+				{
+					if(pw_alpha)
+					{
+						// powerups (drawn above scores)
+						HUDLINE_SECTOR({
+							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+							powerup_pos = hud_sector_pos;
+							sector_alphamod = pw_alpha;
+						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+						sector_alphamod = 1;
+					}
+				}
 
 				// post-scores
 				HUDLINE_SLICE({
@@ -3963,8 +4141,8 @@ void Sbar_Draw (void)
 		Sbar_Timer();
 
 		// draw strength/invincibility icon and timer
-		if(rm_oldhud)
-			CSQC_Strength_Timer();
+		//if(rm_oldhud)
+			CSQC_Strength_Timer(powerup_pos);
 
 		// draw gametype specific icons
 
@@ -4173,7 +4351,10 @@ void CSQC_ctf_hud(vector hudpos)
 	vector bottomleft, redflag_pos, blueflag_pos, sz;
 	float f; // every function should have that
 	bottomleft_x = 0;
-	bottomleft_y = vid_conheight - 10;
+	if(rm_oldhud)
+		bottom_y = 0;
+	else
+		bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;
 
 	float redflag, blueflag; // current status
