@@ -341,6 +341,7 @@ float Item_GiveTo(entity item, entity player)
 						if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
 							player.health += cvar("g_explosive_health_overflow");
 				}
+				else player.health = 100;
 
 			}
 
