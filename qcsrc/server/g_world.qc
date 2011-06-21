@@ -2276,6 +2276,32 @@ void MapVote_AddVotable(string nextMap, float isSuggestion)
 	mapvote_count += 1;
 }
 
+string GameTypeVote_GetOptions();
+float GameTypeVote_AvailabilityStatus_ForMap(string, string);
+float MapIsPlayable(string map_name)
+{
+	if(!cvar("g_explosive_gametypevote"))
+		// if gametype voting isn't enabled, the server will stay on the current gametype
+		// so let's hide any map that isn't allowed in the current mode
+		return GameTypeFilter_Allowed(map_name, GetGametype());
+	
+	// Multigametype server: we'll hide the map if it supports none of gametypes that can be played
+	local float ret, i, n;
+	local string gtname;
+	
+	n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	for(i = 0; i < n; ++i)
+	{
+		gtname = argv(i);
+		ret += (GameTypeVote_AvailabilityStatus_ForMap(gtname, map_name) == GTV_AVAILABLE);
+		
+		// GameTypeVote_AvailabilityStatus_ForMap tokenizes
+		n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	}
+	
+	return ret;
+}
+
 void MapVote_Spawn();
 void MapVote_Init()
 {
@@ -2299,7 +2325,12 @@ void MapVote_Init()
 			MapVote_AddVotable(mapvote_suggestions[floor(random() * mapvote_suggestion_ptr)], TRUE);
 
 	for(i = 0; i < 100 && mapvote_count < nmax; ++i)
-		MapVote_AddVotable(GetNextMap(), FALSE);
+	{
+		local string m = GetNextMap();
+		
+		if(MapIsPlayable(m))
+			MapVote_AddVotable(m, FALSE);
+	}
 
 	if(mapvote_count == 0)
 	{
@@ -2310,7 +2341,11 @@ void MapVote_Init()
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
 		{
-			MapVote_AddVotable(GetNextMap(), FALSE);
+			m = GetNextMap();
+			if(!MapIsPlayable(m))
+				continue;
+			
+			MapVote_AddVotable(m, FALSE);
 			mapvote_maps_availability[i] = GTV_AVAILABLE;
 		}
 	}
@@ -2687,18 +2722,23 @@ void MapVote_Start()
 		mapvote_run = TRUE;
 }
 
-float GameTypeVote_AvailabilityStatus(string gtname)
+float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 {
+	if (! GameTypeFilter_Allowed (map_name, gtname))
+		return GTV_FORBIDDEN;
+	
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_AVAILABLE;
 	
 	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
 		return GTV_OVERPLAYED;
 	
-	if (! GameTypeFilter_Allowed (getmapname_stored, gtname))
-		return GTV_FORBIDDEN;
-	
 	return GTV_AVAILABLE;
+}
+
+float GameTypeVote_AvailabilityStatus(string gtname)
+{
+	return GameTypeVote_AvailabilityStatus_ForMap(gtname, getmapname_stored);
 }
 
 void MapVote_Think()
