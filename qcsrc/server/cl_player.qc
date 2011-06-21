@@ -637,6 +637,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				}
 				
 				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+				if(!cvar("g_explosive_extendfragmessages")) wpnstring = "";
 				
 				if(attacker.classname == "player") if(attacker != targ)
 				{
