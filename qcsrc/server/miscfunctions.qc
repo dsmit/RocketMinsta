@@ -3080,3 +3080,75 @@ string GetVoteList()
 	else
 		return GetVoteList_Filtered();
 }
+
+void GameCommand(string);
+void ShuffleMaplist();
+void UpdateCTFBlacklist()
+{
+	registercvar("_g_rm_oldmaplist", "");
+	
+	if(cvar_string("g_maplist") == "")
+	{
+		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		if(cvar("g_maplist_shuffle"))
+			ShuffleMaplist();
+		localcmd("\nmenu_cmd sync\n");
+	}
+	
+	if(cvar_string("_g_rm_oldmaplist") == cvar_string("g_maplist"))
+		return;
+	
+	print("^5Maplist has changed, updating CTF blacklist...\n");
+	
+	local float n, i, fh, supported;
+	local string map_name, s, mlist;
+	
+	mlist = cvar_string("g_maplist");
+	n = tokenizebyseparator(mlist, " ");
+	
+	for(i = 0; i < n; ++i)
+	{
+		supported = FALSE;
+		map_name = argv(i);
+		print(" -  processing ^2", map_name, "^7... ");
+		
+		fh = fopen(strcat("maps/", map_name, ".mapinfo"), FILE_READ);
+		if(fh < 0)
+		{
+			print("^1failed to open mapinfo\n");
+			continue;
+		}
+		
+		while((s = fgets(fh)))
+		{
+			tokenize_console(s);
+			
+			if(argv(0) != "type")
+				continue;
+			
+			if(argv(1) == "ctf")
+			{
+				print("^3supports CTF, not updating filter\n");
+				supported = TRUE;
+				break;
+			}
+		}
+		fclose(fh);
+		
+		if(!supported)
+		{
+			registercvar(strcat("g_gametypefilter_", map_name), "ctf");
+			
+			//perhaps should be exported into another function?
+			GameCommand(strcat("addtolist g_gametypefilter_", map_name, " ctf"));
+			
+			print("^3does not support CTF, added to filter\n");
+		}
+		
+		// tokenize_console breaks this
+		n = tokenizebyseparator(mlist, " ");
+	}
+	
+	cvar_set("_g_rm_oldmaplist", cvar_string("g_maplist"));
+}

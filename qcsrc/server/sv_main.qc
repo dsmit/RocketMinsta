@@ -208,6 +208,7 @@ void StartFrame (void)
 	Spawnqueue_Check();
 
 	// if in warmup stage and limit for warmup is hit start match
+	if (!forbidrestart)
 	if (inWarmupStage)
 	if ((g_warmup_limit > 0 && time >= g_warmup_limit)
 	 || (g_warmup_limit == 0 && cvar("timelimit") != 0 && time >= cvar("timelimit") * 60))

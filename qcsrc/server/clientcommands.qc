@@ -276,6 +276,11 @@ void SV_ParseClientCommand(string s) {
 		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
 		WriteSpectatorInfo(self);
 		return;
+	} else if(cmd == "nokillsound") {
+		if(!self)
+			return;
+			
+		self.rm_nokillsound = stof(argv(1));
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;
@@ -960,6 +965,13 @@ void ReadyRestartForce()
 
 void ReadyRestart()
 {
+	if(forbidrestart)
+	{
+		print("FIXME: tried to restart while restarts are forbidden\n");
+		backtrace("ReadyRestart traceback");
+		return;
+	}
+	
 	// no arena, assault support yet...
 	if(g_arena | g_assault | gameover | intermission_running | race_completing)
 		localcmd("restart\n");

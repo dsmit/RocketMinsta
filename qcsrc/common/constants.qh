@@ -516,7 +516,7 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA "weapons/rm_minsta.wav"
+	#define RM_SOUND_MINSTA (cvar("g_explosive_oldnexsound")? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
 	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"
