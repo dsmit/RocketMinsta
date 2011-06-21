@@ -171,6 +171,11 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 			*/
+			
+			// Why the hell was this never needed before?
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
+			RemapVote_display = strzone(strcat("^1", vote));
+			return TRUE;
 		}
 	}
     if(argv(0) == "endround")
