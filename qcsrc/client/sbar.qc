@@ -4352,7 +4352,7 @@ void CSQC_ctf_hud(vector hudpos)
 	float f; // every function should have that
 	bottomleft_x = 0;
 	if(rm_oldhud)
-		bottom_y = 0;
+		bottomleft_y = vid_conheight;
 	else
 		bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;
