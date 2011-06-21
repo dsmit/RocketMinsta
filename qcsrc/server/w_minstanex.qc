@@ -253,7 +253,7 @@ void minstagib_ammocheck (void)
 	if(!cvar("g_balance_minstanex_explosive"))
 	if (self.ammo_cells <= 0)
 	{
-		#define AMMO_DEATHMESSAGE(m) bigprint_spec(self, m, "", 1);
+		#define AMMO_DEATHMESSAGE(m) bigprint_spec(self, m, "", 1)
 		
 		if (self.health == 5)
 		{
