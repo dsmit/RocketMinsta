@@ -782,6 +782,7 @@ void spawnfunc_worldspawn (void)
 //	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
 	InfoMessages_Init();
 	IP2C_Init();
+	UpdateCTFBlacklist();
 	
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
