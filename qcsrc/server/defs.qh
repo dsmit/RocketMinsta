@@ -669,3 +669,5 @@ float gametypetoset;
 #define DEPENDON_F(d,f) if(!(d)) return f;
 
 float forbidrestart;
+
+.float rm_nokillsound;

@@ -276,6 +276,11 @@ void SV_ParseClientCommand(string s) {
 		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
 		WriteSpectatorInfo(self);
 		return;
+	} else if(cmd == "nokillsound") {
+		if(!self)
+			return;
+			
+		self.rm_nokillsound = stof(argv(1));
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;

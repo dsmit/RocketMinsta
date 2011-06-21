@@ -2852,7 +2852,12 @@ void EndFrame()
 			else if(self.cvar_cl_hitsound)
 			{
 				if(self.enemy.killsound)
-					play2(self, RM_SOUND_KILL);
+				{
+					if(self.rm_nokillsound)
+						play2(self, "misc/hit.wav");
+					else
+						play2(self, RM_SOUND_KILL);
+				}
 				else if(self.enemy.hitsound)
 					play2(self, "misc/hit.wav");
 			}
@@ -2864,7 +2869,12 @@ void EndFrame()
 			else if(self.cvar_cl_hitsound)
 			{
 				if(self.killsound)
-					play2(self, RM_SOUND_KILL);
+				{
+					if(self.rm_nokillsound)
+						play2(self, "misc/hit.wav");
+					else
+						play2(self, RM_SOUND_KILL);
+				}
 				else if(self.hitsound)
 					play2(self, "misc/hit.wav");
 			}
