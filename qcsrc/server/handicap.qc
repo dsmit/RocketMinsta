@@ -126,6 +126,8 @@ void Handicap_ApplyRMOverflow(entity player, .float field, float amount, float m
 	
 	if(player.field < maxval)
 		player.field = maxval;
+	else if(!limit)
+		player.field = player.field + amount;
 	else if(player.field < limit)
 		player.field = min(limit, player.field + amount);
 }
