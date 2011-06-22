@@ -886,6 +886,8 @@ void PutClientInServer (void)
 			self.weapons = start_weapons;
 		}
 
+		Handicap_ApplyStartAmmo(self);
+
 		if(g_weaponarena_random)
 			self.weapons = randombits(self.weapons, g_weaponarena_random, FALSE);
 

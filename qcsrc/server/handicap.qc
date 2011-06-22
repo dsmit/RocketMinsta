@@ -1,4 +1,7 @@
 
+#define HC_AFFECT_POSITIVE(f,e) f = f * (1 + (e).rm_handicap)
+#define HC_AFFECT_NEGATIVE(f,e) f = f * (1 - (e).rm_handicap)
+
 void Handicap_Force(entity e, float hvalue)
 {
 	local float old;
@@ -24,7 +27,16 @@ void Handicap_Set(entity e, float hvalue)
 
 float Handicap_ApplyDamage(float damage, entity attacker, entity targ)
 {
-	damage *= (1 - attacker.rm_handicap);
-	damage *= (1 + targ.rm_handicap);
+	HC_AFFECT_NEGATIVE(damage, attacker);
+	HC_AFFECT_POSITIVE(damage, targ);
 	return damage;
+}
+
+void Handicap_ApplyStartAmmo(entity player)
+{
+	HC_AFFECT_NEGATIVE(self.ammo_shells, self);
+	HC_AFFECT_NEGATIVE(self.ammo_nails, self);
+	HC_AFFECT_NEGATIVE(self.ammo_rockets, self);
+	HC_AFFECT_NEGATIVE(self.ammo_cells, self);
+	HC_AFFECT_NEGATIVE(self.ammo_fuel, self);
 }

@@ -1,2 +1,3 @@
 void Handicap_Set(entity, float);
 float Handicap_ApplyDamage(float, entity, entity);
+void Handicap_ApplyStartAmmo(entity);
