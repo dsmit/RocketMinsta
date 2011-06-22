@@ -257,7 +257,8 @@ float Item_GiveTo(entity item, entity player)
 			if (player.ammo_fuel < g_pickup_fuel_max)
 			{
 				pickedup = TRUE;
-				player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
+				//player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
+				Handicap_GiveAmmo(player, item.ammo_fuel, ammo_fuel, g_pickup_fuel_max);
 				player.pauserotfuel_finished = max(player.pauserotfuel_finished, time + cvar("g_balance_pause_fuel_rot"));
 			}
 			if((it = (item.items - (item.items & player.items)) & IT_PICKUPMASK))
@@ -329,7 +330,8 @@ float Item_GiveTo(entity item, entity player)
 				if (item.weapons & WEPBIT_MINSTANEX)
 					W_GiveWeapon (player, WEP_MINSTANEX, "Nex");
 				if (item.ammo_cells)
-					player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
+					//player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
+					Handicap_GiveAmmo(player, cvar("g_minstagib_ammo_drop"), ammo_cells, 999);
 
 				
 				local float sh;
@@ -433,31 +435,36 @@ float Item_GiveTo(entity item, entity player)
 			if (player.ammo_shells < g_pickup_shells_max)
 			{
 				pickedup = TRUE;
-				player.ammo_shells = min (player.ammo_shells + item.ammo_shells, g_pickup_shells_max);
+				//player.ammo_shells = min (player.ammo_shells + item.ammo_shells, g_pickup_shells_max);
+				Handicap_GiveAmmo(player, item.ammo_shells, ammo_shells, g_pickup_shells_max);
 			}
 			if (item.ammo_nails)
 			if (player.ammo_nails < g_pickup_nails_max)
 			{
 				pickedup = TRUE;
-				player.ammo_nails = min (player.ammo_nails + item.ammo_nails, g_pickup_nails_max);
+				//player.ammo_nails = min (player.ammo_nails + item.ammo_nails, g_pickup_nails_max);
+				Handicap_GiveAmmo(player, item.ammo_nails, ammo_nails, g_pickup_nails_max);
 			}
 			if (item.ammo_rockets)
 			if (player.ammo_rockets < g_pickup_rockets_max)
 			{
 				pickedup = TRUE;
-				player.ammo_rockets = min (player.ammo_rockets + item.ammo_rockets, g_pickup_rockets_max);
+				//player.ammo_rockets = min (player.ammo_rockets + item.ammo_rockets, g_pickup_rockets_max);
+				Handicap_GiveAmmo(player, item.ammo_rockets, ammo_rockets, g_pickup_rockets_max);
 			}
 			if (item.ammo_cells)
 			if (player.ammo_cells < g_pickup_cells_max)
 			{
 				pickedup = TRUE;
-				player.ammo_cells = min (player.ammo_cells + item.ammo_cells, g_pickup_cells_max);
+				//player.ammo_cells = min (player.ammo_cells + item.ammo_cells, g_pickup_cells_max);
+				Handicap_GiveAmmo(player, item.ammo_cells, ammo_cells, g_pickup_cells_max);
 			}
 			if (item.ammo_fuel)
 			if (player.ammo_fuel < g_pickup_fuel_max)
 			{
 				pickedup = TRUE;
-				player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
+				//player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
+				Handicap_GiveAmmo(player, item.ammo_fuel, ammo_fuel, g_pickup_fuel_max);
 				player.pauserotfuel_finished = max(player.pauserotfuel_finished, time + cvar("g_balance_pause_fuel_rot"));
 			}
 		}
