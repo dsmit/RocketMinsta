@@ -251,6 +251,9 @@ float Item_GiveTo(entity item, entity player)
 
 	if (g_minstagib)
 	{
+		local float sh;
+		sh = Handicap_GetStartHealth(player);
+		
 		if(item.spawnshieldtime)
 		{
 			if (item.ammo_fuel)
@@ -333,17 +336,17 @@ float Item_GiveTo(entity item, entity player)
 					//player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
 					Handicap_GiveAmmo(player, cvar("g_minstagib_ammo_drop"), ammo_cells, 999);
 
-				
-				local float sh;
-				sh = Handicap_GetStartHealth(player);
-
 				if(cvar("g_balance_minstanex_explosive"))
 				{
+					/*
 					if(player.health < sh)
 						player.health = sh;
 					else if(cvar("g_explosive_health_overflow"))
 						if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
 							player.health += cvar("g_explosive_health_overflow");
+					*/
+					
+					Handicap_ApplyRMOverflow(player, health, cvar("g_explosive_health_overflow"), sh, cvar("g_explosive_health_max"), "health");
 				}
 				else
 					player.health = sh;
@@ -388,16 +391,8 @@ float Item_GiveTo(entity item, entity player)
 
 			if(item.armorvalue)
 			{
-				if(!cvar("g_explosive_handicap_affects_armor_start"))
-					sh = 100;
-				else
-					sh = Handicap_GetStartHealth_Force(player);
-				
 				pickedup = TRUE;
-				if(player.armorvalue < sh)
-					player.armorvalue = sh;
-				else if(player.armorvalue < item.max_armorvalue)
-					player.armorvalue = min(item.max_armorvalue, player.armorvalue + cvar("g_explosive_armor_overflow"));
+				Handicap_ApplyRMOverflow(player, armorvalue, cvar("g_explosive_armor_overflow"), sh, item.max_armorvalue, "armor");
 			}
 		}
 	}
@@ -515,14 +510,16 @@ float Item_GiveTo(entity item, entity player)
 			if (player.health < item.max_health)
 			{
 				pickedup = TRUE;
-				player.health = min(player.health + item.health, item.max_health);
+				//player.health = min(player.health + item.health, item.max_health);
+				Handicap_GiveHealth(player, item.health, health, item.max_health);
 				player.pauserothealth_finished = max(player.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
 			}
 			if (item.armorvalue)
 			if (player.armorvalue < item.max_armorvalue)
 			{
 				pickedup = TRUE;
-				player.armorvalue = min(player.armorvalue + item.armorvalue, item.max_armorvalue);
+				//player.armorvalue = min(player.armorvalue + item.armorvalue, item.max_armorvalue);
+				Handicap_GiveArmor(player, item.armorvalue, armorvalue, item.max_armorvalue);
 				player.pauserotarmor_finished = max(player.pauserotarmor_finished, time + cvar("g_balance_pause_armor_rot"));
 			}
 		}

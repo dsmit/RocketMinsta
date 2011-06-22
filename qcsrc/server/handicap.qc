@@ -80,16 +80,52 @@ void Handicap_ApplyStartArmor(entity player)
 	HC_AFFECT_NEGATIVE(player.armorvalue, player);
 }
 
-void Handicap_GiveAmmo(entity player, float amount, .float field, float maxammo)
+void Handicap_Give_Common(entity player, float amount, .float field, float maxval, string iname)
 {
-	HC_DEPEND_OR("ammo_pickup", {
-		player.field = min(player.field + amount, maxammo);
+	HC_DEPEND_OR(strcat(iname, "_pickup"), {
+		player.field = min(player.field + amount, maxval);
 	});
 	
 	HC_AFFECT_NEGATIVE_CEIL(amount, player);
 	
-	if(HC_CVAR("ammo_max"))
-		HC_AFFECT_NEGATIVE_CEIL(maxammo, player);
+	if(HC_CVAR(strcat(iname, "_max")))
+		HC_AFFECT_NEGATIVE_CEIL(maxval, player);
 	
-	player.field = min(player.field + amount, maxammo);
+	player.field = min(player.field + amount, maxval);
+}
+
+void Handicap_GiveAmmo(entity player, float amount, .float field, float maxval)
+{
+	Handicap_Give_Common(player, amount, field, maxval, "ammo");
+}
+
+void Handicap_GiveHealth(entity player, float amount, .float field, float maxval)
+{
+	Handicap_Give_Common(player, amount, field, maxval, "health");
+}
+
+void Handicap_GiveArmor(entity player, float amount, .float field, float maxval)
+{
+	Handicap_Give_Common(player, amount, field, maxval, "armor");
+}
+
+float Handicap_ApplyRefire(float ref, entity player)
+{
+	HC_DEPEND_WITHVAL("refire", ref);
+	HC_AFFECT_POSITIVE(ref, player);
+	return ref;
+}
+
+void Handicap_ApplyRMOverflow(entity player, .float field, float amount, float maxval, float limit, string iname)
+{
+	if(HC_CVAR(strcat(iname, "_pickup")))
+		HC_AFFECT_NEGATIVE(amount, player);
+	
+	if(HC_CVAR(strcat(iname, "_max")))
+		HC_AFFECT_NEGATIVE(limit, player);
+	
+	if(player.field < maxval)
+		player.field = maxval;
+	else if(player.field < limit)
+		player.field = min(limit, player.field + amount);
 }

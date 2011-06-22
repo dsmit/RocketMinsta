@@ -4,7 +4,11 @@ float Handicap_ApplyDamage(float, entity, entity);
 void Handicap_ApplyStartAmmo(entity);
 void Handicap_ApplyStartHealth(entity);
 void Handicap_ApplyStartArmor(entity);
-void Handicap_GiveAmmo(entity, float, .float, float)
+void Handicap_GiveAmmo(entity, float, .float, float);
+void Handicap_GiveHealth(entity, float, .float, float);
+void Handicap_GiveArmor(entity, float, .float, float);
+float Handicap_ApplyRefire(float, entity);
+void Handicap_ApplyRMOverflow(entity, .float, float, float, float, string);
 
 float Handicap_GetStartHealth(entity);
 float Handicap_GetStartHealth_Force(entity);

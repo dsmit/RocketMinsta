@@ -500,18 +500,22 @@ float w_minstanex(float req)
 			
 			if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_laser_new"))
 			{
+				local float laser_refire, laser_rapid_refire;
+				laser_refire = Handicap_ApplyRefire(cvar("g_explosive_laser_refire"), self);
+				laser_rapid_refire = Handicap_ApplyRefire(cvar("g_explosive_laser_rapid_refire"), self);
+				
 				if (self.jump_interval <= time && !self.held_down)
 				{
 					if(rapid)
 						self.held_down = TRUE;
-					self.jump_interval = time + cvar("g_explosive_laser_refire");
+					self.jump_interval = time + laser_refire;
 					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_delay");
 					//self.goodhits = 0;
 					W_RM_Alt_Attack();
 				}
 				else if(rapid && self.jump_interval2 <= time && self.held_down)
 				{
-					self.jump_interval2 = time + cvar("g_explosive_laser_rapid_refire");
+					self.jump_interval2 = time + laser_rapid_refire;
 					//self.goodhits = 0;
 					W_RM_Alt_Attack_Single();
 				}
