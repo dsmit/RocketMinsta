@@ -2,8 +2,9 @@
 #define HC_AFFECT_POSITIVE(f,e) f = f * (1 + (e).rm_handicap)
 #define HC_AFFECT_NEGATIVE(f,e) f = f * (1 - (e).rm_handicap)
 
-#define HC_DEPEND(s) if(!cvar(s)) return
-#define HC_DEPEND_WITHVAL(s,v) if(!cvar(s)) return v
+#define HC_CVAR(s) cvar(strcat("g_explosive_handicap_affects_", s))
+#define HC_DEPEND(s) if(!HC_CVAR(s)) return
+#define HC_DEPEND_WITHVAL(s,v) if(!HC_CVAR(s)) return v
 
 void Handicap_Force(entity e, float hvalue)
 {
@@ -30,7 +31,7 @@ void Handicap_Set(entity e, float hvalue)
 
 float Handicap_ApplyDamage(float damage, entity attacker, entity targ)
 {
-	HC_DEPEND_WITHVAL("g_explosive_handicap_affects_damage", damage);
+	HC_DEPEND_WITHVAL("damage", damage);
 	
 	HC_AFFECT_NEGATIVE(damage, attacker);
 	HC_AFFECT_POSITIVE(damage, targ);
@@ -39,11 +40,39 @@ float Handicap_ApplyDamage(float damage, entity attacker, entity targ)
 
 void Handicap_ApplyStartAmmo(entity player)
 {
-	HC_DEPEND("g_explosive_handicap_affects_ammo_start");
+	HC_DEPEND("ammo_start");
 	
-	HC_AFFECT_NEGATIVE(self.ammo_shells, self);
-	HC_AFFECT_NEGATIVE(self.ammo_nails, self);
-	HC_AFFECT_NEGATIVE(self.ammo_rockets, self);
-	HC_AFFECT_NEGATIVE(self.ammo_cells, self);
-	HC_AFFECT_NEGATIVE(self.ammo_fuel, self);
+	HC_AFFECT_NEGATIVE(player.ammo_shells, player);
+	HC_AFFECT_NEGATIVE(player.ammo_nails, player);
+	HC_AFFECT_NEGATIVE(player.ammo_rockets, player);
+	HC_AFFECT_NEGATIVE(player.ammo_cells, player);
+	HC_AFFECT_NEGATIVE(player.ammo_fuel, player);
 }
+
+float Handicap_GetStartHealth_Force(entity player)
+{
+	local float f;
+	f = start_health;
+	HC_AFFECT_NEGATIVE(f, player);
+	f = max(1, f);
+	return f;
+}
+
+float Handicap_GetStartHealth(entity player)
+{
+	HC_DEPEND_WITHVAL("health_start", start_health);
+	return Handicap_GetStartHealth_Force(player);
+}
+
+void Handicap_ApplyStartHealth(entity player)
+{
+	HC_DEPEND("health_start");
+	HC_AFFECT_NEGATIVE(player.health, player);
+}
+
+void Handicap_ApplyStartArmor(entity player)
+{
+	HC_DEPEND("armor_start");
+	HC_AFFECT_NEGATIVE(player.armorvalue, player);
+}
+

@@ -418,7 +418,8 @@ float freezetag_PlayerDies()
 		bprint("^7", frag_target.netname, "^1 was frozen by ^7", frag_attacker.netname, ".\n");
 	}*/
 
-	frag_target.health = 100; // "respawn" the player :P
+	frag_target.health = start_health; // "respawn" the player :P
+	Handicap_ApplyStartHealth(frag_target);
 	
 	if(g_minstagib)
 		W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);

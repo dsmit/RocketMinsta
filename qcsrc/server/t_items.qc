@@ -275,7 +275,6 @@ float Item_GiveTo(entity item, entity player)
 				//centerprint(player, "\n");
 				if (clienttype(player) == CLIENTTYPE_REAL && cvar("g_balance_minstanex_explosive"))
 				{
-					//<akari>
 					if(!cvar("g_balance_minstanex_explosive"))
 					{
 						if(player.health <= 5)
@@ -322,7 +321,6 @@ float Item_GiveTo(entity item, entity player)
 							play2(player, RM_SOUND_RECOVERY);
 						}
 					}
-					//</akari>
 				}
 				// sound not available
 				// else if(item.items == IT_CELLS)
@@ -333,15 +331,20 @@ float Item_GiveTo(entity item, entity player)
 				if (item.ammo_cells)
 					player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
 
+				
+				local float sh;
+				sh = Handicap_GetStartHealth(player);
+
 				if(cvar("g_balance_minstanex_explosive"))
 				{
-					if(player.health < 100)
-						player.health = 100;
+					if(player.health < sh)
+						player.health = sh;
 					else if(cvar("g_explosive_health_overflow"))
 						if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
 							player.health += cvar("g_explosive_health_overflow");
 				}
-				else player.health = 100;
+				else
+					player.health = sh;
 
 			}
 
@@ -381,16 +384,19 @@ float Item_GiveTo(entity item, entity player)
 				player.pauserotfuel_finished = max(player.pauserotfuel_finished, time + cvar("g_balance_pause_fuel_rot"));
 			}
 
-			//<akari>
 			if(item.armorvalue)
 			{
+				if(!cvar("g_explosive_handicap_affects_armor_start"))
+					sh = 100;
+				else
+					sh = Handicap_GetStartHealth_Force(player);
+				
 				pickedup = TRUE;
-				if(player.armorvalue < 100)
-					player.armorvalue = 100;
+				if(player.armorvalue < sh)
+					player.armorvalue = sh;
 				else if(player.armorvalue < item.max_armorvalue)
 					player.armorvalue = min(item.max_armorvalue, player.armorvalue + cvar("g_explosive_armor_overflow"));
 			}
-			//</akari>
 		}
 	}
 	else

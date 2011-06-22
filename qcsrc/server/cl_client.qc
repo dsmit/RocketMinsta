@@ -887,6 +887,8 @@ void PutClientInServer (void)
 		}
 
 		Handicap_ApplyStartAmmo(self);
+		Handicap_ApplyStartHealth(self);
+		Handicap_ApplyStartArmor(self);
 
 		if(g_weaponarena_random)
 			self.weapons = randombits(self.weapons, g_weaponarena_random, FALSE);
