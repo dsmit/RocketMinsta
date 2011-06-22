@@ -257,6 +257,8 @@ void SV_ParseClientCommand(string s) {
 		
 		sprint(self, strcat("^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n"));
 		return;
+	} else if(cmd == "handicap") {
+		Handicap_Set(self, stof(argv(1)));
 	} else if(cmd == "madoka") {
 		if(!self)
 			return;

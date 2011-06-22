@@ -27,6 +27,8 @@ ip2c.qh
 csqcprojectile.qh
 csqceffects.qc
 
+handicap.qh
+
 portals.qh
 
 g_hook.qh
@@ -146,6 +148,8 @@ keyhunt.qc
 assault.qc
 
 ipban.qc
+
+handicap.qc
 
 ../common/mapinfo.qc
 
