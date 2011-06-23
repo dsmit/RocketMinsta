@@ -75,6 +75,7 @@ void Handicap_ApplyStartHealth(entity player)
 {
 	HC_DEPEND("health_start");
 	HC_AFFECT_NEGATIVE(player.health, player);
+	player.health = max(player.health, 1);
 }
 
 void Handicap_ApplyStartArmor(entity player)
