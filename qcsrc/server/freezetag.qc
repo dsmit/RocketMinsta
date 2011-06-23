@@ -544,7 +544,8 @@ float freezetag_PlayerPreThink()
 	if(o) // OK, there is at least one teammate reviving us
 	{
 		self.rev_finished = 0;
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_freezetag_revive_speed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * 
+			Handicap_ApplyFreezetagReviveSpeed(cvar("g_explosive_freezetag_revive_speed"), self, revive_extra_size, oPrev), 1);
 
 		if(self.freezetag_revive_progress >= 1)
 		{
@@ -567,7 +568,7 @@ float freezetag_PlayerPreThink()
 						{
 							PlayerScore_Add(other, SP_FREEZETAG_REVIVALS, +1);
 							PlayerScore_Add(other, SP_SCORE, cvar("g_explosive_freezetag_score_revival"));
-                            other.health = max(other.health, 100);
+                            other.health = max(other.health, Handicap_GetStartHealth(other));
                             centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
                             
                             if(first)
