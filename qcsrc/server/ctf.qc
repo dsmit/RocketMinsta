@@ -793,7 +793,7 @@ void spawnfunc_item_flag_team1()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib)
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -913,7 +913,7 @@ void spawnfunc_item_flag_team2()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib)
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
