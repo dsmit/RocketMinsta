@@ -844,6 +844,9 @@ void VoteCount() {
 
 	FOR_EACH_REALCLIENT(player)
 	{
+		if(player.is_away)
+			continue;
+		
 		if(player.vote_vote == -1) {
 			++nocount;
 		} else if(player.vote_vote == 1) {
@@ -874,7 +877,7 @@ void VoteCount() {
 		playercount = realplayercount;
 	}
 	
-	abstaincount += CountAFKClients();
+	//abstaincount += CountAFKClients();
 
 	float votefactor, simplevotefactor;
 	votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);
