@@ -536,6 +536,7 @@ void PostInit(void)
 	
 	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
+	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
