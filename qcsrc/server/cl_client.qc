@@ -281,15 +281,23 @@ Finds a point to respawn
 */
 
 entity global_spawnpoint;
+float noclosetoteam;
+
+// wtf, no abs function in QC? Not putting in common/ because I don't want to alter other modules.
+float abs(float f)
+{
+	return f * ((f < 0)? -1 : 1);
+}
 
 entity SelectSpawnPoint (float anypoint)
 {
-	local float teamcheck;
+	local float teamcheck, closetoteam;
 	local entity firstspot_new;
 	local entity spot, firstspot, playerlist;
 
-	local float randspawns;
+	local float randspawns, closetoteam_cvar;
 	randspawns = cvar("g_explosive_randomspawns");
+	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
 	
 	if(!global_spawnpoint)
 		global_spawnpoint = spawn();
@@ -309,6 +317,19 @@ entity SelectSpawnPoint (float anypoint)
 	if(!anypoint && have_team_spawns)
 		teamcheck = self.team;
 
+	closetoteam = 1;
+	if(noclosetoteam)
+	{
+		closetoteam = 0;
+		noclosetoteam = 0;
+	}
+	
+	if(!closetoteam_cvar)
+		closetoteam = 0;
+	if(closetoteam_cvar < 2)
+	if(have_team_spawns)
+		closetoteam = 0;
+
 	// get the list of players
 	playerlist = findchain(classname, "player");
 	// get the entire list of spots
@@ -318,6 +339,33 @@ entity SelectSpawnPoint (float anypoint)
 	if(anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
+	}
+	else if(teams_matter && closetoteam)
+	{
+		local entity e, md_point, md_player;
+		local float mdst;
+		mdst = -1;
+
+		for(spot = firstspot; spot; spot = spot.chain)
+		{
+			FOR_EACH_PLAYER(e) if(e.team == self.team) if(e != self) if(!teamcheck || spot.team == teamcheck)
+			if(spot.origin_x != e.origin_x || spot.origin_y != e.origin_y)
+			{
+				if(mdst == -1 || abs(vlen(e.origin - spot.origin)) < mdst)
+				{
+					mdst = abs(vlen(md_player.origin - spot.origin));
+					md_player = e;
+					md_point = spot;
+				}
+			}
+		}
+		
+		if(!md_point)
+		{
+			noclosetoteam = 1;
+			return SelectSpawnPoint(anypoint);
+		}
+		else return md_point;
 	}
 	else
 	{
