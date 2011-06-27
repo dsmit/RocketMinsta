@@ -283,12 +283,6 @@ Finds a point to respawn
 entity global_spawnpoint;
 float noclosetoteam;
 
-// wtf, no abs function in QC? Not putting in common/ because I don't want to alter other modules.
-float abs(float f)
-{
-	return f * ((f < 0)? -1 : 1);
-}
-
 entity SelectSpawnPoint (float anypoint)
 {
 	local float teamcheck, closetoteam;
@@ -351,9 +345,9 @@ entity SelectSpawnPoint (float anypoint)
 			FOR_EACH_PLAYER(e) if(e.team == self.team) if(e != self) if(!teamcheck || spot.team == teamcheck)
 			if(spot.origin_x != e.origin_x || spot.origin_y != e.origin_y)
 			{
-				if(mdst == -1 || abs(vlen(e.origin - spot.origin)) < mdst)
+				if(mdst == -1 || vlen(e.origin - spot.origin) < mdst)
 				{
-					mdst = abs(vlen(md_player.origin - spot.origin));
+					mdst = vlen(md_player.origin - spot.origin);
 					md_player = e;
 					md_point = spot;
 				}
