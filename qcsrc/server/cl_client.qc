@@ -292,7 +292,7 @@ float abs(float f)
 entity SelectSpawnPoint (float anypoint)
 {
 	local float teamcheck, closetoteam;
-	local entity firstspot_new;
+	local entity firstspot_new, e;
 	local entity spot, firstspot, playerlist;
 
 	local float randspawns, closetoteam_cvar;
@@ -342,7 +342,7 @@ entity SelectSpawnPoint (float anypoint)
 	}
 	else if(teams_matter && closetoteam)
 	{
-		local entity e, md_point, md_player;
+		local entity md_point, md_player;
 		local float mdst;
 		mdst = -1;
 
@@ -394,7 +394,6 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		print("spot mindistance: ", ftos(spot.SPAWNPOINT_SCORE), "\n");
 
-		entity e;
 		if(teamcheck)
 			for(e = firstspot; e; e = e.chain)
 				if(e.team != teamcheck)
