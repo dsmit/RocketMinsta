@@ -576,7 +576,7 @@ void SendRMCFGReport()
 	for(i = 0; i < n; ++i)
 	{
 		k = bufstr_get(h, i);
-		res = strcat(res, k, " ", cvar_string(k), " ");
+		res = strcat(res, "^3", k, " ^2", cvar_string(k), " ");
 	}
 	
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
