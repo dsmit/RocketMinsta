@@ -1026,6 +1026,8 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(self.switchweapon != self.weapon)
 		return FALSE;
 
+	attacktime = Handicap_ApplyRefire(attacktime, self);
+
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished

@@ -789,9 +789,7 @@ entity damage_targ;
 entity damage_inflictor;
 entity damage_attacker;
 
-//<akari>
 .float ignore_next;
-//</akari>
 
 void Damage (entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
@@ -820,6 +818,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		attacker_save = attacker;
 
 	local float took_extra;
+
+	damage = Handicap_ApplyDamage(damage, attacker, targ);
 
 	if(targ.classname == "player")
 		if(targ.hook)

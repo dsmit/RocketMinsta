@@ -664,6 +664,9 @@ void vip_ResetHealthArmor(entity vip)
 {
 	vip.health = vip.vip_maxhealth;
 	vip.armorvalue = vip.vip_maxarmor;
+	
+	Handicap_ApplyStartArmor(vip);
+	Handicap_ApplyStartHealth(vip);
 }
 
 void vip_AssignCustomRedVIP(entity newvip)

@@ -489,15 +489,14 @@ void FlagTouch()
 		// give credit to the individual player
 		UpdateFrags(other, ctf_score_value("score_capture"));
 
-		//<akari>
-		//Specially for Spook: restore health on flag capture
-		
 		if(cvar("g_balance_minstanex_explosive"))
 		if(cvar("g_explosive_ctf_capheals"))
-		if(other.health < 100)
-			other.health = 100;
-		
-		//</akari>
+		{
+			local float sh = Handicap_GetStartHealth(other);
+			
+			if(other.health < sh)
+				other.health = sh;
+		}
 
 		if (cvar("g_ctf_flag_capture_effects")) {
 			if (other.team == COLOR_TEAM1) { // red team scores effect
