@@ -544,11 +544,9 @@ float w_minstanex(float req)
 	{
 		precache_model ("models/nexflash.md3");
 		
-		/*
 		precache_model ("models/weapons/g_minstanex.md3");
 		precache_model ("models/weapons/v_minstanex.md3");
 		precache_model ("models/weapons/h_minstanex.dpm");
-		*/
 		
 		precache_model ("models/weapons/g_nex.md3");
 		precache_model ("models/weapons/v_nex.md3");
@@ -560,7 +558,6 @@ float w_minstanex(float req)
 		precache_sound ("weapons/nexwhoosh3.wav");
 		w_laser(WR_PRECACHE);
 		
-		//Wtf? Why doesn't this shit work?
 		precache_sound (RM_SOUND_LASER_PRIMARY);
 		precache_sound (RM_SOUND_LASER_SECONDARY);
 	}

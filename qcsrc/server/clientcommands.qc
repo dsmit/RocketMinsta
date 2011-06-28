@@ -209,6 +209,22 @@ void SV_ParseClientCommand(string s) {
 		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
 		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
 		
+		// Report availability of certain RM options
+		#define OPTAVAIL_RAW(o,v) stuffcmd(self, strcat("set _rm_optavail_", o, " ", v, "\n"));
+		#define OPTAVAIL(o,v) OPTAVAIL_RAW(o, ftos(cvar(v)))
+		#define OPTAVAIL_NOT(o,v) OPTAVAIL_RAW(o, ftos(!cvar(v)))
+		
+		OPTAVAIL	("anonspec", "g_explosive_anonspecs")
+		OPTAVAIL	("showspec", "g_explosive_showspecs")
+		//OPTAVAIL	("teamlasers", "g_explosive_laser_teamcolor")
+		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
+		OPTAVAIL	("shownames", "g_explosive_shownames")
+		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
+		
+		#undef OPTAVAIL_RAW
+		#undef OPTAVAIL
+		#undef OPTAVAIL_NOT
+		
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
 	} else if(cmd == "spyrmcfg") {

@@ -536,6 +536,7 @@ void PostInit(void)
 	
 	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
+	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
@@ -550,7 +551,9 @@ void PostInit(void)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
-		
+	
+	localcmd("cmd menu_request"); // workaround against restarts
+	
 	postinit = true;
 }
 
@@ -573,7 +576,7 @@ void SendRMCFGReport()
 	for(i = 0; i < n; ++i)
 	{
 		k = bufstr_get(h, i);
-		res = strcat(res, k, " ", cvar_string(k), " ");
+		res = strcat(res, "^3", k, " ^2", cvar_string(k), " ");
 	}
 	
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
