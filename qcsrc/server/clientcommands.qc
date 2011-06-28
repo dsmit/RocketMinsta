@@ -919,6 +919,7 @@ void SV_ParseClientCommand(string s) {
 	}
 }
 
+void VoteDialog_Reset();
 void ReadyRestartForce()
 {
 	local entity e;
@@ -974,6 +975,9 @@ void ReadyRestartForce()
 	//reset map immediately if this cvar is not set
 	if (!cvar("sv_ready_restart_after_countdown"))
 		reset_map(TRUE);
+
+	// fix vote dialog
+	VoteDialog_Reset();
 
 	if(cvar("sv_eventlog"))
 		GameLogEcho(":restart");
