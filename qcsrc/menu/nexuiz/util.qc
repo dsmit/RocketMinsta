@@ -318,6 +318,15 @@ void Menu_ClearVars()
 	
 	registercvar("_rm_server", "", 0);
 	cvar_set("_rm_server", "0");
+	
+	// this is needed for compatibility with older RM servers
+	#define OPTAVAIL(o) localcmd("set _rm_optavail_", o, " 1\n");
+	OPTAVAIL("anonspec")
+	OPTAVAIL("showspec")
+	OPTAVAIL("teamlasers")
+	OPTAVAIL("shownames")
+	OPTAVAIL("showdamage")
+	#undef OPTAVAIL
 }
 
 void Event_Connect()
