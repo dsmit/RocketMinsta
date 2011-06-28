@@ -12,27 +12,34 @@ ENDCLASS(NexuizRMConfigDialog)
 
 #ifdef IMPLEMENTATION
 
+#define OPTDEP(o) setDependent(e, "_rm_optavail_"##o, 1, 1);
+
 void fillNexuizRMConfigDialog(entity me)
 {
 	entity e;
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showspec", "Show spectators"));
+			OPTDEP("showspec")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showdamage", "Hit/damage indicator"));
+			OPTDEP("showdamage")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "crosshealth", "Color crosshair by health"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames", "Show player names above their heads"));
+			OPTDEP("shownames")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Visualize score"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Teamcolored lasers"));
+			OPTDEP("teamlasers")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "legacyvote", "Simple voting screen"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "simpleeffects", "Effects for textual notifications"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "anonspec", "Spectate anonymously"));
+			OPTDEP("anonspec")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nobigtext", "Enable big notifications"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);

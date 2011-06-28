@@ -281,15 +281,25 @@ Finds a point to respawn
 */
 
 entity global_spawnpoint;
+float noclosetoteam;
+
+/*
+void bsprint(entity e, string s)
+{
+	print("To ", e.netname, ": ", s);
+	sprint(e, s);
+}
+*/
 
 entity SelectSpawnPoint (float anypoint)
 {
-	local float teamcheck;
-	local entity firstspot_new;
+	local float teamcheck, closetoteam;
+	local entity firstspot_new, e;
 	local entity spot, firstspot, playerlist;
 
-	local float randspawns;
+	local float randspawns, closetoteam_cvar;
 	randspawns = cvar("g_explosive_randomspawns");
+	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
 	
 	if(!global_spawnpoint)
 		global_spawnpoint = spawn();
@@ -309,6 +319,19 @@ entity SelectSpawnPoint (float anypoint)
 	if(!anypoint && have_team_spawns)
 		teamcheck = self.team;
 
+	closetoteam = 1;
+	if(noclosetoteam)
+	{
+		closetoteam = 0;
+		noclosetoteam = 0;
+	}
+	
+	if(!closetoteam_cvar)
+		closetoteam = 0;
+	if(closetoteam_cvar < 2)
+	if(have_team_spawns)
+		closetoteam = 0;
+
 	// get the list of players
 	playerlist = findchain(classname, "player");
 	// get the entire list of spots
@@ -318,6 +341,126 @@ entity SelectSpawnPoint (float anypoint)
 	if(anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
+	}
+	else if(teams_matter && closetoteam)
+	{
+		local entity md_point, md_player, md_tmp_point, md_tmp_player;
+		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
+		mdst = -1;
+		local float i;
+		
+		local float cvar_mindist_team = cvar("g_explosive_spawnclosetoteam_mindist_team");
+		local float cvar_mindist_enemies = cvar("g_explosive_spawnclosetoteam_mindist_enemies");
+
+		for(i = 0; i < 2; ++i)
+		{
+			for(spot = firstspot; spot; spot = spot.chain) if(!teamcheck || spot.team == teamcheck)
+			{
+				//bsprint(self, strcat("^3checking point ", etos(spot), "\n"));
+				
+				tmplen = 0;
+				md_tmp_player = md_tmp_point = world;
+				minlen = minenemylen = -1;
+				
+				FOR_EACH_PLAYER(e) if(e.team != self.team)
+				{
+					tmplen = vlen(e.origin - spot.origin);
+					if(minenemylen < 0 || tmplen < minenemylen)
+						minenemylen = tmplen;
+				}
+				
+				//bsprint(self, strcat("^x0AFMeasured dist to enemy: ", ftos(minenemylen), "\n"));
+				
+				if(!i)
+				if(minenemylen < cvar_mindist_enemies)
+				{
+					//bsprint(self, "^xA06TOO CLOSE TO ENEMY\n");
+					continue;
+				}
+				
+				FOR_EACH_PLAYER(e) if(e.team == self.team) if(e != self)
+				{
+					tmplen = vlen(e.origin - spot.origin);
+					
+					if(minlen < 0)
+						minlen = tmplen;
+					
+					if(tmplen > minlen)
+					{
+						//bsprint(self, strcat("skipped ", e.netname, " ^7(tmplen > minlen)\n"));
+						continue;
+					}
+
+					// try to avoid points with players spawned
+					if(!i)
+					{
+						//bsprint(self, strcat("checking if ", e.netname, "^7 is spawned on ", etos(spot), " (tmplen = ", ftos(tmplen), ")\n"));
+						
+						if(tmplen < cvar_mindist_team)
+						{
+							//bsprint(self, strcat("a player already spawned on that spot! ^3", e.netname, "\n"));
+							spawnfailed = TRUE;
+							break;
+						}
+					}
+					
+					if(tmplen <= minlen)
+					{
+						minlen = tmplen;
+						md_tmp_player = e;
+						md_tmp_point  = spot;
+						
+						//bsprint(self, strcat("^2measured dist to point ", etos(md_tmp_point), " = ", ftos(minlen), "\n"));
+					}
+				}
+				//bsprint(self, strcat("^xA58md_point is currently ^1", etos(md_point), "\n"));
+				
+				if(spawnfailed)
+				{
+					spawnfailed = FALSE;
+					continue;
+				}
+				
+				//bsprint(self, strcat("^1Now trying to select spawn: ^7", ftos(minlen), " < ", ftos(mdst), "?\n"));
+				if(mdst == -1 || minlen < mdst)
+				{
+					mdst = minlen;
+					md_player = md_tmp_player;
+					md_point = md_tmp_point;
+					
+					//bsprint(self, strcat(" ^6******** ^7selected spot ", etos(md_point), " with distance ", ftos(mdst), "\n"));
+				}
+				
+				//bsprint(self, strcat("^xA58md_point is currently ^1", etos(md_point), "\n"));
+			}
+			
+			if(!i)
+			{
+				if(md_point) // if this fails, will try again without the already-spawned-players check
+				{
+					//bsprint(self, "^5SPAWN SUCCEDED\n");
+					//bsprint(self, strcat("^5final spot: ", etos(md_point), " with distance ", ftos(mdst), "\n"));
+					break;
+				}
+				//else
+					//bsprint(self, "^5SPAWN FAILED\n");
+			}
+			
+			minlen = -1;
+		}
+		
+		// if even that fails, fall back to normal spawning method
+		if(!md_point)
+		{
+			//bsprint(self, "^5FALLBACK SPAWN FAILED\n");
+			noclosetoteam = 1;
+			return SelectSpawnPoint(anypoint);
+		}
+		else
+		{
+			//bsprint(self, "^5SPAWN FINISHED\n");
+			return md_point;
+		}
 	}
 	else
 	{
@@ -346,7 +489,6 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		print("spot mindistance: ", ftos(spot.SPAWNPOINT_SCORE), "\n");
 
-		entity e;
 		if(teamcheck)
 			for(e = firstspot; e; e = e.chain)
 				if(e.team != teamcheck)

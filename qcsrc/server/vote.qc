@@ -119,7 +119,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			
 			s = NormalizeGametypeName(argv(2));
-			if(!ListContains(cvar_string("sv_vote_commands"), s, " ")) s = "";
+			if(!ListContains(cvar_string("g_explosive_gametypevote_options"), s, " ")) s = "";
 			
 			// ListContains tokenizes
 			vote_argc = tokenize_console(vote);
@@ -171,6 +171,11 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 			*/
+			
+			// Why the hell was this never needed before?
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
+			RemapVote_display = strzone(strcat("^1", vote));
+			return TRUE;
 		}
 	}
     if(argv(0) == "endround")
@@ -839,6 +844,9 @@ void VoteCount() {
 
 	FOR_EACH_REALCLIENT(player)
 	{
+		if(player.is_away)
+			continue;
+		
 		if(player.vote_vote == -1) {
 			++nocount;
 		} else if(player.vote_vote == 1) {
@@ -869,7 +877,7 @@ void VoteCount() {
 		playercount = realplayercount;
 	}
 	
-	abstaincount += CountAFKClients();
+	//abstaincount += CountAFKClients();
 
 	float votefactor, simplevotefactor;
 	votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);

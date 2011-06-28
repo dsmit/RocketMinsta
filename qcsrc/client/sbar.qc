@@ -3634,7 +3634,8 @@ void Sbar_Draw (void)
 					next_sector = bottomright_x - 206 - 13; //bottomright_x - 103 - 6;
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
-						hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
+						hudline_x = topright_x - hudline_pos_x - (bottomright_x - 
+							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - 103 - 6) : next_sector)) - bw_left;
 					})
 
 					// powerups
@@ -3650,17 +3651,19 @@ void Sbar_Draw (void)
 					}
 					sector_alphamod = 1;
 
+					/*		WTF did I write?
+					
 					local float offs;
 					offs = 0;
-
+					
 					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
 					{
 						hud_sector_pos_x = next_sector - 2;
 						hud_sector_x = 103;
 						
 						HUDLINE_SLICE({
-							hudline_x = hud_sector_x + bw_right;
-							hudline_pos_x = hud_sector_pos_x - bw_right;
+							hudline_x = hud_sector_x; //+ bw_right;
+							hudline_pos_x = hud_sector_pos_x; //- bw_right;
 						})
 					}
 					else
@@ -3671,6 +3674,16 @@ void Sbar_Draw (void)
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + offs;;
 						hudline_x = 10 - bw_right - bw_left - offs + 2;
 					})
+					*/
+					
+					// powerups | scores
+					if not(!pwhud_enabled || pwhud_enabled != pw_finalstate)
+					{
+						HUDLINE_SLICE({
+							hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+							hudline_x = 10 - bw_right - bw_left;
+						})
+					}
 					
 					// scores
 					HUDLINE_SECTOR({
@@ -4352,7 +4365,7 @@ void CSQC_ctf_hud(vector hudpos)
 	float f; // every function should have that
 	bottomleft_x = 0;
 	if(rm_oldhud)
-		bottom_y = 0;
+		bottomleft_y = vid_conheight;
 	else
 		bottomleft_y = vid_conheight - 10;
 	bottomleft_z = 0;

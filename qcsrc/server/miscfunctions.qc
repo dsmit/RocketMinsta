@@ -3051,7 +3051,19 @@ float Banning_UnbanPlayerByName (string name)
 
 string GetVoteList_All()
 {
-	return cvar_string("sv_vote_commands");
+	if(!cvar("g_explosive_gametypevote_call"))
+		return cvar_string("sv_vote_commands");
+	
+	local string votes;
+	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
+	
+	for(i = 0; i < n; ++i)
+	{
+		if(NormalizeGametypeName(argv(i)) == "")
+			votes = strcat(votes, argv(i), " ");
+	}
+	
+	return strcat(votes, cvar_string("g_explosive_gametypevote_options"));
 }
 
 string GetVoteList_Filtered()
