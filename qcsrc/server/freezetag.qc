@@ -13,13 +13,13 @@ void update_playercount()
 void last_players()
 {
 	local entity e;
-
+	update_playercount();
 	if(redalive >=2)
 		red_announced = 1;
 	if(bluealive >=2)
 		blue_announced = 1;	
 
-	if(redalive == 1 && blue_announced)
+	if(redalive == 1 && red_announced == 1)
 	{
 		FOR_EACH_PLAYER(e)
 		{
@@ -29,7 +29,7 @@ void last_players()
 		red_announced =0;
 	}
 
-	else if(bluealive == 1 && blue_announced)
+	else if(bluealive == 1 && blue_announced == 1)
 	{
 		FOR_EACH_PLAYER(e)
 		{
