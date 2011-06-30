@@ -1,5 +1,6 @@
-
 entity uglyfreezetagworkaround;
+float red_announced;
+float blue_announced;
 
 void update_playercount()
 {
@@ -7,6 +8,36 @@ void update_playercount()
 	oldself = self;
 	count_alive_players();
 	self = oldself;
+}
+
+void last_players()
+{
+	local entity e;
+
+	if(redalive >=2)
+		red_announced = 1;
+	if(bluealive >=2)
+		blue_announced = 1;	
+
+	if(redalive == 1 && blue_announced)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM1 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
+		}
+		red_announced =0;
+	}
+
+	else if(bluealive == 1 && blue_announced)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM2 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			bigprint_spec(e, "^4You are the last player of your team!\n", "", 2);
+		}
+		blue_announced = 0;
+	}
 }
 
 void freezetag_EndRound_Think()
@@ -146,6 +177,7 @@ void freezetag_CheckWinner()
 	*/
 	
 	update_playercount();
+	last_players();
 	
 	if((redalive >= 1 && bluealive >= 1) // counted in arena.qc
 		|| (redalive >= 1 && yellowalive >= 1)
