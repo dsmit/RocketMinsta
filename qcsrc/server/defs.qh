@@ -671,3 +671,4 @@ float gametypetoset;
 float forbidrestart;
 .float rm_nokillsound;
 .float rm_handicap;
+.float hidecountry;
