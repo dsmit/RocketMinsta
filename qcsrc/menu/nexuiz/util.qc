@@ -326,6 +326,7 @@ void Menu_ClearVars()
 	OPTAVAIL("teamlasers")
 	OPTAVAIL("shownames")
 	OPTAVAIL("showdamage")
+	OPTAVAIL("hidecountry")
 	#undef OPTAVAIL
 }
 
