@@ -469,9 +469,11 @@ void PostInit(void)
 			localcmd("seta rm_notimer 0; notimer 0\n");
 		case 31:
 			localcmd("seta rm_nokillsound 0; nokillsound 0\n");
+		case 32:
+			localcmd ("seta rm_hidecountry 0; hidecountry 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 32\n");
+		localcmd("seta rm_initialized 33\n");
 		RM_OUTDATED
 		break;
 	}
@@ -520,6 +522,8 @@ void PostInit(void)
 	registercmd("nokillsound");
 	// -- //
 	registercmd("hudskin");
+	registercmd ("hidecountry");
+	localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -831,6 +835,16 @@ float CSQC_ConsoleCommand(string strMessage)
 			return true;
 		}
 		
+		return true;
+	}
+	else if (strCmd == "hidecountry")
+	{
+		VALUEREQUIRED
+		cvar_set ("rm_hidecountry", argv (1));
+		rm_hidecountry = cvar ("rm_hidecountry");
+		SendRMCFGReport ();
+		localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+		RMSETTINGREPORT
 		return true;
 	}
 

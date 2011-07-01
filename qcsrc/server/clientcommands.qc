@@ -220,6 +220,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
 		OPTAVAIL	("shownames", "g_explosive_shownames")
 		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
+		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -856,6 +857,15 @@ void SV_ParseClientCommand(string s) {
 		}
 		else
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
+	} else if (cmd == "hidecountry") {
+		if (! self) return;
+		if (! cvar ("g_explosive_allow_hidecountry"))
+		{
+			sprint (self, "^1hidecountry is not allowed on this server.\n");
+			return;
+		}
+		self.hidecountry = stof (argv (1));
+		IP2C_SetCountry (self);
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
