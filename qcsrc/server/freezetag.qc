@@ -13,7 +13,7 @@ void update_playercount()
 void last_players()
 {
 	local entity e;
-	update_playercount();
+	//count_alive_players();
 	if(redalive >=2)
 		red_announced = 1;
 	if(bluealive >=2)
