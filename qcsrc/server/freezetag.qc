@@ -1,6 +1,8 @@
 entity uglyfreezetagworkaround;
 float red_announced;
 float blue_announced;
+red_announced = 1;
+blue_announced = 1;
 
 void update_playercount()
 {
@@ -13,7 +15,6 @@ void update_playercount()
 void last_players()
 {
 	local entity e;
-	//count_alive_players();
 	if(redalive >=2)
 		red_announced = 1;
 	if(bluealive >=2)
@@ -26,7 +27,7 @@ void last_players()
 			if(e.team == COLOR_TEAM1 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
 			bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
 		}
-		red_announced =0;
+		red_announced = 0;
 	}
 
 	else if(bluealive == 1 && blue_announced == 1)
