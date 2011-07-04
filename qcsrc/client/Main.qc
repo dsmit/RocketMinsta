@@ -556,7 +556,7 @@ void PostInit(void)
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
-	localcmd("cmd menu_request"); // workaround against restarts
+	localcmd("cmd menu_request\n"); // workaround against restarts
 	
 	postinit = true;
 }
