@@ -13,11 +13,6 @@ void update_playercount()
 void last_players()
 {
 	local entity e;
-	//we need this because otherwise the player get spammed with the message always when a player "dies"
-	if(redalive >1)
-		red_announced = 1;
-	if(bluealive >1)
-		blue_announced = 1;	
 
 	if(redalive == 1 && red_announced == 1)
 	{
@@ -371,6 +366,10 @@ void freezetag_Unfreeze(entity attacker)
 		WaypointSprite_Kill(self.waypointsprite_attached);
 	
 	self.disableclientprediction = 0;
+	if(self.team == COLOR_TEAM1)
+		red_announced = 1;
+	if(self.team == COLOR_TEAM2)
+		blue_announced = 1;
 }
 
 .vector ft_oldorigin;
