@@ -1,8 +1,6 @@
 entity uglyfreezetagworkaround;
 float red_announced;
 float blue_announced;
-red_announced = 1;
-blue_announced = 1;
 
 void update_playercount()
 {
@@ -15,9 +13,10 @@ void update_playercount()
 void last_players()
 {
 	local entity e;
-	if(redalive >=2)
+	//we need this because otherwise the player get spammed with the message always when a player "dies"
+	if(redalive >1)
 		red_announced = 1;
-	if(bluealive >=2)
+	if(bluealive >1)
 		blue_announced = 1;	
 
 	if(redalive == 1 && red_announced == 1)
@@ -83,6 +82,8 @@ void freezetag_EndRound_Think()
 
 void freezetag_EndRound()
 {
+    red_announced = 1;
+    blue_announced = 1;
     local entity e = spawn();
     e.think = freezetag_EndRound_Think;
     e.nextthink = time + 1;
@@ -106,6 +107,8 @@ void freezetag_UglyFreezetagWorkaround_Think()
 
 void freezetag_Initialize()
 {
+	red_announced = 1;
+	blue_announced = 1;
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
     
@@ -186,7 +189,7 @@ void freezetag_CheckWinner()
 		|| (bluealive >= 1 && yellowalive >= 1)
 		|| (bluealive >= 1 && pinkalive >= 1)
 		|| (yellowalive >= 1 && pinkalive >= 1))
-		return; // we still have active players on two or more teams, nobody won yet
+		return;// we still have active players on two or more teams, nobody won yet
 
 	entity e, winner;
 	string teamname, teamname_full;
