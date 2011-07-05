@@ -77,6 +77,7 @@ float RemapVote(string vote, string cmd, entity e)
 	vote_argc = tokenize_console(vote);
 	local string s;
 
+	if(!e.vote_master)
 	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
 	{
 		sprint (e, strcat ("^1You cannot call votes this often. Please wait for another ^2", ftos ((cvar ("_sv_rm_lastvote") + cvar("g_explosive_vote_mindelay")) - time), " ^1second(s) and try again.\n"));
