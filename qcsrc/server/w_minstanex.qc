@@ -493,7 +493,7 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells))
+		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && cvar("g_balance_minstanex_explosive")))
 		{
 			if(g_freezetag)
 			if(self.freezetag_frozen)
