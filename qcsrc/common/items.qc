@@ -112,7 +112,7 @@ void RegisterWeapons()
 	register_weapon(WEP_HAGAR,            w_hagar,        IT_ROCKETS,       8,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "hagar",        "hagar",           "Hagar");
 	register_weapon(WEP_ROCKET_LAUNCHER,  w_rlauncher,    IT_ROCKETS,       9,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_HIGH, "rl",           "rocketlauncher",  "Rocket Launcher");
 	register_weapon(WEP_PORTO,            w_porto,        0,                0,  0, 0, WEP_TYPE_OTHER,   0,                      "porto" ,       "porto",           "Port-O-Launch");
-	register_weapon(WEP_MINSTANEX,        w_minstanex,    IT_CELLS,         7, -1, 1, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, (cvar("g_explosive_oldnexmodel")? "minstanex" : "nex"),          "minstanex",       "MinstaNex");
+	register_weapon(WEP_MINSTANEX,        w_minstanex,    IT_CELLS,         7, -1, 1, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, (cvar("g_explosive_oldnexmodel")? "minstanex" : (cvar("g_explosive_locnexmodel")? "minstanexloc" : "nex")),          "minstanex",       "MinstaNex");
 	register_weapon(WEP_HOOK,             w_hook,         IT_CELLS|IT_FUEL, 0,  0, 1, WEP_TYPE_SPLASH,  0,                      "hookgun",      "hook",            "Grappling Hook");
 	register_weapon(WEP_HLAC,             w_hlac,         IT_CELLS,         6,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "hlac",         "hlac",            "Heavy Laser Assault Cannon");
 	register_weapon(WEP_TUBA,             w_tuba,         0,                1, -1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "tuba",         "tuba",            "@!#%'n Tuba");

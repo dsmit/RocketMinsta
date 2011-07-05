@@ -547,6 +547,10 @@ float w_minstanex(float req)
 		precache_model ("models/weapons/g_nex.md3");
 		precache_model ("models/weapons/v_nex.md3");
 		precache_model ("models/weapons/h_nex.dpm");
+
+		precache_model ("models/weapons/g_minstanexloc.md3");
+		precache_model ("models/weapons/v_minstanexloc.md3");
+		precache_model ("models/weapons/h_minstanexloc.iqm");
 		
 		precache_sound (RM_SOUND_MINSTA);
 		precache_sound ("weapons/nexwhoosh1.wav");
