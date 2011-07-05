@@ -251,6 +251,7 @@ void minstagib_ammocheck (void)
 
 	if(g_minstagib)
 	if(!cvar("g_balance_minstanex_explosive"))
+	if not(g_freezetag && self.freezetag_frozen)
 	if (self.ammo_cells <= 0)
 	{
 		#define AMMO_DEATHMESSAGE(m) bigprint_spec(self, m, "", 1)
