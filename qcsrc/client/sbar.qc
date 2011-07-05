@@ -2802,6 +2802,8 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	}
 }
 
+float ammonotifytime;
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -4028,6 +4030,13 @@ void Sbar_Draw (void)
 						//pos_y = 33;
 					//}
 
+					if(!a)
+					{
+						if(ammonotifytime < time)
+							ammonotifytime = time + 1;
+					}
+					else ammonotifytime = 0;
+
 					if(rm_oldhud)
 					{
 						pos_x = 206;
@@ -4038,6 +4047,9 @@ void Sbar_Draw (void)
 							drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '107 29 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
 						drawpic(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+						if(!a)
+							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
+						
 						if(a < 10)
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
@@ -4050,13 +4062,13 @@ void Sbar_Draw (void)
 						pos_x = ammosector_pos;
 
 						drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+						if(!a)
+							drawpic_expanding(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						if(a < 10)
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 					}
-					if(!a)
-						o2 = Sbar_DrawCenterNoteLine(o2, "out of ammo");
 				}
 			} else {
 				if (a > 0) {
@@ -4070,9 +4082,11 @@ void Sbar_Draw (void)
 						}
 
 						pos = bottom - pos;
+						
 						if (stat_items & GetAmmoItemCode(i))
 							drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 						drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+						
 						if (a < 10) {
 							if(stat_items & GetAmmoItemCode(i))
 								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4096,6 +4110,7 @@ void Sbar_Draw (void)
 							ammo_last = i;
 							
 							drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
 							if(a < 10)
 								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 							else
