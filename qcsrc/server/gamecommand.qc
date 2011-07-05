@@ -657,6 +657,14 @@ void GameCommand(string command)
 	{
 		float t, tsave;
 		s = argv(1);
+		s = NormalizeGametypeName(s);
+		
+		if(s == "")
+		{
+			print("^1Gametype '", argv(1), "' is either invalid or not supported by RocketMinsta\n");
+			return;
+		}
+		
 		t = MapInfo_Type_FromString(s);
 		tsave = MapInfo_CurrentGametype();
 		if(t)
