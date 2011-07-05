@@ -124,5 +124,6 @@ void GameCommand(string theCommand)
 	}
 #endif
 
-	print("Invalid theCommand. For a list of supported theCommands, try menu_cmd help.\n");
+
+	print("Invalid theCommand '", theCommand, "'. For a list of supported theCommands, try menu_cmd help.\n");
 }
