@@ -843,6 +843,16 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		// These are ALWAYS lethal
 		// No damage modification here
 		// Instead, prepare the victim for his death...
+		
+		if(g_freezetag && targ.freezetag_frozen && deathtype != DEATH_KILL)
+		{
+			oldself = self;
+			self = targ;
+			PutClientInServer();
+			self = oldself;
+			return;
+		}
+		
 		targ.armorvalue = 0;
 		targ.spawnshieldtime = 0;
 		targ.health = 0.9; // this is < 1

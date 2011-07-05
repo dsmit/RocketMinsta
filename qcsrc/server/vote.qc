@@ -77,6 +77,7 @@ float RemapVote(string vote, string cmd, entity e)
 	vote_argc = tokenize_console(vote);
 	local string s;
 
+	if(!e.vote_master)
 	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
 	{
 		sprint (e, strcat ("^1You cannot call votes this often. Please wait for another ^2", ftos ((cvar ("_sv_rm_lastvote") + cvar("g_explosive_vote_mindelay")) - time), " ^1second(s) and try again.\n"));
@@ -717,8 +718,15 @@ float VoteCommandInList(string votecommand, string list)
 }
 
 float VoteAllowed(string votecommand, string cmd) {
+	local string s;
+	
 	if(VoteCommandInList(votecommand, GetVoteList()))
 		return TRUE;
+
+	if(cvar("g_explosive_gametypevote_call"))
+	if((s = NormalizeGametypeName(votecommand)) != "")
+	if(ListContains(cvar_string("g_explosive_gametypevote_options"), s, " "))
+		return TRUE;			// gametype alias
 
 	if(cmd == "vdo")
 	{

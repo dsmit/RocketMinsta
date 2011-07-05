@@ -1,18 +1,28 @@
-border_simple 2
-sector_teamcolor some
-sector_teamcolor_brightness 0.2
-sector_color 0.2 0.2 0.2
-border_color 0 0 0
-sector_alpha 0.5
-border_alpha 0.8
-line_color 0.5 0.5 0.5
-line_alpha 0.2
+border_left_scale 0.3
+border_right_scale 0.3
+border_left_offset -7 -3
+border_right_offset 7 3
+border_simple 0
+border_right_width 3
+border_left_width 3
+border_teamcolor always
+border_teamcolor_brightness 1
+sector_teamcolor always
+sector_teamcolor_brightness 0.1
+sector_alpha 0.4
+sector_color 0 0 0
+sector_fill tile
+border_alpha 0.7
+line_color 0 0 0
+line_alpha 0
+line_full 1
 flash_alphamod 1
-flash_intmod 1
+flash_intmod 2
 border_drawmode normal
+sector_padding -27 -27 -30 -30
 flash_line_imod 1
-flash_line_amod 1
-flash_sector_imod 2
+flash_line_amod 0.2
+flash_sector_imod 1
 flash_sector_amod 0
-flash_border_imod 0
-flash_border_amod 0
+flash_border_imod 1
+flash_border_amod 1

@@ -517,7 +517,10 @@ float freezetag_PlayerPreThink()
 	o = world;
 
     if(warmup >= time || next_round >= time)
+    {
+		self.freezetag_revive_progress = 0;
 		return 0;
+	}
 	
     if(self.classname != "player")
 		return 0;
