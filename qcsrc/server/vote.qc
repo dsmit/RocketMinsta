@@ -717,8 +717,15 @@ float VoteCommandInList(string votecommand, string list)
 }
 
 float VoteAllowed(string votecommand, string cmd) {
+	local string s;
+	
 	if(VoteCommandInList(votecommand, GetVoteList()))
 		return TRUE;
+
+	if(cvar("g_explosive_gametypevote_call"))
+	if((s = NormalizeGametypeName(votecommand)) != "")
+	if(ListContains(cvar_string("g_explosive_gametypevote_options"), s, " "))
+		return TRUE;			// gametype alias
 
 	if(cmd == "vdo")
 	{
