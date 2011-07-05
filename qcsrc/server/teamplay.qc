@@ -84,14 +84,8 @@ void LogTeamchange(entity pl)
 	GameLogEcho(str);
 }
 
-void printcvar(string c)
-{
-	bprint(c, " = ", cvar_string(c), "\n");
-}
-
 void WriteGameCvars()
 {
-	bprint("WriteGameCvars()\n");
 	cvar_set("g_dm", ftos(g_dm));
 	cvar_set("g_tdm", ftos(g_tdm));
 	cvar_set("g_domination", ftos(g_domination));
@@ -108,13 +102,6 @@ void WriteGameCvars()
 	cvar_set("g_cts", ftos(g_cts));
 	cvar_set("g_freezetag", ftos(g_freezetag));
     cvar_set("g_vip", ftos(g_vip));
-    
-    printcvar("g_vip");
-    printcvar("g_freezetag");
-    printcvar("g_ctf");
-    printcvar("g_keyhunt");
-    printcvar("g_domination");
-    printcvar("g_total_domination");
 }
 
 void ReadGameCvars()
@@ -122,8 +109,6 @@ void ReadGameCvars()
 	float found;
 	float prev;
 	//float i;
-
-	bprint("ReadGameCvars()\n");
 
 	found = 0;
 	prev = cvar("gamecfg");
@@ -252,16 +237,7 @@ void ReadGameCvars()
 		g_freezetag = 0;
 		g_vip = 0;
 	}
-
-	printcvar("g_vip");
-    printcvar("g_freezetag");
-    printcvar("g_ctf");
-    printcvar("g_keyhunt");
-    printcvar("g_domination");
-    printcvar("g_total_domination");
-    printcvar("g_dm");
-    printcvar("g_tdm");
-
+	
 	//if(!found)
 	//	g_dm = 1;
 
