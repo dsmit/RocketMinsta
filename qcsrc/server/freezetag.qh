@@ -9,3 +9,4 @@ void freezetag_CheckWinner();
 .float freezetag_meltprogress;
 .float freezetag_freezetime;
 .float rev_finished;
+float ft_teams;

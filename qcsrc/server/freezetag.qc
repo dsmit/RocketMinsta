@@ -74,6 +74,12 @@ void freezetag_UglyFreezetagWorkaround_Think()
 
 void freezetag_Initialize()
 {
+
+	ft_teams = cvar("g_ft_teams_override");
+	if(ft_teams < 2)
+		ft_teams = cvar("g_ft_teams");
+	ft_teams = bound(2, ft_teams, 4);
+
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
     
