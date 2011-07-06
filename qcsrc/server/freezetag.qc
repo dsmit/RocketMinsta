@@ -82,6 +82,8 @@ void freezetag_Initialize()
 
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
+	precache_model("models/ice/ice_yellow.md3");
+	precache_model("models/ice/ice_pink.md3");
     
     if(inWarmupStage)
         warmup = time;
@@ -260,9 +262,17 @@ void freezetag_Freeze(entity attacker)
 		{
 			setmodel(ice, "models/ice/ice_red.md3");
 		}
-		else
+		else if(self.team == COLOR_TEAM2)
 		{
 			setmodel(ice, "models/ice/ice_blue.md3");
+		}
+		else if(self.team == COLOR_TEAM3)
+		{
+			setmodel(ice, "models/ice/ice_yellow.md3");
+		}
+		else
+		{
+			setmodel(ice, "models/ice/ice_pink.md3");
 		}
 	}
 	else
