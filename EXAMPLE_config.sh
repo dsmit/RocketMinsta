@@ -4,8 +4,8 @@
 NEXDATA="$HOME/.nexuiz/data"
 
 # Paths where the compiled mod files will be installed
-SVPROGS="$NEXDATA/sv_mod.dat"
-CSPROGS="$NEXDATA/cl_mod.dat"
+SVPROGS="$NEXDATA/rocketminsta_sv.dat"
+CSPROGS="$NEXDATA/rocketminsta_cl.dat"
 
 # List of QuakeC compillers the script will attempt to use
 # Full and relative paths are allowed
