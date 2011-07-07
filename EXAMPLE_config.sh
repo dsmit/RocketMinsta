@@ -39,3 +39,5 @@ CACHEPKGS=0
 # Like CACHEPKGS, but caches compilled QuakeC code
 CACHEQC=0
 
+# Release branch override. Normally empty.
+BUILDNAME=""
