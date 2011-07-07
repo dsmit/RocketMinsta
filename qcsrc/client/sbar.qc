@@ -4772,10 +4772,12 @@ void CSQC_hud_RedBlueStatCommon(vector hudpos, float redstat, float bluestat)
 
 void CSQC_ft_hud(vector hudpos)
 {
-	float redalive, bluealive; //Currently supports only red and blue teams
+	float redalive, bluealive, yellowalive, pinkalive;
 
 	redalive = getstati(STAT_REDALIVE);
 	bluealive = getstati(STAT_BLUEALIVE);
+	yellowalive = getstati(STAT_YELLOWALIVE);
+	pinkalive = getstati(STAT_PINKALIVE);
 
 	teamhud_enabled = 1;
 
@@ -4783,14 +4785,29 @@ void CSQC_ft_hud(vector hudpos)
 	{
 		vector position;
 		position = '0 0 0';
+		
+		position_y = vid_conheight - sbar_fontsize_y * (3 + ((yellowalive > -1) + (pinkalive > -1)));
 
-		position_y = vid_conheight - sbar_fontsize_y*2;
+		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+		drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+
+		position_y += sbar_fontsize_y;
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 		drawcolorcodedstring(position, strcat("^4Blue alive^7: ", ftos(bluealive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 
-		position_y -= sbar_fontsize_y;
+		if(yellowalive < 0)
+			return;
+		
+		position_y += sbar_fontsize_y;
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-		drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+		drawcolorcodedstring(position, strcat("^3Yellow alive^7: ", ftos(yellowalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+		
+		if(pinkalive < 0)
+			return;
+		
+		position_y += sbar_fontsize_y;
+		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+		drawcolorcodedstring(position, strcat("^6Pink alive^7: ", ftos(pinkalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 	}
 	else
 		CSQC_hud_RedBlueStatCommon(hudpos, redalive, bluealive);
