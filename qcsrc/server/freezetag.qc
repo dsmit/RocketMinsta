@@ -72,9 +72,26 @@ void freezetag_UglyFreezetagWorkaround_Think()
 	self.nextthink = time + 1;
 }
 
+void printents()
+{
+	local entity e;
+	for(e = world; (e = nextent(e)); )
+		if(e.classname && e.classname != "")
+			print(etos(e), ": ", e.classname, "\n");
+}
+
+void freezetag_FixTeamSpawns()
+{
+	if(count_team_spawns() < ft_teams)
+	{
+		print("Freezetag: not enough team spawnpoints, refusing to use them\n");
+		have_team_spawns = 0;
+	}
+}
+
 void freezetag_Initialize()
 {
-
+	// Akari: BD131, wtf is this? well I'll just leave it this way.
 	ft_teams = cvar("g_explosive_freezetag_teams_override");
 	if(ft_teams < 2)
 		ft_teams = cvar("g_explosive_freezetag_teams");
@@ -99,6 +116,8 @@ void freezetag_Initialize()
 	uglyfreezetagworkaround = spawn();
 	uglyfreezetagworkaround.think = freezetag_UglyFreezetagWorkaround_Think;
 	uglyfreezetagworkaround.nextthink = time + 1;
+	
+	defer(0.1, freezetag_FixTeamSpawns);
 }
 
 void freezetag_CheckWinner()
