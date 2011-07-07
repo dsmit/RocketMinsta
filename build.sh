@@ -2,7 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
-require md5sum tar 7za
+require md5sum tar 7za %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -54,6 +54,70 @@ function buildall
     rm -v "$QCSOURCE"/common/rm_auto.qh
 }
 
+function tocompress
+{
+	cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
+}
+
+function compress-gfx
+{
+	[ $COMPRESSGFX = 0 ] && return
+	
+	echo "   -- Compressing graphics"
+	
+	COMPRESSGFX_ABORT=0
+	
+	if [ ! -e compressdirs ]; then
+		echo "Package didn't provide a list of directories to compress"
+		COMPRESSGFX_ABORT=1
+		return 0
+	fi
+	
+	COMPRESSGFX_TEMPDIR="$(mktemp -d)"
+	echo "     - Temporary directory with original graphics to be compressed: $COMPRESSGFX_TEMPDIR"
+	
+	if [ ! -e $COMPRESSGFX_TEMPDIR ]; then
+		warning "Failed to create temporary directory! Skipping this package"
+		COMPRESSGFX_ABORT=1
+		return 1
+	fi
+	
+	tocompress | while read line; do
+		dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
+		file="$(echo $line | sed -e 's@.*/@@')"
+	
+		mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
+	
+		echo "Compressing: $line"
+		
+		if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
+			warning "Failed to compress $line! Restoring the uncompressed file"
+		fi
+		
+		mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
+	done
+}
+
+function compress-restore
+{
+	[ $COMPRESSGFX = 0 ] && return
+	[ $COMPRESSGFX_ABORT = 1 ] && return
+	
+	echo "   -- Cleaning up after compression"
+	
+	pkgdir="$PWD"
+	pushd "$COMPRESSGFX_TEMPDIR"
+	
+	find -type f | sed -e 's@^./@@' | while read line; do
+		mv -v "$line" "$pkgdir/$line"
+		rm -vf "$pkgdir/${line%%.tga}.jpg"
+	done
+	
+	popd
+	
+	rm -rf "$COMPRESSGFX_TEMPDIR"
+}
+
 function makedata
 {
     local rmdata="$1"
@@ -89,6 +153,8 @@ function makedata
         return
     fi
     
+    compress-gfx
+    
     echo "   -- Writing version info"
     echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
     echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
@@ -97,8 +163,10 @@ function makedata
     7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
     echo "   -- Removing temporary files"
     rm -vf _*
-    popd
     
+    compress-restore
+    popd
+        
     echo "   -- Installing to $NEXDATA"
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
 
@@ -233,13 +301,18 @@ EOF
     fi
 }
 
-function clientpkg-test
+function configtest
 {
 	if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
 		error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
 	fi
 	
 	SUPPORT_CLIENTPKGS=1
+	
+	if [ "$COMPRESSGFX" != 0 ] && ! hasoptional convert; then
+		warning "You have COMPRESSGFX on without ImageMagick installed. Compression will be DISABLED."
+		COMPRESSGFX=0
+	fi
 }
 
 ################################################################################
@@ -272,13 +345,23 @@ if [ -z $CACHEQC ]; then
     CACHEQC=0
 fi
 
+if [ -z $COMPRESSGFX ]; then
+    warn-oldconfig "config.sh" "COMPRESSGFX" "1"
+    COMPRESSGFX=1
+fi
+
+if [ -z $COMPRESSGFX_QUALITY ]; then
+    warn-oldconfig "config.sh" "COMPRESSGFX_QUALITY" "85"
+    COMPRESSGFX_QUALITY=85
+fi
+
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
     rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"
     exit
 fi
 
-clientpkg-test
+configtest
 
 if [ "$1" = "release" ]; then
     RELEASE=1
@@ -290,7 +373,7 @@ if [ "$1" = "release" ]; then
     [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
     . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
     
-    clientpkg-test
+    configtest
     
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
