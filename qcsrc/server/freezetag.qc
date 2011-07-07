@@ -109,6 +109,7 @@ void freezetag_Initialize()
     
     precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");
+    precache_sound("kh/capture.wav");
     precache_sound("freezetag/freezing.wav");
 	ScoreRules_freezetag();
 	update_playercount();
@@ -201,13 +202,13 @@ void freezetag_CheckWinner()
         {
 			teamname = "^1red";
             teamname_full = "^1Red team";
-            play2all("ctf/red_capture.wav");
+            if(ft_teams < 3) play2all("ctf/red_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
 			teamname = "^4blue";
             teamname_full = "^4Blue team";
-            play2all("ctf/blue_capture.wav");
+            if(ft_teams < 3) play2all("ctf/blue_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
@@ -219,6 +220,10 @@ void freezetag_CheckWinner()
 			teamname = "^6pink";
             teamname_full = "^6Pink team";
         }
+        
+        if(ft_teams > 2)
+			play2all("kh/capture.wav");
+        
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
             bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
