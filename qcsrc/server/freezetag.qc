@@ -1,5 +1,6 @@
-
 entity uglyfreezetagworkaround;
+float red_announced;
+float blue_announced;
 
 void update_playercount()
 {
@@ -7,6 +8,31 @@ void update_playercount()
 	oldself = self;
 	count_alive_players();
 	self = oldself;
+}
+
+void last_players()
+{
+	local entity e;
+
+	if(redalive == 1 && red_announced == 1)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM1 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
+		}
+		red_announced = 0;
+	}
+
+	else if(bluealive == 1 && blue_announced == 1)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM2 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			bigprint_spec(e, "^4You are the last player of your team!\n", "", 2);
+		}
+		blue_announced = 0;
+	}
 }
 
 void freezetag_EndRound_Think()
@@ -51,6 +77,8 @@ void freezetag_EndRound_Think()
 
 void freezetag_EndRound()
 {
+    red_announced = 1;
+    blue_announced = 1;
     local entity e = spawn();
     e.think = freezetag_EndRound_Think;
     e.nextthink = time + 1;
@@ -91,11 +119,15 @@ void freezetag_FixTeamSpawns()
 
 void freezetag_Initialize()
 {
+
 	// Akari: BD131, wtf is this? well I'll just leave it this way.
 	ft_teams = cvar("g_explosive_freezetag_teams_override");
 	if(ft_teams < 2)
 		ft_teams = cvar("g_explosive_freezetag_teams");
 	ft_teams = bound(2, ft_teams, 4);
+
+	red_announced = 1;
+	blue_announced = 1;
 
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
@@ -174,6 +206,7 @@ void freezetag_CheckWinner()
 	*/
 	
 	update_playercount();
+	last_players();
 	
 	if((redalive >= 1 && bluealive >= 1) // counted in arena.qc
 		|| (redalive >= 1 && yellowalive >= 1)
@@ -181,7 +214,7 @@ void freezetag_CheckWinner()
 		|| (bluealive >= 1 && yellowalive >= 1)
 		|| (bluealive >= 1 && pinkalive >= 1)
 		|| (yellowalive >= 1 && pinkalive >= 1))
-		return; // we still have active players on two or more teams, nobody won yet
+		return;// we still have active players on two or more teams, nobody won yet
 
 	entity e, winner;
 	string teamname, teamname_full;
@@ -375,6 +408,10 @@ void freezetag_Unfreeze(entity attacker)
 		WaypointSprite_Kill(self.waypointsprite_attached);
 	
 	self.disableclientprediction = 0;
+	if(self.team == COLOR_TEAM1)
+		red_announced = 1;
+	if(self.team == COLOR_TEAM2)
+		blue_announced = 1;
 }
 
 .vector ft_oldorigin;
