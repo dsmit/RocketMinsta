@@ -90,16 +90,30 @@ function rm-hasversion
     [ "$(rm-version)" != "git" ]
 }
 
+function warning
+{
+    echo -e "***\n\e[31;1mWARNING: \e[0m$@\e[0m\n***\n"
+    sleep 1 #little annoyance
+}
+
 function warn-oldconfig
 {
-    echo -e "***\n\e[31;1mWARNING: \e[0myour $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!\n***"
-    sleep 1 #little annoyance
+    warning "your $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!"
 }
 
 PERLGREP="grep -P"
 function perlgrep
 {
     $PERLGREP "$@"
+}
+
+OPTIONAL_FOUND=""
+
+function hasoptional
+{
+    for i in $OPTIONAL_FOUND; do
+        [ $i == $1 ] && return 0;
+    done; return 1
 }
 
 function require
@@ -122,20 +136,31 @@ function require
     fi
 
     for i in $req; do
-        echo -n " - $i... "
+        echo -n " - ${i##%}... "
 
-        if which $i &> /dev/null; then
-            echo -e '\e[32;1mfound\e[0m'
-        else
-            echo -e '\e[31;1mnot found!\e[0m'
-            lacking="$lacking $i"
+        if [ ${i##%} = $i ]; then          # no %prefix, required
+            if which $i &> /dev/null; then
+                echo -e '\e[32;1mfound\e[0m'
+            else
+                echo -e '\e[31;1mnot found!\e[0m'
+                lacking="$lacking $i"
+            fi
+        else                                # %prefix, optional
+            i="${i##%}"
+            
+            if which $i &> /dev/null; then
+                echo -e '\e[32;1mfound\e[0m'
+                OPTIONAL_FOUND="$OPTIONAL_FOUND $i"
+            else
+                echo -e '\e[33;1mnot found but optional\e[0m'
+            fi
         fi
     done
 
     if [ -n "$lacking" ]; then
         error "The following utilities are required but are not present: $lacking. Please install them to proceed."
     fi
-
+    
     echo "All OK, proceeding"
 }
 
