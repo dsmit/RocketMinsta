@@ -1005,32 +1005,6 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			}
 
 			if(ex)
-			if(ex_armor)
-			if(targ.armorvalue)
-			if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_explosive_minsta_damage") >= 0))
-			if not(DEATH_ISSPECIAL(deathtype))
-			if(targ != attacker)
-			{
-				armordamage = damage * cvar("g_explosive_armor_factor");
-				attacker.hitsound += 1;
-
-				if(armor_passthrough)
-				{
-					float rest;
-					rest = targ.armorvalue - armordamage;
-
-					if(rest < 0)
-						damage = -rest;
-					else
-						damage = 0;
-				}
-				else
-					damage = 0;
-
-				targ.armorvalue -= min(targ.armorvalue, armordamage);
-			}
-
-			if(ex)
 			{
 				if (DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 				{
@@ -1038,6 +1012,35 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 					{
 						damage = 0;
 					}
+				}
+				
+				if(damage)
+				if(ex_armor)
+				if(targ.armorvalue)
+				if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_explosive_minsta_damage") >= 0))
+				if not(DEATH_ISSPECIAL(deathtype))
+				{
+					armordamage = damage * cvar("g_explosive_armor_factor");
+					
+					if(targ == attacker)
+						armordamage *= cvar("g_balance_selfdamagepercent");
+					else
+						attacker.hitsound += 1;
+
+					if(armor_passthrough)
+					{
+						float rest;
+						rest = targ.armorvalue - armordamage;
+
+						if(rest < 0)
+							damage = -rest;
+						else
+							damage = 0;
+					}
+					else
+						damage = 0;
+
+					targ.armorvalue -= min(targ.armorvalue, armordamage);
 				}
 			}
 			else
@@ -1400,6 +1403,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	}
 
 	// apply mirror damage if any
+	if not(g_minstagib && cvar("g_balance_minstanex_explosive"))
 	if(mirrordamage > 0 || mirrorforce > 0)
 	{
 		attacker = attacker_save;
