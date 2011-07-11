@@ -125,10 +125,12 @@ void Draw_ShowNames()
             s = GetPlayerName(self.the_entnum-1);
             //if((autocvar_hud_shownames_decolorize == 1 && teamplay) || autocvar_hud_shownames_decolorize == 2)
             if(teamplay)
-                s = playername(s, GetPlayerColor(self.the_entnum-1));
-
-            //drawfontscale = '1 1 0' * resize;
-            s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors_svn);
+            {
+                //s = playername(s, GetPlayerColor(self.the_entnum-1));
+                s = strdecolorize(s);
+				s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_svn);
+			}
+			else s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors_svn);
 
             float width;
             width = stringwidth_svn(s, TRUE, '1 1 0' * autocvar_hud_shownames_fontsize * resize);
@@ -137,7 +139,12 @@ void Draw_ShowNames()
                 namepos_x += (namesize - width) / 2;
                 
             drawfont = sbar_bigfont_real;
-            drawcolorcodedstring(namepos, s, '1 1 0' * autocvar_hud_shownames_fontsize * resize, a, DRAWFLAG_NORMAL);
+            
+            if(teamplay)
+				drawstring(namepos, s, '1 1 0' * autocvar_hud_shownames_fontsize * resize, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+			else
+				drawcolorcodedstring(namepos, s, '1 1 0' * autocvar_hud_shownames_fontsize * resize, a, DRAWFLAG_NORMAL);
+				
             drawfont = oldfont;
             //drawfontscale = '1 1 0';
         }
