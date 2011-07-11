@@ -688,8 +688,10 @@ float freezetag_PlayerPreThink()
 	{
 		if(cvar("g_explosive_freezetag_melt"))
 		{
-			if(self.hooker.hooked_to == self)
-				return 1;
+			local entity h;
+			for(h = world; (h = find(h, classname, "grapplinghook")); )
+				if(h.aiment == self)
+					return 1;
 			
 			if(self.freezetag_freezetime + cvar("g_explosive_freezetag_melt_delay") <= time)
 			{
