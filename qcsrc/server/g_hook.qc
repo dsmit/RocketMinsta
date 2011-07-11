@@ -307,20 +307,6 @@ void GrapplingHookTouch (void)
 	//self.owner.disableclientprediction = TRUE;
 }
 
-string GetHitSound(entity attacker, entity targ)
-{
-	if(attacker == targ)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	if(teams_matter) if(self.owner.team == attacker.team)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	//return GetHitSound_ENEMY();
-	return hook_hitsound;
-}
-
 void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	if(self.health > 0)
@@ -361,7 +347,10 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 				self.health = 0;
 			
 			//Play a hitsound
-			play2(attacker, GetHitSound(attacker, self.owner));
+			if(attacker == self.owner || (!teams_matter && self.owner.team != attacker.team))
+				attacker.typehitsound += 1;
+			else
+				attacker.hitsound += 1;
 			
 			//Reflect the hook damage to it's owner
 			Damage(self.owner, inflictor, attacker, damage * cvar("g_explosive_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
