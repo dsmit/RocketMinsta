@@ -95,10 +95,6 @@ void RemoveGrapplingHook(entity pl)
 	if(pl.movetype == MOVETYPE_FLY)
 		pl.movetype = MOVETYPE_WALK;
 
-	//<akari>
-	pl.hooked_to = nobody;
-	//</akari>
-
 	//pl.disableclientprediction = FALSE;
 }
 
@@ -357,7 +353,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 			}
 			
 			//Don't allow hookbreak if the hook is attached to a player
-			if(self.owner.hooked_to != nobody)
+			if(self.aiment && self.aiment.classname == "player")
 				return;
 			
 			//Die if any amount of damage is recieved
