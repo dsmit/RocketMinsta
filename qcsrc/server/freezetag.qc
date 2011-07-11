@@ -22,7 +22,7 @@ void last_players()
 		{
 			if(e.team == COLOR_TEAM1 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
 			{
-				play2(e, "freezetag/last_player_alarm.ogg");
+				announce(e, "freezetag/last_player_alarm.ogg");
 				bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
 			}
 		}
@@ -35,7 +35,7 @@ void last_players()
 		{
 			if(e.team == COLOR_TEAM2 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
 			{
-				play2(e, "freezetag/last_player_alarm.ogg");
+				announce(e, "freezetag/last_player_alarm.ogg");
 				bigprint_spec(e, "^4You are the last player of your team!\n", "", 2);
 			}
 		}
@@ -47,7 +47,7 @@ void last_players()
 		{
 			if(e.team == COLOR_TEAM3 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
 			{
-				play2(e, "freezetag/last_player_alarm.ogg");
+				announce(e, "freezetag/last_player_alarm.ogg");
 				bigprint_spec(e, "^3You are the last player of your team!\n", "", 2);
 			}
 		}
@@ -60,7 +60,7 @@ void last_players()
 		{
 			if(e.team == COLOR_TEAM4 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
 			{
-				play2(e, "freezetag/last_player_alarm.ogg");
+				announce(e, "freezetag/last_player_alarm.ogg");
 				bigprint_spec(e, "^6You are the last player of your team!\n", "", 2);
 			}
 		}
