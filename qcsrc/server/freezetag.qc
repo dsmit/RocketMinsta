@@ -136,30 +136,67 @@ void freezetag_UglyFreezetagWorkaround_Think()
 	self.nextthink = time + 1;
 }
 
+void printents()
+{
+	local entity e;
+	for(e = world; (e = nextent(e)); )
+		if(e.classname && e.classname != "")
+			print(etos(e), ": ", e.classname, "\n");
+}
+
+void freezetag_FixTeamSpawns()
+{
+	if(count_team_spawns() < ft_teams)
+	{
+		print("Freezetag: not enough team spawnpoints, refusing to use them\n");
+		have_team_spawns = 0;
+	}
+}
+
 void freezetag_Initialize()
 {
+<<<<<<< HEAD
 	red_announced = 1;
 	blue_announced = 1;
 	yellow_announced = 1;
 	pink_announced = 1;
+=======
+	// Akari: BD131, wtf is this? well I'll just leave it this way.
+	ft_teams = cvar("g_explosive_freezetag_teams_override");
+	if(ft_teams < 2)
+		ft_teams = cvar("g_explosive_freezetag_teams");
+	ft_teams = bound(2, ft_teams, 4);
+
+>>>>>>> unstable
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
+	precache_model("models/ice/ice_yellow.md3");
+	precache_model("models/ice/ice_pink.md3");
     
     if(inWarmupStage)
         warmup = time;
     else
         warmup = time + cvar("g_start_delay");
     
+<<<<<<< HEAD
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
 	precache_sound("freezetag/last_player_alarm.ogg");
 	precache_sound("freezetag/freezing.wav");
+=======
+    precache_sound("ctf/red_capture.wav");
+    precache_sound("ctf/blue_capture.wav");
+    precache_sound("kh/capture.wav");
+    precache_sound("freezetag/freezing.wav");
+>>>>>>> unstable
 	ScoreRules_freezetag();
 	update_playercount();
 	
 	uglyfreezetagworkaround = spawn();
 	uglyfreezetagworkaround.think = freezetag_UglyFreezetagWorkaround_Think;
 	uglyfreezetagworkaround.nextthink = time + 1;
+	
+	defer(0.1, freezetag_FixTeamSpawns);
 }
 
 void freezetag_CheckWinner()
@@ -244,13 +281,13 @@ void freezetag_CheckWinner()
         {
 			teamname = "^1red";
             teamname_full = "^1Red team";
-            play2all("ctf/red_capture.wav");
+            if(ft_teams < 3) play2all("ctf/red_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
 			teamname = "^4blue";
             teamname_full = "^4Blue team";
-            play2all("ctf/blue_capture.wav");
+            if(ft_teams < 3) play2all("ctf/blue_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
@@ -262,6 +299,10 @@ void freezetag_CheckWinner()
 			teamname = "^6pink";
             teamname_full = "^6Pink team";
         }
+        
+        if(ft_teams > 2)
+			play2all("kh/capture.wav");
+        
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
             bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
@@ -324,9 +365,17 @@ void freezetag_Freeze(entity attacker)
 		{
 			setmodel(ice, "models/ice/ice_red.md3");
 		}
-		else
+		else if(self.team == COLOR_TEAM2)
 		{
 			setmodel(ice, "models/ice/ice_blue.md3");
+		}
+		else if(self.team == COLOR_TEAM3)
+		{
+			setmodel(ice, "models/ice/ice_yellow.md3");
+		}
+		else
+		{
+			setmodel(ice, "models/ice/ice_pink.md3");
 		}
 	}
 	else
@@ -689,8 +738,10 @@ float freezetag_PlayerPreThink()
 	{
 		if(cvar("g_explosive_freezetag_melt"))
 		{
-			if(self.hooker.hooked_to == self)
-				return 1;
+			local entity h;
+			for(h = world; (h = find(h, classname, "grapplinghook")); )
+				if(h.aiment == self)
+					return 1;
 			
 			if(self.freezetag_freezetime + cvar("g_explosive_freezetag_melt_delay") <= time)
 			{

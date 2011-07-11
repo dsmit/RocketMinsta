@@ -465,14 +465,15 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn name |", (g_minstagib? " hfrags" : ""), " +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
+		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
 		"+lms/lives +lms/rank +vip/vipkills +vip/survivals ",
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		"-lms,race,nexball/score");
+		"+tdm/deaths +tdm/suicides -lms,race,nexball/score");
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -4749,7 +4750,8 @@ void CSQC_nb_hud(void)
 		drawpic(pos, "gfx/hud/sb_nexball_carrying", '80 34 0', '1 1 1', 1, DRAWFLAG_NORMAL);
 }
 
-void CSQC_hud_RedBlueStatCommon(vector hudpos, float redstat, float bluestat)
+#define CSQC_hud_RedBlueStatCommon(v,r,b) CSQC_hud_TeamStatCommon(v,r,b,-1,-1)
+void CSQC_hud_TeamStatCommon(vector hudpos, float redstat, float bluestat, float yellowstat, float pinkstat)
 {
 	hudpos_x -= 70;
 	hudpos_y -= 1;
@@ -4757,25 +4759,88 @@ void CSQC_hud_RedBlueStatCommon(vector hudpos, float redstat, float bluestat)
 	vector position;
 	position = hudpos;
 
-	if(redstat > 9)
-		position_x += 24;
+	if(yellowstat < 0)
+	{
+		if(redstat > 9)
+			position_x += 24;
 
-	Sbar_DrawXNum(position, redstat, 4, 0, 24, GetTeamRGB(COLOR_TEAM1) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		Sbar_DrawXNum(position, redstat, 4, 0, 24, GetTeamRGB(COLOR_TEAM1) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-	position = hudpos;
-	position_x += 103 - 29;
+		position = hudpos;
+		position_x += 103 - 29;
 
-	Sbar_DrawXNum(position, bluestat, 4, 0, 24, GetTeamRGB(COLOR_TEAM2) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		Sbar_DrawXNum(position, bluestat, 4, 0, 24, GetTeamRGB(COLOR_TEAM2) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		return;
+	}
+	
+	local float i, colour, stat;
+	local vector offs;
+	for(i = 0; i < 4; ++i)
+	{
+		position = hudpos;
+		
+		switch(i)	// haha
+		{
+			case 0:
+				colour = COLOR_TEAM1;
+				stat = redstat;
+				break;
+			
+			case 1:
+				colour = COLOR_TEAM2;
+				stat = bluestat;
+				break;
+			
+			case 2:
+				colour = COLOR_TEAM3;
+				stat = yellowstat;
+				break;
+			
+			case 3:
+				if(pinkstat < 0)
+					continue;
+				
+				colour = COLOR_TEAM4;
+				stat = pinkstat;
+				break;
+		}
+		
+		//print("Color = ", ftos(colour), "; stat = ", ftos(stat), "\n");
+		
+		if(colour == myteam)
+		{
+			position = hudpos;
+			
+			if(stat > 9)
+				position_x += 24;
+				
+			Sbar_DrawXNum(position, stat, 4, 0, 24, GetTeamRGB(colour) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			continue;
+		}
+		
+		position = hudpos;
+		position_x += 125;
+		Sbar_DrawXNum(position+offs, stat, 4, 0, 12, GetTeamRGB(colour) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		offs_y += 12;
+		
+		if(offs_y >= 24)
+		{
+			offs_x -= 24;
+			offs_y -= 12;
+		}
+	}
 }
 
 //Freezetag HUD
 
 void CSQC_ft_hud(vector hudpos)
 {
-	float redalive, bluealive; //Currently supports only red and blue teams
+	float redalive, bluealive, yellowalive, pinkalive;
 
 	redalive = getstati(STAT_REDALIVE);
 	bluealive = getstati(STAT_BLUEALIVE);
+	yellowalive = getstati(STAT_YELLOWALIVE);
+	pinkalive = getstati(STAT_PINKALIVE);
 
 	teamhud_enabled = 1;
 
@@ -4783,17 +4848,32 @@ void CSQC_ft_hud(vector hudpos)
 	{
 		vector position;
 		position = '0 0 0';
+		
+		position_y = vid_conheight - sbar_fontsize_y * (3 + ((yellowalive > -1) + (pinkalive > -1)));
 
-		position_y = vid_conheight - sbar_fontsize_y*2;
+		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+		drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+
+		position_y += sbar_fontsize_y;
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 		drawcolorcodedstring(position, strcat("^4Blue alive^7: ", ftos(bluealive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 
-		position_y -= sbar_fontsize_y;
+		if(yellowalive < 0)
+			return;
+		
+		position_y += sbar_fontsize_y;
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-		drawcolorcodedstring(position, strcat("^1Red alive^7: ", ftos(redalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+		drawcolorcodedstring(position, strcat("^3Yellow alive^7: ", ftos(yellowalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
+		
+		if(pinkalive < 0)
+			return;
+		
+		position_y += sbar_fontsize_y;
+		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
+		drawcolorcodedstring(position, strcat("^6Pink alive^7: ", ftos(pinkalive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
 	}
 	else
-		CSQC_hud_RedBlueStatCommon(hudpos, redalive, bluealive);
+		CSQC_hud_TeamStatCommon(hudpos, redalive, bluealive, yellowalive, pinkalive);
 }
 
 //Domination / Total Domination HUD
