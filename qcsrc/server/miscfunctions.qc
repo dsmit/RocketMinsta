@@ -230,6 +230,27 @@ void relocate_spawnpoint()
     }
 }
 
+float count_team_spawns()
+{
+	float r, b, y, p, c;
+	entity e;
+	
+	#define HANDLETEAM(o,p) case o: if(!p) c++; p = 1; break;
+	for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) if(e.team)
+	{
+		switch(e.team)
+		{
+			HANDLETEAM(COLOR_TEAM1, r)
+			HANDLETEAM(COLOR_TEAM2, b)
+			HANDLETEAM(COLOR_TEAM3, y)
+			HANDLETEAM(COLOR_TEAM4, p)
+		}
+	}
+	#undef HANDLETEAM
+	
+	return c;
+}
+
 #define strstr strstrofs
 /*
 // NOTE: DO NOT USE THIS FUNCTION TOO OFTEN.

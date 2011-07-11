@@ -311,8 +311,8 @@ void count_alive_players()
 		FOR_EACH_CLIENT(self) {
 			self.redalive_stat = redalive;
 			self.bluealive_stat = bluealive;
-			self.yellowalive_stat = yellowalive;
-			self.pinkalive_stat = pinkalive;
+			self.yellowalive_stat = ((ft_teams > 2)? yellowalive : -1);
+			self.pinkalive_stat = ((ft_teams > 3)? pinkalive : -1);
 		}
 	}
 	
