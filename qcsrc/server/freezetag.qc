@@ -1,6 +1,8 @@
 entity uglyfreezetagworkaround;
 float red_announced;
 float blue_announced;
+float yellow_announced;
+float pink_announced;
 
 void update_playercount()
 {
@@ -19,7 +21,10 @@ void last_players()
 		FOR_EACH_PLAYER(e)
 		{
 			if(e.team == COLOR_TEAM1 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
-			bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
+			{
+				play2(e, "freezetag/last_player_alarm.ogg");
+				bigprint_spec(e, "^1You are the last player of your team!\n", "", 2);
+			}
 		}
 		red_announced = 0;
 	}
@@ -29,9 +34,37 @@ void last_players()
 		FOR_EACH_PLAYER(e)
 		{
 			if(e.team == COLOR_TEAM2 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
-			bigprint_spec(e, "^4You are the last player of your team!\n", "", 2);
+			{
+				play2(e, "freezetag/last_player_alarm.ogg");
+				bigprint_spec(e, "^4You are the last player of your team!\n", "", 2);
+			}
 		}
 		blue_announced = 0;
+	}
+	else if(yellowalive == 1 && yellow_announced == 1)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM3 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			{
+				play2(e, "freezetag/last_player_alarm.ogg");
+				bigprint_spec(e, "^3You are the last player of your team!\n", "", 2);
+			}
+		}
+		yellow_announced = 0;
+	}
+
+	else if(pinkalive == 1 && pink_announced == 1)
+	{
+		FOR_EACH_PLAYER(e)
+		{
+			if(e.team == COLOR_TEAM4 && e.freezetag_frozen == 0 && e.classname == "player" && e.health >= 1)
+			{
+				play2(e, "freezetag/last_player_alarm.ogg");
+				bigprint_spec(e, "^6You are the last player of your team!\n", "", 2);
+			}
+		}
+		pink_announced = 0;
 	}
 }
 
@@ -77,14 +110,17 @@ void freezetag_EndRound_Think()
 
 void freezetag_EndRound()
 {
-    red_announced = 1;
-    blue_announced = 1;
-    local entity e = spawn();
-    e.think = freezetag_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
-    update_playercount();
+	red_announced = 1;
+	blue_announced = 1;
+	yellow_announced = 1;
+	pink_announced = 1;
+	
+	local entity e = spawn();
+	e.think = freezetag_EndRound_Think;
+	e.nextthink = time + 1;
+	next_round = time + 5;
+	e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
+	update_playercount();
 }
 
 void freezetag_UglyFreezetagWorkaround_Think()
@@ -104,6 +140,8 @@ void freezetag_Initialize()
 {
 	red_announced = 1;
 	blue_announced = 1;
+	yellow_announced = 1;
+	pink_announced = 1;
 	precache_model("models/ice/ice_blue.md3");
 	precache_model("models/ice/ice_red.md3");
     
@@ -112,9 +150,10 @@ void freezetag_Initialize()
     else
         warmup = time + cvar("g_start_delay");
     
-    precache_sound("ctf/red_capture.wav");
-    precache_sound("ctf/blue_capture.wav");
-    precache_sound("freezetag/freezing.wav");
+	precache_sound("ctf/red_capture.wav");
+	precache_sound("ctf/blue_capture.wav");
+	precache_sound("freezetag/last_player_alarm.ogg");
+	precache_sound("freezetag/freezing.wav");
 	ScoreRules_freezetag();
 	update_playercount();
 	
@@ -370,6 +409,10 @@ void freezetag_Unfreeze(entity attacker)
 		red_announced = 1;
 	if(self.team == COLOR_TEAM2)
 		blue_announced = 1;
+	if(self.team == COLOR_TEAM3)
+		yellow_announced = 1;
+	if(self.team == COLOR_TEAM4)
+		pink_announced = 1;
 }
 
 .vector ft_oldorigin;
