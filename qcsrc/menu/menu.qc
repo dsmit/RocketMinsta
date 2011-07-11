@@ -652,6 +652,8 @@ void() m_draw =
 	draw_reset();
 	postMenuDraw();
 
+	IP2C_CheckTimedOut();
+
 	frametime = 0;
 };
 
