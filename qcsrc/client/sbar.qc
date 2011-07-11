@@ -473,7 +473,7 @@ string Sbar_DefaultColumnLayout()
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		"-lms,race,nexball/score");
+		"+tdm/deaths +tdm/suicides -lms,race,nexball/score");
 }
 
 void Cmd_Sbar_SetFields(float argc)
