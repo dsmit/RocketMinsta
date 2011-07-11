@@ -117,6 +117,7 @@ void GrapplingHook_Stop()
 	self.hook_length = -1;
 }
 
+.float last_dmg;
 void GrapplingHookThink()
 {
 	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch;
@@ -257,37 +258,22 @@ void GrapplingHookThink()
 		}
 	}
 
+	if(self.aiment.classname == "player") if(self.last_dmg < time)
+	if not(g_freezetag && (self.aiment.freezetag_frozen || warmup >= time))
+	if not(g_vip && vip_soulgem && !vip_started)
+	if(!teams_matter || self.owner.team != self.aiment.team)
+	if(cvar("g_balance_minstanex_explosive"))
+	{
+		sprint(self.owner, "check 5\n");
+		self.last_dmg = time + 0.1;
+		self.owner.hitsound += 1;
+		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		self.owner.health += 1;
+	}
+	
 	makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0');
 	te_beam(self.owner, self.origin + v_forward * (-9), org);
 }
-
-//<akari>
-void HookDamage_Think()
-{
-	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0 || self.hooker.health <= 0
-	  || (g_freezetag && self.hooker.hooked_to.freezetag_frozen))
-	{
-		remove(self);
-		return;
-	}
-	
-	if(g_vip) if(vip_soulgem) if(!vip_started)
-	{
-		remove(self);
-		return;
-	}
-	
-	if(!teams_matter || self.hooker.team != self.hooker.hooked_to.team)
-	{
-		play2(self.hooker, "misc/hit.wav");
-		Damage(self.hooker.hooked_to, self.hooker.hook, self.hooker, 1, DEATH_NOAMMO, self.origin, '0 0 0');
-		self.hooker.health += 1;
-		self.nextthink = time + 0.1;
-	}
-	else
-		remove(self);
-}
-//</akari>
 
 void GrapplingHookTouch (void)
 {
@@ -316,21 +302,6 @@ void GrapplingHookTouch (void)
 			return;
 		}
 	}
-
-	//<akari>
-	if(other.classname == "player") if(cvar("g_balance_minstanex_explosive"))
-	{
-		//sprint(self.owner, "\{0}Hooked ", other.netname, "\n");
-		self.owner.hooked_to = other;
-		other.hooker = self.owner;
-		
-		entity hookdmg = spawn();
-		hookdmg.classname = "hookdamage";
-		hookdmg.think = HookDamage_Think;
-		hookdmg.nextthink = time + 0.1;
-		hookdmg.hooker = self.owner;
-	}
-	//</akari>
 
 	GrapplingHook_Stop();
 
