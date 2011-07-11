@@ -313,10 +313,13 @@ float Sbar_ComparePlayerScores(entity left, entity right)
 	if(!right.gotscores)
 		vr = COLOR_SPECTATOR;
 
+	/*
+	 * Akari: whose fucking great idea was to put this shit here?
 	if(vl > vr)
 		return true;
 	if(vl < vr)
 		return false;
+		*/
 
 	if(vl == COLOR_SPECTATOR)
 	{
@@ -1367,6 +1370,7 @@ string MakeRaceString(float cp, float mytime, float histime, float lapdelta, str
 		return strcat(col, cpname, " (", timestr, " ", strcat(hisname, col, lapstr), ")");
 }
 
+void Sbar_DrawScore_Rankings(vector, vector, entity);
 void Sbar_Score()
 {
 	float score, distribution, leader;
@@ -1389,6 +1393,11 @@ void Sbar_Score()
 		score_pos = bottomright - '178 38 0';
 		secondary_score_pos = score_pos + '72 0 0';
 	}
+
+	vector rpos, rsize = '100 100 0';
+	rpos = bottomright;
+	rpos_y -= 100;
+	rpos_x -= 105;
 
 	if((scores_flags[ps_primary] & SFL_TIME) && !teamplay) { // race/cts record display on HUD
 		pl = players.sort_next;
@@ -1445,6 +1454,9 @@ void Sbar_Score()
 
 	} else if (!teamplay) { // non-teamgames, except race/cts
 		// me vector := [team/connected frags id]
+		
+		Sbar_DrawScore_Rankings(rpos, rsize, me);
+		
 		pl = players.sort_next;
 		if(pl == me)
 			pl = pl.sort_next;
@@ -1517,6 +1529,8 @@ void Sbar_Score()
 				}
 			}
 		}
+		
+		Sbar_DrawScore_Rankings(rpos, rsize, me);
 	}
 
 	if(gametype == GAME_RACE || gametype == GAME_CTS)
@@ -2805,6 +2819,69 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 
 float ammonotifytime;
 
+void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
+{
+	if(oldengine)
+		return;
+	
+	float score;
+	entity tm, pl;
+#define SCOREPANEL_MAX_ENTRIES 6
+#define SCOREPANEL_ASPECTRATIO 2
+	const float entries = bound(1, floor(SCOREPANEL_MAX_ENTRIES * mySize_y/mySize_x * SCOREPANEL_ASPECTRATIO), SCOREPANEL_MAX_ENTRIES);
+	const vector fontsize = '8 8 0'; //'1 1 0' * (mySize_y/entries);
+
+	vector rgb, score_color;
+	rgb = '1 1 1';
+	score_color = '1 1 1';
+
+	const float name_size = mySize_x*0.75;
+	const float spacing_size = mySize_x*0.04;
+	const float highlight_alpha = 0.2;
+	float i, me_printed, first_pl;
+	string s;
+	i, first_pl = 0;
+	
+		
+	i = first_pl;
+
+	for (pl = players.sort_next; pl && i<entries; pl = pl.sort_next)
+	{
+		if (pl.team == COLOR_SPECTATOR)
+			continue;
+
+		if (i == entries-1 && !me_printed && pl != me)
+		if (spectatee_status != -1)
+		{
+			for (pl = me.sort_next; pl; pl = pl.sort_next)
+				if (pl.team != COLOR_SPECTATOR)
+					break;
+
+			if (pl)
+				rgb = '1 1 0'; //not last but not among the leading players: yellow
+			else
+				rgb = '1 0 0'; //last: red
+			pl = me;
+		}
+
+		if (pl == me)
+		{
+			if (i == first_pl)
+				rgb = '0 1 0'; //first: green
+			me_printed = 1;
+			drawfill(pos, eX * mySize_x + eY * fontsize_y, rgb, highlight_alpha * sbar_alpha_fg, DRAWFLAG_NORMAL);
+		}
+		if (teamplay)
+			score_color = GetTeamRGB(pl.team) * 0.8;
+		s = textShortenToWidth_svn(GetPlayerName(pl.sv_entnum), name_size, fontsize, stringwidth_colors_svn);
+		drawcolorcodedstring(pos + eX * (name_size - stringwidth_svn(s, TRUE, fontsize)), s, fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		drawstring(pos + eX * (name_size + spacing_size), ftos(pl.(scores[ps_primary])), fontsize, score_color, sbar_alpha_bg, DRAWFLAG_NORMAL);
+		pos_y += fontsize_y;
+		++i;
+	}
+}
+
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3015,7 +3092,7 @@ void Sbar_Draw (void)
 
 	local vector sv_pos;
 	sv_pos = bottomright;
-	sv_pos_y -= 72;
+	sv_pos_y -= 100;
 
 	float sv_offset;
 
