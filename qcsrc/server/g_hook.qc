@@ -264,7 +264,6 @@ void GrapplingHookThink()
 	if(!teams_matter || self.owner.team != self.aiment.team)
 	if(cvar("g_balance_minstanex_explosive"))
 	{
-		sprint(self.owner, "check 5\n");
 		self.last_dmg = time + 0.1;
 		self.owner.hitsound += 1;
 		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
