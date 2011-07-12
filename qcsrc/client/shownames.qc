@@ -128,7 +128,7 @@ void Draw_ShowNames()
             {
                 //s = playername(s, GetPlayerColor(self.the_entnum-1));
                 s = strdecolorize(s);
-				s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_svn);
+				s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_nocolors_svn);
 			}
 			else s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors_svn);
 
