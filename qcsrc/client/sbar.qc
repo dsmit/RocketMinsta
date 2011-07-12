@@ -1787,6 +1787,8 @@ float Sbar_WouldDrawScoreboard() {
 		return 1;
 	else if (intermission == 2)
 		return 1;
+	else if (spectatee_status == -1)
+		return 0;
 	else if (getstati(STAT_HEALTH) <= 0 && cvar("cl_deathscoreboard"))
 		return 1;
 	else if(sb_showscores_force)
@@ -3525,7 +3527,7 @@ void Sbar_Draw (void)
 	{
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else if(!spectatee_status || sb_showscores || intermission)
+  		else //if(!spectatee_status || sb_showscores || intermission)
 			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)
