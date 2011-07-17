@@ -620,10 +620,9 @@ void RM_WelcomeMessage(entity pl)
 		motd = "^8(message of the day missing)";
 	
 	s = strcat("^xFB0", strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " "), gamemode_name, "\n", GetClientVersionMessage());
-	s = strcat(s, "\n^8mod build date: ^9", RM_BUILD_DATE, "\n\n\n\n\n");
+	s = strcat(s, "\n^8mod build date: ^9", RM_BUILD_DATE, "\n\n");
 	
-	s = strcat(s, "\n^0^x111^x222^x333^x333^x222^x111^0\n", motd,
-				  "\n^0^x111^x222^x333^x333^x222^x111^0");
+	s = strcat(s, "\n", motd );
 	
 	s = strcat("\x01", s);
 	centerprint(pl, s);
