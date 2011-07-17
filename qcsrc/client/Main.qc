@@ -471,9 +471,11 @@ void PostInit(void)
 			localcmd("seta rm_nokillsound 0; nokillsound 0\n");
 		case 32:
 			localcmd ("seta rm_hidecountry 0; hidecountry 0\n");
+		case 33:
+			localcmd ("seta rm_showrankings 1; showrankings 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 33\n");
+		localcmd("seta rm_initialized 34\n");
 		RM_OUTDATED
 		break;
 	}
@@ -497,6 +499,7 @@ void PostInit(void)
 	rm_oldhud = rm_oldhud_option;
 	rm_althud = rm_althud_option;
 	rm_noflags = cvar("rm_noflags");
+	rm_showrankings = cvar("rm_showrankings");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -520,10 +523,11 @@ void PostInit(void)
 	registercmd("notimer");
 	registercmd("nogamemenu");
 	registercmd("nokillsound");
+	registercmd("hidecountry");
+	registercmd("showrankings");
 	// -- //
 	registercmd("hudskin");
-	registercmd ("hidecountry");
-	localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+	
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
@@ -541,6 +545,7 @@ void PostInit(void)
 	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
@@ -664,6 +669,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
+		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
@@ -694,7 +700,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "noflags"				||
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
-		strCmd == "nokillsound"			 )
+		strCmd == "nokillsound"			||
+		strCmd == "showrankings"		 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -712,6 +719,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_oldhud_option = cvar("rm_oldhud");
 		rm_althud_option = cvar("rm_althud");
 		rm_noflags = cvar("rm_noflags");
+		rm_showrankings = cvar("rm_showrankings");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{

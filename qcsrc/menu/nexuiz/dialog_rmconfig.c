@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 19)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 18)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -28,8 +28,6 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames", "Show player names above their heads"));
 			OPTDEP("shownames")
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Visualize score"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Teamcolored lasers"));
 			OPTDEP("teamlasers")
@@ -75,14 +73,18 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
 		setDependent(e, "rm_oldhud", 0, 0);
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showrankings", "Show top players in the HUD"));
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 		me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 6, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 8, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
-		
+	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }
 #endif
 

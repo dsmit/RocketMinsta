@@ -2883,6 +2883,9 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	if(oldengine)
 		return;
 	
+	if(!rm_showrankings)
+		return;
+	
 	entity pl, tm;
 #define SCOREPANEL_MAX_ENTRIES 6
 #define SCOREPANEL_ASPECTRATIO 2
@@ -3145,6 +3148,9 @@ void Sbar_Draw (void)
 	local vector sv_pos;
 	sv_pos = bottomright;
 	sv_pos_y -= 100;
+	
+	if(!rm_showrankings)
+		sv_pos_y += 40;
 
 	float sv_offset;
 
