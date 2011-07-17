@@ -2886,7 +2886,11 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	entity pl, tm;
 #define SCOREPANEL_MAX_ENTRIES 6
 #define SCOREPANEL_ASPECTRATIO 2
-	const float entries = bound(1, floor(SCOREPANEL_MAX_ENTRIES * mySize_y/mySize_x * SCOREPANEL_ASPECTRATIO), SCOREPANEL_MAX_ENTRIES);
+	float entries = bound(1, floor(SCOREPANEL_MAX_ENTRIES * mySize_y/mySize_x * SCOREPANEL_ASPECTRATIO), SCOREPANEL_MAX_ENTRIES);
+	
+	if(teamplay)
+		entries = entries / 2;
+	
 	const vector fontsize = '8 8 0'; //'1 1 0' * (mySize_y/entries);
 
 	vector score_color;
@@ -2906,7 +2910,7 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 			continue;
 		
 		i = 0;
-		for (pl = players.sort_next; pl && i<entries/2; pl = pl.sort_next)
+		for (pl = players.sort_next; pl && i<entries; pl = pl.sort_next)
 		{
 			if(pl.team != tm.team)
 				continue;
