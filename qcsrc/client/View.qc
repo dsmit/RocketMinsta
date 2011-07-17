@@ -711,8 +711,8 @@ void CSQC_UpdateView(float w, float h)
 					wcross_color_z = cvar("crosshair_color_blue");
 				}
 				
-                wcross_alpha = cvar("crosshair_color_alpha") * m * (1 - sbar_scoreboard_alpha_fg);
-                wcross_sizefloat = cvar("crosshair_size") * m * (1 - sbar_scoreboard_alpha_fg);
+                wcross_alpha = cvar("crosshair_color_alpha") * m * (1 - sbar_scoreboard_fade_alpha);
+                wcross_sizefloat = cvar("crosshair_size") * m * (1 - sbar_scoreboard_fade_alpha);
                 if (cvar("crosshair_per_weapon")) {
                     e = get_weaponinfo(activeweapon);
                     if (e && e.netname != "")
