@@ -661,8 +661,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
-		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game\n");
-		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead)\n");
+		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
+		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
+		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
