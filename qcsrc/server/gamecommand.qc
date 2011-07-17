@@ -640,8 +640,15 @@ void GameCommand(string command)
 		return;
 	}
 
-	if(argv(0) == "gotomap") if(argc == 2)
+	if(argv(0) == "gotomap") if(argc >= 2)
 	{
+		// might fail but screw it
+		if(argc > 2)
+		{
+			localcmd("gametype ", argv(2), "\n");
+			gametypetoset = GametypeIDFromName(argv(2));
+		}
+		
 		print(GotoMap(argv(1)), "\n");
 		return;
 	}
@@ -650,6 +657,14 @@ void GameCommand(string command)
 	{
 		float t, tsave;
 		s = argv(1);
+		s = NormalizeGametypeName(s);
+		
+		if(s == "")
+		{
+			print("^1Gametype '", argv(1), "' is either invalid or not supported by RocketMinsta\n");
+			return;
+		}
+		
 		t = MapInfo_Type_FromString(s);
 		tsave = MapInfo_CurrentGametype();
 		if(t)
@@ -1139,6 +1154,15 @@ void GameCommand(string command)
 			//e.armorvalue = 999;
 			
 			e.health = max(e.health, 100);
+			
+			if(g_freezetag)
+			{
+				local entity oldself;
+				oldself = self;
+				self = e;
+				freezetag_Unfreeze(world);
+				self = oldself;
+			}
 		}
 		
 		return;
@@ -1149,14 +1173,38 @@ void GameCommand(string command)
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "round aborted", "", 5);
 
-        if(!g_freezetag)
+        if(!EndRound_Allowed())
         {
-            bprint("Attempted to endround, but the gametype is not Freezetag!\n");
+            bprint("Attempted to endround, but the gametype doesn't support it!\n");
             return;
         }
 
-        freezetag_EndRound();
+        EndRound();
     }
+
+	if(argv(0) == "topic")
+	{
+		if(!keeptopic)
+			cvar_set("_sv_explosive_topicby", "");
+		keeptopic = FALSE;
+		
+		local string topicby = cvar_string("_sv_explosive_topicby");
+		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
+		
+		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		
+		return;
+	}
+
+	if(argv(0) == "addinfo")
+	{
+		float c = cvar("_g_explosive_infomessages_count");
+		string newvar = strcat("_g_explosive_infomessages_", ftos(c));
+		registercvar(newvar, "");
+		cvar_set(newvar, argv(1));
+		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
+		return;
+	}
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

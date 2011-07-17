@@ -1,0 +1,35 @@
+void vip_init();
+float vip_PlayerDies(float);
+void vip_AssignVIPs();
+void vip_ClearVIPs();
+float vip_RemovePlayer();
+void vip_ClearVIP_Common(entity);
+void vip_ClearVIPs_MaybeAssign();
+void vip_ResetHealthArmor(entity);
+
+float vip_soulgem;
+entity vip_bluegem;
+entity vip_redgem;
+void vip_SpawnSoulGem(vector, float);
+void vip_RespawnSoulGems();
+void vip_SoulGem_StartRound();
+
+void vip_AssignCustomRedVIP(entity);
+void vip_AssignCustomBlueVIP(entity);
+
+entity redvip;
+entity bluevip;
+float vip_started;
+float vip_ended;
+.float vip_maxhealth;
+.float vip_maxarmor;
+.float gem_pickedup;
+
+vector redgem_loc;
+vector bluegem_loc;
+
+#define ISVIP(e) ((e) == redvip || (e) == bluevip)
+#define ISREDVIP(e) ((e) == redvip)
+#define ISBLUEVIP(e) ((e) == bluevip)
+
+void vip_PlayerPreThink();

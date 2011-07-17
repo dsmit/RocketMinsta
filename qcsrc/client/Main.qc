@@ -168,6 +168,8 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
+	
+	IP2C_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -179,6 +181,9 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+
+	HUDSkin_Unload();
+	IP2C_Shutdown();
 
 	remove(teams);
 	remove(players);
@@ -344,7 +349,7 @@ void SetMadokaFont(float v)
 			{
 				if(cvar("rm_specmadoka"))
 				{
-					SetMadokaFont(madokalockstate);
+					sbar_bigfont = (madokalockstate? sbar_madokafont : sbar_bigfont_real);
 					return;
 				}
 				/*else
@@ -362,6 +367,33 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void ReloadMenu_f()
+{
+	if(!self.cnt)
+	{
+		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
+		localcmd("menu_restart\n");
+		self.cnt = 1;
+		self.nextthink = time + 1;
+	}
+	else
+	{
+		if(rm_helptime)
+			localcmd("menu_cmd directmenu RMConfig\n");
+			
+		gui_reloading = 0;
+		remove(self);
+	}
+}
+
+void ReloadMenu()
+{
+	gui_reloading = 1;
+	entity e = spawn();
+	e.think = ReloadMenu_f;
+	e.nextthink = time + 1;
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -377,7 +409,6 @@ void PostInit(void)
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
-	local float _printmsg;
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
@@ -408,13 +439,49 @@ void PostInit(void)
 			localcmd("seta rm_specmadoka 1; specmadoka 1\n");
 		case 14:
 			localcmd("seta rm_crosshealth 0; crosshealth 0\n");
+		case 15:
+			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
+		case 16:
+			localcmd("seta rm_shownames 1; shownames 1\n");
+		case 17:
+			localcmd("seta rm_shownames 0; shownames 0\n");
+		case 18:
+			localcmd("seta rm_visualscore 1; visualscore 1\n");
+		case 19:
+			localcmd("seta rm_oldhud 0; oldhud 0\n");
+		case 20:
+			//localcmd("seta rm_althud 0; althud 0\n");
+		case 21:
+			localcmd("seta rm_althud 1; althud 1\n");
+		case 22:
+			//localcmd("alias afk \"cmd afk\"\n");
+		case 23:
+			localcmd("seta rm_noflags 0; noflags 0\n");
+		case 24:
+			localcmd("seta rm_hudskin \"default\"\n");
+		case 25:	// yep, nothing here
+		case 26:
+		case 27:
+		case 28:
+		case 29:
+			localcmd("seta rm_nogamemenu 0; nogamemenu 0\n");
+		case 30:
+			localcmd("seta rm_notimer 0; notimer 0\n");
+		case 31:
+			localcmd("seta rm_nokillsound 0; nokillsound 0\n");
+		case 32:
+			localcmd ("seta rm_hidecountry 0; hidecountry 0\n");
+		case 33:
+			localcmd ("seta rm_showrankings 1; showrankings 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 15\n");
+		localcmd("seta rm_initialized 34\n");
 		RM_OUTDATED
 		break;
 	}
-
+	
+	localcmd("alias afk \"cmd afk\"\n");
+	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
@@ -424,6 +491,15 @@ void PostInit(void)
 	rm_hidewatermark = cvar("rm_hidewatermark");
 	rm_madoka = cvar("rm_madoka");
 	rm_crosshealth = cvar("rm_crosshealth");
+	rm_simpleeffects = cvar("rm_simpleeffects");
+	rm_shownames = cvar("rm_shownames");
+	rm_visualscore = cvar("rm_visualscore");
+	rm_oldhud_option = cvar("rm_oldhud");
+	rm_althud_option = cvar("rm_althud");
+	rm_oldhud = rm_oldhud_option;
+	rm_althud = rm_althud_option;
+	rm_noflags = cvar("rm_noflags");
+	rm_showrankings = cvar("rm_showrankings");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -438,7 +514,21 @@ void PostInit(void)
 	registercmd("dontmesswithfonts");
 	registercmd("specmadoka");
 	registercmd("crosshealth");
-
+	registercmd("simpleeffects");
+	registercmd("shownames");
+	registercmd("visualscore");
+	registercmd("oldhud");
+	registercmd("althud");
+	registercmd("noflags");
+	registercmd("notimer");
+	registercmd("nogamemenu");
+	registercmd("nokillsound");
+	registercmd("hidecountry");
+	registercmd("showrankings");
+	// -- //
+	registercmd("hudskin");
+	
+	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
 	SendRMCFGReport();
@@ -452,7 +542,27 @@ void PostInit(void)
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
+	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
+	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+	
+	if(cvar("_cl_afkstate"))
+		localcmd("cmd afk\n");
+	
+	HUDSkin_Load(cvar_string("rm_hudskin"));
+	
+	screenfade = time + 0.1;
+	fovlock = -1;
+	
+	registercvar("rm_loadedmenu", "");
+	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
+		ReloadMenu();
+	else if(rm_helptime)
+		localcmd("menu_cmd directmenu RMConfig\n");
+	
+	localcmd("cmd menu_request\n"); // workaround against restarts
+	
 	postinit = true;
 }
 
@@ -475,14 +585,14 @@ void SendRMCFGReport()
 	for(i = 0; i < n; ++i)
 	{
 		k = bufstr_get(h, i);
-		res = strcat(res, k, " ", cvar_string(k), " ");
+		res = strcat(res, "^3", k, " ^2", cvar_string(k), " ");
 	}
 	
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n"));
+#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -493,7 +603,6 @@ float CSQC_ConsoleCommand(string strMessage)
 	// Acquire Command
 	local string strCmd;
 	strCmd = argv(0);
-	local float value;
 
 	if(strCmd == "+button4") { // zoom
 		// return false, because the message shall be sent to the server anyway (for demos/speccing)
@@ -526,29 +635,51 @@ float CSQC_ConsoleCommand(string strMessage)
 		return true;
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
-		bigprint("Accuracy statistics are disabled", "", 2);
+		
+		if(cvar("_g_balance_minstanex_explosive"))
+			bigprint("Accuracy statistics are disabled", "", 2);
+		else
+			sb_showaccuracy = true;
+			
 		return true;
 	} else if(strCmd == "-showaccuracy") {
-		//sb_showaccuracy = false;
+		sb_showaccuracy = false;
 		return true;
 	}
 	else if(strCmd == "rmhelp")
 	{
 		print("^xFB0RocketMinsta configuration options. ^7To enable an option, type ^2optionname 1^7. To disable, ^2optionname 0^7.\n\n");
-		print("^2showspec^7: if enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
-		print("^2showdamage^7: if enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
-		print("^2teamlasers^7: if enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
-		print("^2nobigtext^7: if enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
-		print("^2hidebigcomments^7: if enabled, comments for bigprints will not be shown (disabled by default)\n");
-		print("^2legacyvote^7: if enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
+		print("^2showspec^7: If enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
+		print("^2showdamage^7: If enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
+		print("^2teamlasers^7: If enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
+		print("^2nobigtext^7: If enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2hidebigcomments^7: If enabled, comments for bigprints will not be shown (disabled by default)\n");
+		print("^2legacyvote^7: If enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
 		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
 		print("^2crosshealth^7: If enabled, the crosshair color will depend on current health (disabled by default)\n");
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
+		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
+		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
+		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
+		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
+		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
+		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
+		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
+		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
+		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
+		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
-		print("^2madoka^7: if enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
-		print("^2specmadoka^7: if enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+		#ifdef RM_SHOW_MADOKA_IN_RMHELP
+		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
+		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
 		#endif
+		#endif
+		
+		print("\nIn addition, these commands are available:\n");
+		print("^5afk^7: Marks you as being away\n");
+		print("^5hudskin^7: Lists or switches HUD skins and displays other HUD-related information\n");
 		return true;
 	}
 	else if(
@@ -560,7 +691,17 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "legacyvote"			||
 		strCmd == "hidewatermark"		||
 		strCmd == "dontmesswithfonts"	||
-		strCmd == "crosshealth"			 )
+		strCmd == "crosshealth"			||
+		strCmd == "simpleeffects"		||
+		strCmd == "shownames"			||
+		strCmd == "visualscore"			||
+		strCmd == "oldhud"				||
+		strCmd == "althud"				||
+		strCmd == "noflags"				||
+		strCmd == "notimer"				||
+		strCmd == "nogamemenu"			||
+		strCmd == "nokillsound"			||
+		strCmd == "showrankings"		 )
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -572,6 +713,31 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_legacyvote = cvar("rm_legacyvote");
 		rm_hidewatermark = cvar("rm_hidewatermark");
 		rm_crosshealth = cvar("rm_crosshealth");
+		rm_simpleeffects = cvar("rm_simpleeffects");
+		rm_shownames = cvar("rm_shownames");
+		rm_visualscore = cvar("rm_visualscore");
+		rm_oldhud_option = cvar("rm_oldhud");
+		rm_althud_option = cvar("rm_althud");
+		rm_noflags = cvar("rm_noflags");
+		rm_showrankings = cvar("rm_showrankings");
+		
+		if(strCmd == "oldhud" || strCmd == "althud")
+		{
+			if(hudlocked)
+				print("^1Won't change HUD while spectating\n");
+			else
+			{
+				rm_oldhud = rm_oldhud_option;
+				rm_althud = rm_althud_option;
+				
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+			}
+		}
+		else if(strCmd == "notimer")
+			localcmd("cl_cmd sbar_columns_set default\n");
+		else if(strCmd == "nokillsound")
+			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+		
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
@@ -590,7 +756,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		if(madoka_locked && cvar("rm_specmadoka"))
 		{
-			print("^1Won't change madoka while spectating!\n");
+			print("^1Won't change madoka while spectating\n");
 			return true;
 		}
 		
@@ -627,6 +793,66 @@ float CSQC_ConsoleCommand(string strMessage)
 		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
+		RMSETTINGREPORT
+		return true;
+	}
+	else if(strCmd == "hudskin")
+	{
+		if(argc < 2)
+		{
+			print("\n^xFB0The following HUD skins are available:\n");
+			
+			local float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+			local string tmpname, displayname;
+			globsize = search_getsize(hsglob);
+			
+			seed = floor(random() * globsize);
+			for(i = 0; i < globsize; ++i)
+			{
+				tmpname = search_getfilename(hsglob, i);
+				tmpname = substring(tmpname, strlen("gfx/hud/skins/"), strlen(tmpname));
+				tmpname = substring(tmpname, 0, strlen(tmpname) - strlen("/skininfo"));
+				
+				if(i == seed)
+					displayname = tmpname;
+					
+				print("^5    ", tmpname);
+				
+				if(tmpname == hudskin_name)
+					print(" ^8(current)\n");
+				else print("\n");
+			}
+			search_end(hsglob);
+			
+			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			
+			return true;
+		}
+		
+		if(!hudlocked)
+		{
+			HUDSkin_Load(argv(1));
+			cvar_set("rm_hudskin", hudskin_name);
+			SendRMCFGReport();
+			localcmd("menu_cmd update_rmvars\n");
+			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+		}
+		else
+		{
+			print("^1Can't change the HUD skin while spectating a player, please join the game or become an observer and try again\n");
+			return true;
+		}
+		
+		return true;
+	}
+	else if (strCmd == "hidecountry")
+	{
+		VALUEREQUIRED
+		cvar_set ("rm_hidecountry", argv (1));
+		rm_hidecountry = cvar ("rm_hidecountry");
+		SendRMCFGReport ();
+		localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
 		RMSETTINGREPORT
 		return true;
 	}
@@ -712,7 +938,7 @@ void ShotOrg_Spawn()
 }
 
 #ifdef RM_SUPPORT_MADOKA
-.float oldspecmadoka
+.float oldspecmadoka;
 void TmpMadoka_Think()
 {
 	//if(!cvar("rm_madoka"))
@@ -745,6 +971,7 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
+string GameTypeVote_GameTypeDescription(string);
 void GameCommand(string msg)
 {
 	float argc;
@@ -858,6 +1085,27 @@ void GameCommand(string msg)
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
+	else if(cmd == "lockhud")
+	{
+		hudlocked = 1;
+		hudlocked_old = stof(argv(1));
+		hudlocked_alt = stof(argv(2));
+		
+		rm_althud = hudlocked_alt;
+		rm_oldhud = hudlocked_old;
+		
+		if(argv(3) != hudskin_name)
+			HUDSkin_Load(argv(3));
+	}
+	else if(cmd == "lockfov")
+	{
+		fovlock = stof(argv(1));
+	}
+	else if(cmd == "speczoom")
+	{
+		speczoom_speed = stof(argv(1));
+		speczoom_factor = stof(argv(2));
+	}
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -878,6 +1126,28 @@ void GameCommand(string msg)
 		}
 		
 		bigprint(argv(1), argv(2), stof(argv(3)));
+	}
+	else if(cmd == "hudflash")
+	{
+		if(argc < 4)
+		{
+			print("Usage: hudflash color time intensivity alpha\n");
+			return;
+		}
+		
+		hudflash(stov(argv(1)), stof(argv(2)), stof(argv(3)), stof(argv(4)));
+	}
+	else if(cmd == "hudskin")
+	{
+		HUDSkin_Load(argv(1));
+	}
+	else if(cmd == "hudskin_unload")
+	{
+		HUDSkin_Unload();
+	}
+	else if(cmd == "hudskin_eval")
+	{
+		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
 	else
 	{
@@ -981,14 +1251,43 @@ void Ent_ReadPlayerScore()
 	lf = ReadShort();
 #endif
 	float p;
+	
+	float oldscore = o.(scores[SP_SCORE]);
+	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+	{
 		if(sf & p)
 		{
-			if(lf & p)
+			if(i == SP_JOINTIME)
+			{
+				local float srvtime;
+				srvtime = stof(ReadString());
+				
+				local float offs;
+				offs = srvtime - time;
+				
+				o.(scores[i]) = stof(ReadString()) - offs;
+			}
+			else if(lf & p)
+			{
 				o.(scores[i]) = ReadInt24_t();
+			}
 			else
+			{
 				o.(scores[i]) = ReadChar();
+			}
 		}
+	}
+
+	float newscore = o.(scores[SP_SCORE]);
+	
+	if(self.sv_entnum == player_localentnum - 1 || self.sv_entnum == spectatee_status - 1)
+	{
+		if(oldscore != newscore)
+		{
+			score_visual(newscore - oldscore);
+		}
+	}
 
 	if(o.sort_prev)
 		Sbar_UpdatePlayerPos(o); // if not registered, we cannot do this yet!
@@ -1111,6 +1410,37 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
+void Ent_ShowNames()
+{
+    float sf;
+
+    // entity init, TODO can this be done only once somehow?
+    self.the_entnum = ReadByte(); // TODO: fixme to only send once somehow
+    self.draw2d = Draw_ShowNames;
+    //self.movetype = MOVETYPE_FLY; // movetype needed so we can traceline?
+    self.mins = '-20 -20 -24';
+    self.maxs = '20 20 45';
+
+    sf = ReadByte();
+
+    if(sf & 1)
+    {
+        self.origin_x = ReadShort();
+        self.origin_y = ReadShort();
+        self.origin_z = ReadShort();
+    }
+    if(sf & 2)
+    {
+        self.healthvalue = ReadByte();
+        self.armorvalue = ReadByte();
+    }
+
+    if(sf & 128) // same team
+        self.sameteam = TRUE;
+    else
+        self.sameteam = FALSE;
+}
+
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1147,6 +1477,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 	self.enttype = t;
 	switch(t)
 	{
+		case ENT_CLIENT: break;
 		case ENT_CLIENT_ENTCS: Ent_ReadEntCS(); break;
 		case ENT_CLIENT_SCORES: Ent_ReadPlayerScore(); break;
 		case ENT_CLIENT_TEAMSCORES: Ent_ReadTeamScore(); break;
@@ -1167,6 +1498,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
+		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -1394,18 +1726,14 @@ void Net_ReadMadokaPrint()
 
 void Net_ReadSpecInfo()
 {
-	local float i, limit;
-	limit = min(num_spectators, MAX_SPECTATORS);
-	for(i = 0; i < limit; ++i)
-		strunzone(spectatornames[i]);
-		
+	local float i;
 	num_spectators = ReadShort();
 
 	for(i = 0; i < num_spectators; ++i)
 	{
-		local string s = ReadString();
+		local float slot = ReadByte();
 		if(i < MAX_SPECTATORS)
-			spectatornames[i] = strzone(s);
+			spectatorlist[i] = slot - 1;
 	}
 }
 
@@ -1444,6 +1772,72 @@ void Net_ReadClearBigPrint()
 {
     bigprint(" ", "", 0);
     //bigprint("", "", 0);
+}
+
+void Net_ReadSpeedRecord()
+{
+	if(speedrecord_string)
+		strunzone(speedrecord_string);
+	
+	float speedrecord = ReadShort();
+	string speedrecord_name = ReadString();
+	
+	speedrecord_string = strzone(strcat("Speed award: ", speedrecord_name, "^7 (", ftos(floor(speedrecord * (0.0254 * 3.6))), " km/h)"));
+	//print("Speed record: ", speedrecord_name, "^7 (", ftos(speedrecord), ")\n");
+}
+
+void Net_ReadHudFlash(float teamcolor)
+{
+	local float a, i, t;
+	local vector c;
+	
+	//c = decompressShortVector(ReadShort());
+	
+	if(teamcolor)
+		c = GetTeamRGB(myteam);
+	else
+	{
+		c_x = ReadCoord();
+		c_y = ReadCoord();
+		c_z = ReadCoord();
+	}
+	
+	t = ReadCoord();
+	i = ReadCoord();
+	a = ReadCoord();
+	
+	hudflash(c, t, i, a);
+}
+
+void Net_ReadVIPInfo(float teem)
+{
+	switch(teem)
+	{
+		case COLOR_TEAM1:
+			vip_red_maxhealth = ReadShort();
+			vip_red_health = ReadShort();
+			
+			if(vip_red_name)
+				strunzone(vip_red_name);
+			vip_red_name = strzone(strdecolorize(ReadString()));
+			return;
+		
+		case COLOR_TEAM2:
+			vip_blue_maxhealth = ReadShort();
+			vip_blue_health = ReadShort();
+			
+			if(vip_blue_name)
+				strunzone(vip_blue_name);
+			vip_blue_name = strzone(strdecolorize(ReadString()));
+			return;
+	}
+	
+	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(teem), "\n");
+	print("Dump: \n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
+	print("^5 -> ", ftos(ReadShort()), "\n");
 }
 
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
@@ -1516,6 +1910,22 @@ float CSQC_Parse_TempEntity()
             Net_ReadClearBigPrint();
             bHandled = true;
             break;
+        case TE_CSQC_SPEEDRECORD:
+			Net_ReadSpeedRecord();
+			bHandled = true;
+			break;
+		case TE_CSQC_HUDFLASH:
+			Net_ReadHudFlash(FALSE);
+			bHandled = true;
+			break;
+		case TE_CSQC_HUDFLASH_TEAMCOLOR:
+			Net_ReadHudFlash(TRUE);
+			bHandled = true;
+			break;
+		case TE_CSQC_VIPINFO:
+			Net_ReadVIPInfo(ReadByte());
+			bHandled = true;
+			break;
 		default:
 			// No special logic for this temporary entity; return 0 so the engine can handle it
 			bHandled = false;
@@ -1569,9 +1979,11 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
-void bigprint_old(string bigstr, string comment, float fadetime)
+void bigprint_old(string bigstr, string comment, float fadeTime)
 {
 	if(is_tmpmadoka) return;
+	
+	obp_draw = 1;
 	
 	if(bigprint_oldstring)
 		fstrunzone(bigprint_oldstring);
@@ -1581,7 +1993,8 @@ void bigprint_old(string bigstr, string comment, float fadetime)
 	bigprint_oldstring = strzone(bigstr);
 	//bigprint_oldcomment = strzone(comment);
 	
-	bigprint_oldfadetime = fadetime - 0.1;
+	bigprint_oldfadetime = fadeTime - 0.1;
+	bigprint_oldappeartime = time;
 }
 
 void bigprint(string bigstr, string comment, float staytime)
@@ -1601,6 +2014,7 @@ void bigprint(string bigstr, string comment, float staytime)
 	
 	if(bigstr != "")
 	{
+		bp_draw = 1;
 		bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
 		
 		if(bigprint_string)
@@ -1613,19 +2027,79 @@ void bigprint(string bigstr, string comment, float staytime)
 	
 	if(comment != "")
 	{
-		bigprint_nofadein = 0;
-		
-		if(bigprint_comment);
-			fstrunzone(bigprint_comment);
 		
 		if(substring(comment, 0, 1) == "\x01")
 		{
+			if(rm_shownames)
+				return;
+			
 			comment = substring(comment, 1, strlen(comment));
 			bigprint_nofadein = 1;
 		}
+		else
+			bigprint_nofadein = 0;
+		
+		bpc_draw = 1;
+		
+		if(bigprint_comment)
+			fstrunzone(bigprint_comment);
 		
 		bigprint_comment = strzone(comment);
 		bigprint_commentfadetime = time + staytime;
 		bigprint_commentappeartime = time;
 	}
+}
+
+void score_visual(float score)
+{
+	//centerprint(ftos(score));
+	
+	string s;
+	vector c;
+	
+	if(score < 0)
+	{
+		c = '1 0 0';
+		s = ftos(score);
+	}
+	else
+	{
+		c = '0 1 0';
+		c_z = c_x = max(0, 1 - score / SCORECOLOR_MAXSCORE);
+		s = strcat("+", ftos(score));
+	}
+	
+	if(score_strings_num >= MAX_SCORESTRINGS)
+	{
+		local float k2;
+		for(k2 = 0; k2 < MAX_SCORESTRINGS-1; ++k2)
+		{
+			if(score_strings[k2]) strunzone(score_strings[k2]);
+			score_strings[k2] = strzone(score_strings[k2+1]);
+			score_strings_fadeout[k2] = score_strings_fadeout[k2+1];
+			score_strings_color[k2] = score_strings_color[k2+1];
+			score_strings_appear[k2] = score_strings_appear[k2+1];
+			score_strings_alphamod[k2] = score_strings_alphamod[k2+1] * 0.8;
+		}
+		
+		strunzone(score_strings[k2]);
+		score_strings_num--;
+	}
+	
+	score_strings[score_strings_num] = strzone(s);
+	score_strings_fadeout[score_strings_num] = time + 2;
+	score_strings_color[score_strings_num] = c;
+	score_strings_alphamod[score_strings_num] = 1.0;
+	score_strings_appear[score_strings_num] = time;
+	++score_strings_num;
+}
+
+void hudflash(vector colour, float staytime, float intensivity, float alph)
+{
+	hudflash_color = colour;
+	hudflash_intensivity = intensivity;
+	hudflash_alpha = alph;
+	hudflash_appeartime = time;
+	hudflash_fadetime = time + staytime;
+	hudflash_enabled = TRUE;
 }

@@ -9,6 +9,7 @@ csqc_constants.qc
 csqc_builtins.qc
 ../common/util.qh
 ../common/items.qh
+../common/ip2c.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -19,6 +20,7 @@ prandom.qh
 bgmscript.qh
 
 main.qh
+hudskin.qh
 
 sortlist.qc
 miscfunctions.qc
@@ -43,7 +45,10 @@ wall.qc
 modeleffects.qc
 
 //vehicles/spiderbot.qc
+shownames.qh
+shownames.qc
 Main.qc
+hudskin.qc
 View.qc
 interpolate.qc
 teamradar.qc
@@ -56,3 +61,4 @@ bgmscript.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc
 ../common/items.qc
+../common/ip2c.qc

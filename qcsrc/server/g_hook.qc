@@ -86,12 +86,6 @@ float LostMovetypeFollow(entity ent)
 .float hook_length;
 .float hook_switchweapon;
 
-//<akari>
-.entity hooker;
-.entity hooked_to;
-//entity nobody;
-//</akari>
-
 void RemoveGrapplingHook(entity pl)
 {
 	if(pl.hook == world)
@@ -100,10 +94,6 @@ void RemoveGrapplingHook(entity pl)
 	pl.hook = world;
 	if(pl.movetype == MOVETYPE_FLY)
 		pl.movetype = MOVETYPE_WALK;
-
-	//<akari>
-	pl.hooked_to = nobody;
-	//</akari>
 
 	//pl.disableclientprediction = FALSE;
 }
@@ -123,6 +113,7 @@ void GrapplingHook_Stop()
 	self.hook_length = -1;
 }
 
+.float last_dmg;
 void GrapplingHookThink()
 {
 	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch;
@@ -263,31 +254,21 @@ void GrapplingHookThink()
 		}
 	}
 
+	if(self.aiment.classname == "player") if(self.last_dmg < time)
+	if not(g_freezetag && (self.aiment.freezetag_frozen || warmup >= time))
+	if not(g_vip && vip_soulgem && !vip_started)
+	if(!teams_matter || self.owner.team != self.aiment.team)
+	if(cvar("g_balance_minstanex_explosive"))
+	{
+		self.last_dmg = time + 0.1;
+		self.owner.hitsound += 1;
+		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		self.owner.health += 1;
+	}
+	
 	makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0');
 	te_beam(self.owner, self.origin + v_forward * (-9), org);
 }
-
-//<akari>
-void HookDamage_Think()
-{
-	if(self.hooker.hooked_to == nobody || self.hooker.hooked_to.health <= 0 || self.hooker.health <= 0
-	  || (g_freezetag && self.hooker.hooked_to.freezetag_frozen))
-	{
-		remove(self);
-		return;
-	}
-	
-	if(!teams_matter || self.hooker.team != self.hooker.hooked_to.team)
-	{
-		play2(self.hooker, "misc/hit.wav");
-		Damage(self.hooker.hooked_to, self.hooker.hook, self.hooker, 1, DEATH_NOAMMO, self.origin, '0 0 0');
-		self.hooker.health += 1;
-		self.nextthink = time + 0.1;
-	}
-	else
-		remove(self);
-}
-//</akari>
 
 void GrapplingHookTouch (void)
 {
@@ -317,21 +298,6 @@ void GrapplingHookTouch (void)
 		}
 	}
 
-	//<akari>
-	if(other.classname == "player")
-	{
-		//sprint(self.owner, "\{0}Hooked ", other.netname, "\n");
-		self.owner.hooked_to = other;
-		other.hooker = self.owner;
-		
-		entity hookdmg = spawn();
-		hookdmg.classname = "hookdamage";
-		hookdmg.think = HookDamage_Think;
-		hookdmg.nextthink = time + 0.1;
-		hookdmg.hooker = self.owner;
-	}
-	//</akari>
-
 	GrapplingHook_Stop();
 
 	if(other)
@@ -340,22 +306,6 @@ void GrapplingHookTouch (void)
 
 	//self.owner.disableclientprediction = TRUE;
 }
-
-//<akari>
-string GetHitSound(entity attacker, entity target)
-{
-	if(attacker == target)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	if(teams_matter) if(self.owner.team == attacker.team)
-		//return GetHitSound_TEAM();
-		return hook_teamhitsound;
-	
-	//return GetHitSound_ENEMY();
-	return hook_hitsound;
-}
-//</akari>
 
 void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
@@ -389,7 +339,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 			}
 			
 			//Don't allow hookbreak if the hook is attached to a player
-			if(self.owner.hooked_to != nobody)
+			if(self.aiment && self.aiment.classname == "player")
 				return;
 			
 			//Die if any amount of damage is recieved
@@ -397,7 +347,10 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 				self.health = 0;
 			
 			//Play a hitsound
-			play2(attacker, GetHitSound(attacker, self.owner));
+			if(attacker == self.owner || (!teams_matter && self.owner.team != attacker.team))
+				attacker.typehitsound += 1;
+			else
+				attacker.hitsound += 1;
 			
 			//Reflect the hook damage to it's owner
 			Damage(self.owner, inflictor, attacker, damage * cvar("g_explosive_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');

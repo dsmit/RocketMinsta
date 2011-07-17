@@ -17,7 +17,10 @@ float require_spawnfunc_prefix; // if this float exists, only functions with spa
 
 float ctf_score_value(string parameter);
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts;
+// derp
+#define g_total_domination g_totaldomination
+
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip;
 float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss;
 float g_warmup_limit;
 float g_warmup_allguns;
@@ -628,6 +631,45 @@ void bigprint(entity e, string bigstring, string comment, float staytime);
 void centerprint_spec(entity, string);
 void bigprint_spec(entity, string, string, float);
 
-.string rmcfgreport
-.float anonspec
+.string rmcfgreport;
+.float anonspec;
 .float madoka;
+
+void dom_cp_placeholder();
+
+float keeptopic;
+
+.float totalpoints_stat, redpoints_stat, bluepoints_stat;
+
+.entity shownames;
+void shownames_think();
+
+float highest_velocity;
+entity highest_velocity_entity;
+string highest_velocity_name;
+
+.float killsound;
+.float instakillsound;
+
+float g_explosive_speedaward_ownaccel;
+
+.float hud_old;
+.float hud_alt;
+
+.float clientfov;
+.float speczoom_speed;
+.float speczoom_factor;
+
+.float g_minstagib_stat;
+.string hudskin;
+
+float gametypetoset;
+
+#define DEPENDON(d) if(!(d)) return;
+#define DEPENDON_F(d,f) if(!(d)) return f;
+
+float forbidrestart;
+
+.float rm_nokillsound;
+
+.float hidecountry;

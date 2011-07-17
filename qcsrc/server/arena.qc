@@ -21,7 +21,6 @@ void assault_objective_reset();
 void target_assault_roundend_reset();
 
 float next_round;
-float stopalivecheck;
 float redalive, bluealive, yellowalive, pinkalive;
 float totalalive;
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
@@ -79,6 +78,12 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
+	
+	if(g_vip)
+	{
+		vip_ClearVIPs_MaybeAssign();
+		//vip_RespawnSoulGems();
+	}
 
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
@@ -93,7 +98,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag)
+			else if(g_freezetag || g_totaldomination || g_vip)
 			{
 				if(self.classname == "player")
 					PutClientInServer();
@@ -268,40 +273,55 @@ void count_spawned_players()
 
 void count_alive_players()
 {
+	//bprint("count_alive_players() called\n");
+	
 	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
 	if(g_freezetag)
 	{
 		// count amount of alive players in each team
-		FOR_EACH_PLAYER(self) {
-			if (self.team == COLOR_TEAM1 && self.freezetag_frozen == 0 && self.health >= 1)
+		FOR_EACH_PLAYER(self)
+		{
+			if (self.team == COLOR_TEAM1 && !self.freezetag_frozen && self.health > 0)
 			{
 				redalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
-			else if (self.team == COLOR_TEAM2 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM2 && !self.freezetag_frozen && self.health > 0)
 			{
 				bluealive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
-			else if (self.team == COLOR_TEAM3 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM3 && !self.freezetag_frozen && self.health > 0)
 			{
 				yellowalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
-			else if (self.team == COLOR_TEAM4 && self.freezetag_frozen == 0 && self.health >= 1)
+			else if (self.team == COLOR_TEAM4 && !self.freezetag_frozen && self.health > 0)
 			{
 				pinkalive += 1;
 				totalalive += 1;
+				//bprint(self.netname, " ^6is alive\n");
 			}
+			
+			//bprint(self.netname, " ^6is ^1DEAD^7: team = ", ftos(self.team), "; freezetag_frozen = ", ftos(self.freezetag_frozen), "\n");
 		}
 		FOR_EACH_CLIENT(self) {
 			self.redalive_stat = redalive;
 			self.bluealive_stat = bluealive;
-			self.yellowalive_stat = yellowalive;
-			self.pinkalive_stat = pinkalive;
+			self.yellowalive_stat = ((ft_teams > 2)? yellowalive : -1);
+			self.pinkalive_stat = ((ft_teams > 3)? pinkalive : -1);
 		}
 	}
-
+	
+	/*
+	bprint("count_alive_players():\n");
+	bprint("totalalive = ", ftos(totalalive), "\n");
+	bprint("redalive = ", ftos(redalive), "\n");
+	bprint("bluealive = ", ftos(bluealive), "\n");
+	*/
 }
 
 /**
@@ -316,14 +336,14 @@ void Spawnqueue_Check()
 	count_spawned_players();
 	if(g_freezetag) // we want to perform this before the return block below (CA)...
 	{
-		count_alive_players();
+		//count_alive_players();
 	}
 	if(time < warmup + 1)
 		return;
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag)
+	if(g_freezetag || g_totaldomination || g_vip)
 	{
 		if((next_round && next_round < time))
 		{

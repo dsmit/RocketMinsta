@@ -33,7 +33,8 @@ void restartAnnouncer_Think() {
 		//gamestart_status = countdown_rounded;
 		//gamestart_fadetime = time + 0.5;
 		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
-		bigprint(ftos(countdown_rounded), "", 0.5);
+		bigprint(" ", "", 1);
+		bigprint(strcat("game starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
@@ -235,6 +236,7 @@ vector Sbar_GetFontsize(string cvarname)
 
 float Sbar_GetWidth(float teamcolumnwidth)
 {
+	#ifdef WE_DONT_NEED_TO_GO_WIDER
 	float f;
 	f = cvar("sbar_width");
 	if(f == 0)
@@ -244,6 +246,9 @@ float Sbar_GetWidth(float teamcolumnwidth)
 	if(f > vid_conwidth - 2 * teamcolumnwidth)
 		f = vid_conwidth - 2 * teamcolumnwidth;
 	return f;
+	#else
+	return vid_conwidth - 2 * teamcolumnwidth;
+	#endif
 }
 
 float PreviewExists(string name)
@@ -424,4 +429,28 @@ void loadfont(string slot, string font)
 	}*/
 	
 	localcmd("loadfont ", slot, " gfx/", font, "\n");
+}
+
+void URI_Get_Callback(float id, float status, string data)
+{
+	if(id == URI_GET_IP2C)
+	{
+		IP2C_URI_Get_Callback(id, status, data);
+		return;
+	}
+}
+
+float stringwidth_svn(string text, float handleColors, vector fontSize);
+#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth_svn(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
+
+// drawstring wrapper to draw a string as large as possible with preserved aspect ratio into a box
+void drawstring_aspect(vector pos, string text, vector sz, vector color, float alpha, float drawflag) {
+	SET_POS_AND_SZ_Y_ASPECT(FALSE)
+	drawstring(pos, text, '1 1 0' * sz_y, color, alpha, drawflag);
+}
+
+// drawstring wrapper to draw a colorcodedstring as large as possible with preserved aspect ratio into a box
+void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha, float drawflag) {
+	SET_POS_AND_SZ_Y_ASPECT(TRUE)
+	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
 }

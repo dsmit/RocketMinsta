@@ -138,7 +138,7 @@ void wordwrap_cb(string s, float l, void(string) callback)
 float dist_point_line(vector p, vector l0, vector ldir)
 {
 	ldir = normalize(ldir);
-	
+
 	// remove the component in line direction
 	p = p - (p * ldir) * ldir;
 
@@ -277,7 +277,7 @@ void db_save(float db, string pFilename)
 {
 	float fh, i, n;
 	fh = fopen(pFilename, FILE_WRITE);
-	if(fh < 0) 
+	if(fh < 0)
 	{
 		print(strcat("^1Can't write DB to ", pFilename));
 		return;
@@ -418,6 +418,7 @@ string GametypeNameFromType(float g)
 	if      (g == GAME_DEATHMATCH) return "dm";
 	else if (g == GAME_TEAM_DEATHMATCH) return "tdm";
 	else if (g == GAME_DOMINATION) return "dom";
+	else if (g == GAME_TOTAL_DOMINATION) return "totaldom";
 	else if (g == GAME_CTF) return "ctf";
 	else if (g == GAME_RUNEMATCH) return "rune";
 	else if (g == GAME_LMS) return "lms";
@@ -429,7 +430,107 @@ string GametypeNameFromType(float g)
 	else if (g == GAME_NEXBALL) return "nexball";
 	else if (g == GAME_CTS) return "cts";
 	else if (g == GAME_FREEZETAG) return "ft";
-	return "dm";
+    else if (g == GAME_VIP) return "vip";
+	return "";
+}
+
+string GametypeFullNameFromType(float g)
+{
+	if      (g == GAME_DEATHMATCH) return "Deathmatch";
+	else if (g == GAME_TEAM_DEATHMATCH) return "Team Deathmatch";
+	else if (g == GAME_DOMINATION) return "Domination";
+	else if (g == GAME_TOTAL_DOMINATION) return "Total Domination";
+	else if (g == GAME_CTF) return "Capture the Flag";
+	else if (g == GAME_RUNEMATCH) return "Rune Match";
+	else if (g == GAME_LMS) return "Last Man Standing";
+	else if (g == GAME_ARENA) return "Arena";
+	else if (g == GAME_KEYHUNT) return "Key Hunt";
+	else if (g == GAME_ONSLAUGHT) return "Onslaught";
+	else if (g == GAME_ASSAULT) return "Assault";
+	else if (g == GAME_RACE) return "Race";
+	else if (g == GAME_NEXBALL) return "Nexball";
+	else if (g == GAME_CTS) return "CTS";
+	else if (g == GAME_FREEZETAG) return "Freeze Tag";
+    else if (g == GAME_VIP) return "VIP";
+	return "Unknown";
+}
+
+float GametypeIDFromName(string gtname)
+{
+	local string s;
+	local float i;
+	i = GAME_DEATHMATCH;
+
+	do
+	{
+		s = GametypeNameFromType(i);
+		if(gtname == s) return i;
+		++i;
+	} while(s != "");
+
+	return -1;
+}
+
+string GametypeFullNameFromName(string gtname)
+{
+	return(GametypeFullNameFromType(GametypeIDFromName(gtname)));
+}
+
+// this function expands possible aliases to real gametype names.
+// Update this code when adding new gametypes and/or builtin aliases to existing ones
+string NormalizeGametypeName(string gtname)
+{
+	switch(gtname)
+	{
+		case "ft": case "freezetag":
+			return "ft";
+
+		case "kh": case "keyhunt":
+			return "kh";
+
+		case "ctf":
+			return "ctf";
+
+		case "dom": case "domination":
+			return "dom";
+
+		case "totaldom": case "tdom": case "totaldomination":
+			return "totaldom";
+
+		case "vip":
+			return "vip";
+
+		case "dm": case "deathmatch":
+			return "dm";
+
+		case "tdm": case "teamdeathmatch": case "teamdm":
+			return "tdm";
+
+		default:
+			return "";
+	}
+}
+
+float ListContains(string source, string key, string sep)
+{
+	local float i;
+	local float n = tokenizebyseparator(source, sep);
+
+	for(i = 0; i < n; ++i)
+		if(argv(i) == key) return 1;
+	return 0;
+}
+
+
+string mmss(float tenths)
+{
+	float minutes;
+	string s;
+	tenths = floor(tenths + 0.5);
+	minutes = floor(tenths / 600);
+	tenths -= minutes * 600;
+	s = ftos(1000 + tenths);
+	return strcat(ftos(minutes), ":", substring(s, 1, 2));
 }
 
 string mmsss(float tenths)
@@ -482,7 +583,7 @@ string ScoreString(float pFlags, float pValue)
 		valstr = TIME_ENCODED_TOSTRING(pValue);
 	else
 		valstr = ftos(pValue);
-	
+
 	return valstr;
 }
 
@@ -689,7 +790,7 @@ string fixPriorityList(string order, float from, float to, float subtract, float
 				neworder = strcat(neworder, ftos(w), " ");
 		}
 	}
-	
+
 	return substring(neworder, 0, strlen(neworder) - 1);
 }
 
@@ -714,7 +815,7 @@ string swapInPriorityList(string order, float i, float j)
 		}
 		return substring(s, 0, strlen(s) - 1);
 	}
-	
+
 	return order;
 }
 
@@ -1088,7 +1189,7 @@ vector rgb_to_hsv(vector rgb)
 		hsv_y = 0;
 	else
 		hsv_y = 1 - mi/ma;
-	
+
 	return hsv;
 }
 
@@ -1106,7 +1207,7 @@ vector rgb_to_hsl(vector rgb)
 	ma = max3(rgb_x, rgb_y, rgb_z);
 
 	hsl_x = rgb_mi_ma_to_hue(rgb, mi, ma);
-	
+
 	hsl_z = 0.5 * (mi + ma);
 	if(mi == ma)
 		hsl_y = 0;
@@ -1114,7 +1215,7 @@ vector rgb_to_hsl(vector rgb)
 		hsl_y = (ma - mi) / (2*hsl_z);
 	else // if(hsl_z > 0.5)
 		hsl_y = (ma - mi) / (2 - 2*hsl_z);
-	
+
 	return hsl;
 }
 
@@ -1126,7 +1227,7 @@ vector hsl_to_rgb(vector hsl)
 		maminusmi = hsl_y * 2 * hsl_z;
 	else
 		maminusmi = hsl_y * (2 - 2 * hsl_z);
-	
+
 	// hsl_z     = 0.5 * mi + 0.5 * ma
 	// maminusmi =     - mi +       ma
 	mi = hsl_z - 0.5 * maminusmi;
@@ -1239,7 +1340,7 @@ float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 		// terminate, as the range still halves each time - but nevertheless, it is
 		// guaranteed that it finds ONE valid cutoff place (where "left" is in
 		// range, and "right" is outside).
-		
+
 		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
 		// and decrease left on the basis of the chars detected of the truncated tag
 		// Even if the ^xrgb tag is not complete/correct, left is decreased
@@ -1267,7 +1368,7 @@ float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 				}
 			}
 	}
-	
+
 	return left;
 }
 

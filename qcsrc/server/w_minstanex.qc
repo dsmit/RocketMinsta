@@ -36,7 +36,8 @@ void W_Explosive_Attack (float attacktype)
 	local entity gren;
 
 	local float expl_damage = cvar("g_explosive_splash_damage") / 2; //I'm not even sure why is this here?
-	local float expl_recoil = 4;
+	local float expl_recoil;
+	expl_recoil = 4;
 	
 	if(cvar("g_explosive_norecoil"))
 		expl_recoil = 0;
@@ -120,7 +121,7 @@ void W_MinstaNex_Attack (void)
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
+	
 
 	yoda = 0;
 	damage_goodhits = 0;
@@ -128,11 +129,13 @@ void W_MinstaNex_Attack (void)
 	
 	//<akari>
 	//Executes the explosive attack
+	
 	if(cvar("g_balance_minstanex_explosive"))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
+	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((cvar("g_explosive_minsta_damage") >= 0)? cvar("g_explosive_minsta_damage") : 10000000000),
 					   cvar("g_explosive_minsta_force"), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
@@ -232,117 +235,93 @@ void W_MinstaNex_Attack (void)
 	}
 }
 
-
-//<akari>
-.entity hooker;
-.entity hooked_to;
-entity nobody;
-string GetHitSound(entity attacker, entity target);
-//</akari>
-
 .float minstagib_nextthink;
 void minstagib_ammocheck (void)
 {
 	if (time < self.minstagib_nextthink || self.deadflag || gameover)
 		return;
 
-	//<akari>
-	//
-	// I have commented the code below out to disable the no-ammo-death in minstagib.
-	// Enabling it will cause problems.
-	
-	/*if (self.ammo_cells <= 0)
+	if(g_minstagib)
+	if(!cvar("g_balance_minstanex_explosive"))
+	if not(g_freezetag && self.freezetag_frozen)
+	if (self.ammo_cells <= 0)
 	{
+		#define AMMO_DEATHMESSAGE(m) bigprint_spec(self, m, "", 1)
+		
 		if (self.health == 5)
 		{
-			centerprint(self, "you're dead now...\n");
+			//AMMO_DEATHMESSAGE("you're dead now");
 			Damage(self, self, self, 5, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/terminated.wav");
 		}
 		else if (self.health == 10)
 		{
-			centerprint(self, "^11^7 second left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^11^7 second left to find some ammo");
 			Damage(self, self, self, 5, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/1.wav");
 		}
 		else if (self.health == 20)
 		{
-			centerprint(self, "^12^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^12^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/2.wav");
 		}
 		else if (self.health == 30)
 		{
-			centerprint(self, "^13^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^13^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/3.wav");
 		}
 		else if (self.health == 40)
 		{
-			centerprint(self, "^14^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^14^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/4.wav");
 		}
 		else if (self.health == 50)
 		{
-			centerprint(self, "^15^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^15^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/5.wav");
 		}
 		else if (self.health == 60)
 		{
-			centerprint(self, "^36^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^36^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/6.wav");
 		}
 		else if (self.health == 70)
 		{
-			centerprint(self, "^37^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^37^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/7.wav");
 		}
 		else if (self.health == 80)
 		{
-			centerprint(self, "^38^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^38^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/8.wav");
 		}
 		else if (self.health == 90)
 		{
-			centerprint(self, "^39^7 seconds left to find some ammo\n");
+			AMMO_DEATHMESSAGE("^39^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			announce(self, "announcer/robotic/9.wav");
 		}
 		else if (self.health == 100)
 		{
-			centerprint(self, "get some ammo or\nyou'll be dead in ^310^7 seconds...");
+			AMMO_DEATHMESSAGE("^310^7 seconds left to find some ammo");
 			Damage(self, self, self, 10, DEATH_NOAMMO, self.origin, '0 0 0');
 			if not(self.flags & FL_GODMODE)
 				announce(self, "announcer/robotic/10.wav");
 		}
-	}*/
-	//</akari>
-	
-	//<akari>
-	//Health draining
+	}
 	
 	if(!g_freezetag || !self.freezetag_frozen)
 	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_health_drain") && self.health > cvar("g_explosive_health_min"))
 	{
 		self.health -= cvar("g_explosive_health_drain");
 	}
-	
-	//Hook damage
-	/*if(self.hooker.hooked_to == self)
-	{
-		if(!teams_matter || self.hooker.team != self.team)
-		{
-			play2(self.hooker, "misc/hit.wav");
-			Damage(self, self.hooker.hook, self.hooker, random() * 10, DEATH_NOAMMO, self.origin, '0 0 0');
-		}
-	}*/
-	
-	//</akari>
 	
 	self.minstagib_nextthink = time + 1;
 }
@@ -491,7 +470,7 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells))
+		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && cvar("g_balance_minstanex_explosive")))
 		{
 			if(g_freezetag)
 			if(self.freezetag_frozen)
@@ -539,11 +518,9 @@ float w_minstanex(float req)
 	{
 		precache_model ("models/nexflash.md3");
 		
-		/*
 		precache_model ("models/weapons/g_minstanex.md3");
 		precache_model ("models/weapons/v_minstanex.md3");
 		precache_model ("models/weapons/h_minstanex.dpm");
-		*/
 		
 		precache_model ("models/weapons/g_nex.md3");
 		precache_model ("models/weapons/v_nex.md3");
@@ -555,7 +532,6 @@ float w_minstanex(float req)
 		precache_sound ("weapons/nexwhoosh3.wav");
 		w_laser(WR_PRECACHE);
 		
-		//Wtf? Why doesn't this shit work?
 		precache_sound (RM_SOUND_LASER_PRIMARY);
 		precache_sound (RM_SOUND_LASER_SECONDARY);
 	}

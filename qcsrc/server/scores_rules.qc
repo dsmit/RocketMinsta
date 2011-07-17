@@ -91,14 +91,44 @@ void ScoreRules_ctf()
 #define ST_DOM_TICKS 1
 #define SP_DOM_TICKS 4
 #define SP_DOM_TAKES 5
-void ScoreRules_dom()
+#define ST_TDOM_CAPS 6
+void ScoreRules_tdom()
 {
 	float sp_domticks, sp_score;
 	sp_score = sp_domticks = 0;
+	
+	/*CheckAllowedTeams(world);
+	ScoreRules_basics(2 + (c3>=0), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // NOTE this assumes that the rogue team is team 3
+	ScoreInfo_SetLabel_TeamScore  (ST_TDOM_CAPS,    "caps",      SFL_SORT_PRIO_PRIMARY);
+	ScoreInfo_SetLabel_TeamScore  (ST_DOM_TICKS,    "ticks",     sp_domticks);
+	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TICKS,    "ticks",     sp_domticks);
+	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TAKES,    "takes",     0);
+	ScoreRules_basics_end();
+	*/
+	
+	CheckAllowedTeams(world);
+	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TICKS,    "ticks",     0);
+	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TAKES,    "takes",     0);
+	ScoreRules_basics_end();
+}
+
+void ScoreRules_dom()
+{
+	if(g_totaldomination)
+	{
+		ScoreRules_tdom();
+		return;
+	}
+	
+	float sp_domticks, sp_score;
+	sp_score = sp_domticks = 0;
+	
 	if(cvar("g_domination_disable_frags"))
 		sp_domticks = SFL_SORT_PRIO_PRIMARY;
 	else
 		sp_score = SFL_SORT_PRIO_PRIMARY;
+	
 	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), sp_score, sp_score, TRUE);
 	ScoreInfo_SetLabel_TeamScore  (ST_DOM_TICKS,    "ticks",     sp_domticks);
@@ -193,10 +223,24 @@ void ScoreRules_nexball(float teams)
 
 // FreezeTag stuff
 #define SP_FREEZETAG_REVIVALS 4
+//#define SP_FREEZETAG_FROZENSTATUS 5
 void ScoreRules_freezetag()
 {
 	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
-	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revivals",		0);
+	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revivals",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_FROZENSTATUS,	"fstat",		SFL_LOWER_IS_BETTER);
+	ScoreRules_basics_end();
+}
+
+// VIP stuff
+#define SP_VIP_VIPKILLS 4
+#define SP_VIP_SURVIVALS 5
+void ScoreRules_vip()
+{
+	CheckAllowedTeams(world);
+	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreInfo_SetLabel_PlayerScore(SP_VIP_VIPKILLS,		"vipkills",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_VIP_SURVIVALS,	"survivals",	0);
 	ScoreRules_basics_end();
 }

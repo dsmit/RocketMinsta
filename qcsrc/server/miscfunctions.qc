@@ -213,7 +213,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm)
         if (self.team)
             have_team_spawns = 1;
 
@@ -228,6 +228,27 @@ void relocate_spawnpoint()
         setsize(e, '-8 -8 -8', '8 8 8');
         e.solid = SOLID_TRIGGER;
     }
+}
+
+float count_team_spawns()
+{
+	float r, b, y, p, c;
+	entity e;
+	
+	#define HANDLETEAM(o,p) case o: if(!p) c++; p = 1; break;
+	for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) if(e.team)
+	{
+		switch(e.team)
+		{
+			HANDLETEAM(COLOR_TEAM1, r)
+			HANDLETEAM(COLOR_TEAM2, b)
+			HANDLETEAM(COLOR_TEAM3, y)
+			HANDLETEAM(COLOR_TEAM4, p)
+		}
+	}
+	#undef HANDLETEAM
+	
+	return c;
 }
 
 #define strstr strstrofs
@@ -1420,43 +1441,13 @@ void precache_all_models(string pattern)
     search_end(globhandle);
 }
 
-//<akari>
-string hook_hitsound;
-string hook_teamhitsound;
-
-string Hook_GetHitSound_ENEMY()
-{
-	if(fopen("sounds/misc/hit_hook.wav", FILE_READ) != -1)
-		return "misc/hit_hook.wav";
-	return "misc/hit.wav";
-}
-
-string Hook_GetHitSound_TEAM()
-{
-	if(fopen("sounds/misc/teamhit_hook.wav", FILE_READ) != -1)
-		return "misc/teamhit_hook.wav";
-	return "misc/typehit.wav";
-}
-//</akari>
-
 void precache()
 {
-    //<akari>
-    hook_hitsound = Hook_GetHitSound_ENEMY();
-    hook_teamhitsound = Hook_GetHitSound_TEAM();
-    
-    bprint("Hook hit sound: ", hook_hitsound, "\n");
-    bprint("Hook teamhit sound: ", hook_teamhitsound, "\n");
-    
-    precache_sound(hook_hitsound);
-    precache_sound(hook_teamhitsound);
-    
     precache_sound (RM_SOUND_MORNINGRESCUE);
 	precache_sound (RM_SOUND_PHOENIX);
 	precache_sound (RM_SOUND_REBIRTH);
 	precache_sound (RM_SOUND_RECOVERY);
-    
-    //</akari>
+    precache_sound (RM_SOUND_KILL);
     
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");
@@ -2006,6 +1997,7 @@ float MAX_IPBAN_URIS = 16;
 float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
+//float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2021,6 +2013,10 @@ void URI_Get_Callback(float id, float status, string data)
     {
         // online ban list
         OnlineBanList_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_IP2C)
+    {
+        IP2C_URI_Get_Callback(id, status, data);
     }
     else
     {
@@ -2762,3 +2758,399 @@ void madokaprint_spec(entity pl, string msg, string comment, float staytime)
     }
 }
 
+#define HF_DEFAULT_TIME 1.5
+//#define HF_DEFAULT_INT 0.3
+#define HF_DEFAULT_INT 0.5
+#define HF_DEFAULT_ALPHA 0.4
+
+void hudflash(entity e, vector flashcolor, float staytime, float intensivity, float alph)
+{
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
+    //WriteShort(MSG_ONE, compressShortVector(flashcolor));
+    
+    WriteCoord(MSG_ONE, flashcolor_x);
+    WriteCoord(MSG_ONE, flashcolor_y);
+    WriteCoord(MSG_ONE, flashcolor_z);
+    
+    WriteCoord(MSG_ONE, staytime);
+    WriteCoord(MSG_ONE, intensivity);
+    WriteCoord(MSG_ONE, alph);
+}
+
+void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
+{
+    if(clienttype(e) != CLIENTTYPE_REAL)
+        return;
+    
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH_TEAMCOLOR);
+    WriteCoord(MSG_ONE, staytime);
+    WriteCoord(MSG_ONE, intensivity);
+    WriteCoord(MSG_ONE, alph);
+}
+
+void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivity, float alph)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            hudflash(e, flashcolor, staytime, intensivity, alph);
+    }
+}
+
+void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
+{
+    local entity e; FOR_EACH_REALCLIENT(e)
+    {
+        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+            hudflash_teamcolor(e, staytime, intensivity, alph);
+    }
+}
+
+void hudflash_default(entity e, vector flashcolor)
+{
+    hudflash(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_default_spec(entity e, vector flashcolor)
+{
+    hudflash_spec(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_teamcolor_default(entity e)
+{
+    hudflash_teamcolor(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void hudflash_teamcolor_default_spec(entity e)
+{
+    hudflash_teamcolor_spec(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+}
+
+void defer_think()
+{
+    entity oself;
+
+    oself           = self;
+    self            = self.owner;
+    oself.think     = SUB_Remove;
+    oself.nextthink = time;
+
+    oself.use();
+}
+
+/*
+    Execute func() after time + fdelay.
+    self when func is executed = self when defer is called
+*/
+void defer(float fdelay, void() func)
+{
+    entity e;
+
+    e           = spawn();
+    e.owner     = self;
+    e.use       = func;
+    e.think     = defer_think;
+    e.nextthink = time + fdelay;
+}
+
+// universal endround for all supported gametypes
+void freezetag_EndRound();
+void vip_EndRound();
+void tdom_EndRound();
+
+void EndRound()
+{
+    if(g_freezetag)
+        freezetag_EndRound();
+else
+    if(g_vip)
+        vip_EndRound();
+else
+    if(g_totaldomination)
+        tdom_EndRound();
+else
+    if(g_keyhunt)
+        kh_FinishRound();
+else
+    bprint("EndRound() for an unsupported gametype!?\n");
+}
+
+float EndRound_Allowed()
+{
+    return( g_freezetag
+         || g_vip
+         || g_totaldomination
+         || g_keyhunt );
+}
+
+void SendSpeedRecord(entity e)
+{
+    if(e.classname == "")
+        return;
+    
+    msg_entity = e;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_SPEEDRECORD);
+    WriteShort(MSG_ONE, highest_velocity);
+    WriteString(MSG_ONE, highest_velocity_name);
+}
+
+void UpdateHighestVelocity(float v, entity e)
+{
+    highest_velocity = v;
+    highest_velocity_entity = e;
+    
+    if(highest_velocity_name)
+        strunzone(highest_velocity_name);
+        
+    highest_velocity_name = strzone(e.netname);
+    
+    FOR_EACH_REALCLIENT(other)
+        SendSpeedRecord(other);
+}
+
+.float is_away;
+
+void MarkAway(entity pl, float force)
+{
+    if(clienttype(pl) != CLIENTTYPE_REAL)
+        return;
+    
+    if(pl.is_away)
+        return;
+    
+    local float idlefor = floor((time - self.parm_idlesince) / 60);
+    
+    if(pl.classname == "player")
+        stuffcmd(pl, "cmd spectate\n");
+    stuffcmd(pl, "set _cl_afkstate 1\n");
+    
+    if(force)
+    {
+        bprint(pl.netname, " ^4is AFK\n");
+        centerprint(pl, "You have been set AFK");
+    }
+    else
+    {
+        bprint(pl.netname, " ^4is AFK (idle for ", ftos(idlefor), " minutes)\n");
+        centerprint(pl, strcat("You have been set AFK (idle for ", ftos(idlefor), " minutes)"));
+    }
+    
+    pl.is_away = 1;
+    
+    if(pl.scorekeeper)
+    {
+        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
+        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
+    }
+    else
+        bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+}
+
+void UnmarkAway(entity pl)
+{
+    if(clienttype(pl) != CLIENTTYPE_REAL)
+        return;
+    
+    if(!pl.is_away)
+        return;
+    
+    stuffcmd(pl, "set _cl_afkstate 0\n");
+    
+    bprint(pl.netname, " ^4is back\n");
+    centerprint(pl, "You are no longer marked AFK");
+    pl.is_away = 0;
+    
+    if(pl.scorekeeper)
+    {
+        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
+        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
+    }
+    else
+        bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+    
+    pl.parm_idlesince = time;
+}
+
+float CountAFKClients()
+{
+    local entity e;
+    local float r;
+    r = 0;
+    FOR_EACH_REALCLIENT(e)
+    {
+        if(e.is_away)
+        {
+            ++r;
+            //bprint(e.netname, " ^7is away\n");
+        }
+    }
+    return r;
+}
+
+// do i have to use floats for everything?
+// --thexdarksider
+// (apparently yes i do, whatever) -- 27/05/11
+float GameTypeFilter_Allowed (string map, string gametype)
+{
+	local string forbiddenModes;
+	local float fmCount, i;
+	forbiddenModes = cvar_string (strcat ("g_gametypefilter_", map));
+	fmCount = tokenizebyseparator (forbiddenModes, " ");
+	for (i = 0; i < fmCount; i ++)
+		if (argv (i) == gametype) return 0;
+	return 1;
+}
+
+float Banning_IsNameBanned (string name)
+{
+	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
+}
+
+float Banning_BanPlayerByName (string name, string reason)
+{
+	if (Banning_IsNameBanned (name))
+		return 0;
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "1");
+	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), reason);
+	return 1;
+}
+
+float Banning_UnbanPlayerByName (string name)
+{
+	if (! Banning_IsNameBanned (name))
+		return 0;
+	db_put (ServerProgsDB, strcat ("nickbanned/", name), "0");
+//	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), "");
+//	leave the reason so we can know why was the chap banned in the first place
+	return 1;
+}
+
+string GetVoteList_All()
+{
+	if(!cvar("g_explosive_gametypevote_call"))
+		return cvar_string("sv_vote_commands");
+	
+	local string votes;
+	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
+	
+	for(i = 0; i < n; ++i)
+	{
+		if(NormalizeGametypeName(argv(i)) == "")
+			votes = strcat(votes, argv(i), " ");
+	}
+	
+	return strcat(votes, cvar_string("g_explosive_gametypevote_options"));
+}
+
+string GetVoteList_Filtered()
+{
+	local string votes;
+	local float i, n = tokenizebyseparator(GetVoteList_All(), " ");
+	
+	for(i = 0; i < n; ++i)
+	{
+		float c = ListContains(cvar_string("g_explosive_secretvotes"), argv(i), " ");
+		
+		// ListContains tokenizes
+		n = tokenizebyseparator(GetVoteList_All(), " ");
+		
+		if not(c)
+			votes = strcat(votes, argv(i), " ");
+	}
+	
+	return votes;
+}
+
+string GetVoteList()
+{
+	if(cvar("g_explosive_secretvotes_enabled"))
+		return GetVoteList_All();
+	else
+		return GetVoteList_Filtered();
+}
+
+void GameCommand(string);
+void ShuffleMaplist();
+void UpdateCTFBlacklist()
+{
+	registercvar("_g_rm_oldmaplist", "");
+	
+	if(cvar_string("g_maplist") == "")
+	{
+		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		if(cvar("g_maplist_shuffle"))
+			ShuffleMaplist();
+		localcmd("\nmenu_cmd sync\n");
+	}
+	
+	if(cvar_string("_g_rm_oldmaplist") == cvar_string("g_maplist"))
+		return;
+	
+	print("^5Maplist has changed, updating CTF blacklist...\n");
+	
+	local float n, i, fh, supported;
+	local string map_name, s, mlist;
+	
+	mlist = cvar_string("g_maplist");
+	n = tokenizebyseparator(mlist, " ");
+	
+	for(i = 0; i < n; ++i)
+	{
+		supported = FALSE;
+		map_name = argv(i);
+		print(" -  processing ^2", map_name, "^7... ");
+		
+		fh = fopen(strcat("maps/", map_name, ".mapinfo"), FILE_READ);
+		if(fh < 0)
+		{
+			print("^1failed to open mapinfo\n");
+			continue;
+		}
+		
+		while((s = fgets(fh)))
+		{
+			tokenize_console(s);
+			
+			if(argv(0) != "type")
+				continue;
+			
+			if(argv(1) == "ctf")
+			{
+				print("^3supports CTF, not updating filter\n");
+				supported = TRUE;
+				break;
+			}
+		}
+		fclose(fh);
+		
+		if(!supported)
+		{
+			registercvar(strcat("g_gametypefilter_", map_name), "ctf");
+			
+			//perhaps should be exported into another function?
+			GameCommand(strcat("addtolist g_gametypefilter_", map_name, " ctf"));
+			
+			print("^3does not support CTF, added to filter\n");
+		}
+		
+		// tokenize_console breaks this
+		n = tokenizebyseparator(mlist, " ");
+	}
+	
+	cvar_set("_g_rm_oldmaplist", cvar_string("g_maplist"));
+}

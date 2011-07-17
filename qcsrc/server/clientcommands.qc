@@ -175,6 +175,10 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "spawn")
 	if(cmd != "begin")
 	if(cmd != "rmcfgreport")
+	if(cmd != "hudinfo")
+	if(cmd != "fovreport")
+	if(cmd != "zoomreport")
+	if(cmd != "menu_request")
 	{
 		if(cmd_floodcheck())
 			return;
@@ -187,10 +191,48 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "rmcfgreport") {
 		print("^2Received rmcfgreport from ", self.netname, "^2: ", s, "\n");
 		
+		if(!self)
+			return;
+			
 		if(self.rmcfgreport)
 			strunzone(self.rmcfgreport);
 		
+		if(!self)
+			return;
+		
 		self.rmcfgreport = strzone(s);
+	} else if(cmd == "menu_request"){
+		// Report that this server is running RM
+		stuffcmd(self, "set _rm_server 1\n");
+		
+		// Report available votes
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
+		
+		// Report availability of certain RM options
+		#define OPTAVAIL_RAW(o,v) stuffcmd(self, strcat("set _rm_optavail_", o, " ", v, "\n"));
+		#define OPTAVAIL(o,v) OPTAVAIL_RAW(o, ftos(cvar(v)))
+		#define OPTAVAIL_NOT(o,v) OPTAVAIL_RAW(o, ftos(!cvar(v)))
+		
+		OPTAVAIL	("anonspec", "g_explosive_anonspecs")
+		OPTAVAIL	("showspec", "g_explosive_showspecs")
+		//OPTAVAIL	("teamlasers", "g_explosive_laser_teamcolor")
+		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
+		OPTAVAIL	("shownames", "g_explosive_shownames")
+		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
+		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
+		
+		#undef OPTAVAIL_RAW
+		#undef OPTAVAIL
+		#undef OPTAVAIL_NOT
+		
+		stuffcmd(self, strcat("set _g_balance_minstanex_explosive ", ftos(cvar("g_balance_minstanex_explosive")), "\n"));
+		
+		// Update all necessary dialogs
+		stuffcmd(self, "menu_cmd update_rmvars\n");
+		
+		// And the scoreboard fields
+		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "spyrmcfg") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
 		
@@ -235,11 +277,72 @@ void SV_ParseClientCommand(string s) {
 			return;
 		}
 		
-		sprint(self, "^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n");
+		sprint(self, strcat("^1Invalid value for anonspec (", val, "^1). Accepting only 1 or 0\n"));
 		return;
 	} else if(cmd == "madoka") {
-		self.madoka = stof(argv(1));
+		if(!self)
+			return;
+		
+		if(cvar("g_explosive_allowmadoka"))
+			self.madoka = stof(argv(1));
+		else
+			self.madoka = 0;
+		
+		if(!self)
+			return;
+		
+		if(!self.scorekeeper)
+			return;
+		
+		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
+		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
+		WriteSpectatorInfo(self);
 		return;
+	} else if(cmd == "nokillsound") {
+		if(!self)
+			return;
+			
+		self.rm_nokillsound = stof(argv(1));
+	} else if(cmd == "hudinfo") {
+		if(!self)
+			return;
+		
+		self.hud_old = stof(argv(1));
+		self.hud_alt = stof(argv(2));
+		
+		if(self.hudskin)
+			fstrunzone(self.hudskin);
+		self.hudskin = strzone(argv(3));
+		
+		WriteSpectatorInfo(self);
+	} else if(cmd == "fakeflag") {
+		if(!self)
+			return;
+		
+		if(!cvar("g_explosive_allow_fakeflag"))
+		{
+			sprint(self, "^1'fakeflag' is forbidden on this server.");
+			
+			if(strtoupper(argv(1)) == "JP")
+				sprint(self, " You weeaboo.");
+			sprint(self, "\n");
+			
+			return;
+		}
+		
+		if(strlen(argv(1)) != 2)
+			return;
+		
+		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
+	} else if(cmd == "fovreport") {
+		if(!self) return;
+		self.clientfov = stof(argv(1));
+		WriteSpectatorInfo(self);
+	} else if(cmd == "zoomreport") {
+		if(!self) return;
+		self.speczoom_speed = stof(argv(1));
+		self.speczoom_factor = stof(argv(2));
+		WriteSpectatorInfo(self);
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));
@@ -337,6 +440,7 @@ void SV_ParseClientCommand(string s) {
 				centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
 			}
 		}
+		UnmarkAway(self);
 	} else if( cmd == "selectteam" ) {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -397,13 +501,16 @@ void SV_ParseClientCommand(string s) {
 			VoiceMessage(argv(1), substring(s, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
 		else
 			VoiceMessage(argv(1), "");
+		UnmarkAway(self);
 	} else if(cmd == "say") {
 		if(tokens >= 2)
 			Say(self, FALSE, world, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), 1);
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "say_team") {
 		if(tokens >= 2)
 			Say(self, TRUE, world, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), 1);
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "tell") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
@@ -417,6 +524,7 @@ void SV_ParseClientCommand(string s) {
 				trigger_magicear_processmessage_forallears(self, -1, world, substring(s, argv_start_index(ParseCommandPlayerSlotTarget_firsttoken), argv_end_index(-1) - argv_start_index(ParseCommandPlayerSlotTarget_firsttoken)));
 			sprint(self, "ERROR: usage: tell # playerid text...\n");
 		}
+		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
 	} else if(cmd == "info") {
 		cmd = cvar_string(strcat("sv_info_", argv(1)));
@@ -449,6 +557,8 @@ void SV_ParseClientCommand(string s) {
 		Score_NicePrint(self);
 	} else if(cmd == "cvar_changes") {
 		sprint(self, cvar_changes);
+	} else if(cmd == "afk") {
+		MarkAway(self, 1);
 	} else if(cmd == "pointparticles") {
 		if((sv_cheats || self.maycheat) && tokens == 5)
 		{
@@ -752,6 +862,15 @@ void SV_ParseClientCommand(string s) {
 		}
 		else
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
+	} else if (cmd == "hidecountry") {
+		if (! self) return;
+		if (! cvar ("g_explosive_allow_hidecountry"))
+		{
+			sprint (self, "^1hidecountry is not allowed on this server.\n");
+			return;
+		}
+		self.hidecountry = stof (argv (1));
+		IP2C_SetCountry (self);
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
@@ -801,6 +920,8 @@ void SV_ParseClientCommand(string s) {
 
 			if (timeoutStatus == 2) //when game is paused, no flood protection
 				self.nickspamcount = self.nickspamtime = 0;
+			
+			UnmarkAway(self);
 		}
 
 		clientcommand(self,s);
@@ -813,6 +934,7 @@ void SV_ParseClientCommand(string s) {
 	}
 }
 
+void VoteDialog_Reset();
 void ReadyRestartForce()
 {
 	local entity e;
@@ -869,12 +991,22 @@ void ReadyRestartForce()
 	if (!cvar("sv_ready_restart_after_countdown"))
 		reset_map(TRUE);
 
+	// fix vote dialog
+	VoteDialog_Reset();
+
 	if(cvar("sv_eventlog"))
 		GameLogEcho(":restart");
 }
 
 void ReadyRestart()
 {
+	if(forbidrestart)
+	{
+		print("FIXME: tried to restart while restarts are forbidden\n");
+		backtrace("ReadyRestart traceback");
+		return;
+	}
+	
 	// no arena, assault support yet...
 	if(g_arena | g_assault | gameover | intermission_running | race_completing)
 		localcmd("restart\n");

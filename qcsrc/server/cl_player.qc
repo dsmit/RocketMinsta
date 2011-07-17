@@ -1,3 +1,4 @@
+
 float weaponstats_buffer;
 
 void WeaponStats_Init()
@@ -586,6 +587,79 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	if(IsDifferentTeam(self, attacker))
 		valid_damage_for_weaponstats = 1;
 	
+	// Print damage to players
+	local float olddamage, armordamage;
+	local entity targ;
+	targ = self;
+	olddamage = damage;
+	
+	if(!g_minstagib)
+	{
+		damage = dh - max(self.health, 0);
+		armordamage = da - max(self.armorvalue, 0);
+	
+		damage = max(0, damage);
+		armordamage = max(0, armordamage);
+	
+		if(attacker.classname == "player")
+		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
+		{
+			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
+			PlayerScore_Add(attacker, SP_SCORE, armordamage * 0.1);
+			
+			if(attacker != targ) if(damage || armordamage)
+				hudflash_teamcolor_default_spec(attacker);
+		}
+		
+		if(!cvar("g_explosive_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
+		{
+			float i;
+			
+			for(i = 0; i < 2; i++)
+			{
+				local string dmgstring, wpnstring;
+				
+				// To-do: generate prints client-side, send all the crap through a tempentity
+				
+				if(i) // damage
+				{
+					if(!damage)
+						continue;
+					
+					dmgstring = ftos(rint(damage));
+				}
+				else //armor damage
+				{
+					if(!armordamage)
+						continue;
+					
+					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
+				}
+				
+				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+				if(!cvar("g_explosive_extendfragmessages")) wpnstring = "";
+				
+				if(attacker.classname == "player") if(attacker != targ)
+				{
+					if(targ.netname)
+						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
+				}
+				
+				if(attacker.netname)
+				{
+					if(attacker == targ)
+						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
+					else
+						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
+				}
+				else
+					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
+				hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
+			}
+		}
+		damage = olddamage;
+	}
+	
 	if(valid_damage_for_weaponstats)
 	{
 		dh = dh - max(self.health, 0);
@@ -653,6 +727,9 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_inflictor = inflictor;
 		frag_target = self;
 		if(freezetag_PlayerDies())
+			return;
+		
+		if(vip_PlayerDies(deathtype))
 			return;
 			
 		if(self == attacker)
@@ -764,6 +841,59 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
 	}
+}
+
+// sendflags use: 1 = origin, 2 = health/armor, 0x80 = same team (includes health), 4 = entity out of range/culled
+float SendEntity_ShowNames(entity to, float sendflags)
+{
+    WriteByte(MSG_ENTITY, ENT_CLIENT_SHOWNAMES);
+    WriteByte(MSG_ENTITY, num_for_edict(self.owner));
+
+    sendflags = sendflags & 127;
+    if(teams_matter && self.owner.team == to.team)
+        sendflags |= 128;
+    else
+        sendflags &~= 2;
+    WriteByte(MSG_ENTITY, sendflags);
+    if(sendflags & 1)
+    {
+        WriteShort(MSG_ENTITY, rint(self.origin_x));
+        WriteShort(MSG_ENTITY, rint(self.origin_y));
+        WriteShort(MSG_ENTITY, rint(self.origin_z));
+    }
+    if(sendflags & 2)
+    {
+        WriteByte(MSG_ENTITY, self.health);
+        WriteByte(MSG_ENTITY, self.armorvalue);
+    }
+    return TRUE;
+}
+
+const vector SHOWNAMES_ORIGIN_OFFSET = '0 0 48';
+void shownames_think()
+{
+	if(self.origin - SHOWNAMES_ORIGIN_OFFSET != self.owner.origin)
+	{
+		setorigin(self, self.owner.origin + SHOWNAMES_ORIGIN_OFFSET);
+		self.SendFlags |= 1;
+	}
+	if(self.health != max(0, floor(self.owner.health)) || self.armorvalue != max(0, floor(self.owner.armorvalue)))
+	{
+		self.health = max(0, floor(self.owner.health));
+		self.armorvalue = max(0, floor(self.owner.armorvalue));
+		self.SendFlags |= 2;
+	}
+    self.nextthink = time;
+}
+
+float shownames_customize()
+{
+    if(self.owner != other) // no need to spam own coordinates
+    if(vlen(other.origin - self.origin) < autocvar_sv_shownames_cull_distance) // distance cull
+    if(self.owner.team == other.team || (self.owner.team != other.team && checkpvs(self.origin, other)))
+        return TRUE;
+
+    return FALSE;
 }
 
 float UpdateSelectedPlayer_countvalue(float v)
@@ -1439,7 +1569,7 @@ void VoiceMessage(string type, string msg)
 		self.flood_field = flood = 0;
 
 	if (msg != "")
-		Say(self, ownteam, world, msg, 0);
+		Say(self, ownteam, world, msg, 1);
 
 	if (!flood)
 		PlayerSound(sample, CHAN_VOICE, voicetype);

@@ -75,6 +75,14 @@ float RemapVote(string vote, string cmd, entity e)
 	float vote_argc;
 	entity victim;
 	vote_argc = tokenize_console(vote);
+	local string s;
+
+	if(!e.vote_master)
+	if (time - cvar ("_sv_rm_lastvote") < cvar ("g_explosive_vote_mindelay"))
+	{
+		sprint (e, strcat ("^1You cannot call votes this often. Please wait for another ^2", ftos ((cvar ("_sv_rm_lastvote") + cvar("g_explosive_vote_mindelay")) - time), " ^1second(s) and try again.\n"));
+		return FALSE;
+	}
 
 	if(!VoteAllowed(argv(0), cmd))
 		return FALSE;
@@ -84,7 +92,7 @@ float RemapVote(string vote, string cmd, entity e)
 
 	// remap chmap to gotomap (forces intermission)
 	if(vote_argc < 2)
-		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban") // won't work without arguments
+		if(argv(0) == "chmap" || argv(0) == "gotomap" || argv(0) == "kick" || argv(0) == "kickban" || argv (0) == "nickban") // won't work without arguments
 			return FALSE;
 	if(argv(0) == "chmap")
 	{
@@ -93,29 +101,102 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	if(argv(0) == "gotomap")
 	{
-		if(!(vote = ValidateMap(substring(vote, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), e)))
+		if(vote_argc > 2)
+			s = strcat(" ", argv(2));
+		
+		//if(!(vote = ValidateMap(substring(vote, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), e)))
+		if(!(vote = ValidateMap(argv(1), e)))
 			return FALSE;
-		vote = strcat("gotomap ", vote);
+		
+		vote = strcat("gotomap ", vote, s);
 		vote_argc = tokenize_console(vote); // ValidateMap may have done some stuff to it
+
+		if(vote_argc > 2)
+		{
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
+			
+			s = NormalizeGametypeName(argv(2));
+			if(!ListContains(cvar_string("g_explosive_gametypevote_options"), s, " ")) s = "";
+			
+			// ListContains tokenizes
+			vote_argc = tokenize_console(vote);
+			
+			if(s == "")
+			{
+				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
+				return FALSE;
+			}
+			else if (! GameTypeFilter_Allowed (argv (1), s))
+			{
+				sprint (e, strcat ("^1", GametypeFullNameFromName (s), " is not allowed on the selected map\n"));
+				return FALSE;
+			}
+			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			{
+				// Gametype overplayed?
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
+
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			
+			return TRUE;
+		}
+		else
+		{
+			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
+			{
+				// Moved from ValidateMap
+				sprint (e, strcat ("^1", GametypeFullNameFromType(game), " is not allowed on the selected map\n"));
+				return FALSE;
+			}
+			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
+			// Akari: not needed, will show a gametype voting screen instead
+			
+			/*
+			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
+			{
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
+			*/
+			
+			// Why the hell was this never needed before?
+			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
+			RemapVote_display = strzone(strcat("^1", vote));
+			return TRUE;
+		}
 	}
     if(argv(0) == "endround")
     {
-        if(!g_freezetag)
+        if(!EndRound_Allowed())
         {
-            sprint(self, "endround is available only in Freezetag\n");
+            sprint(self, "endround is not available in current gametype\n");
             return FALSE;
         }
     }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
-		
+
 		if(argv(0) == "kill" && victim.classname != "player")
 		{
-			sprint(self, victim.netname, "^1 is not playing.\n");
+			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));
 			return FALSE;
 		}
 		
@@ -131,21 +212,43 @@ float RemapVote(string vote, string cmd, entity e)
 		}
 		
 		local string cfgname = argv(1), strcfgs, tmpname;
-		local float i, size, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
-		size = search_getsize(rmglob);
+		local float i, globsize, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
+		globsize = search_getsize(rmglob);
 		
-		if(size <= 0)
+		if(globsize <= 0)
 		{
 			sprint(e, "This server doesn't have any custom configurations\n");
 			search_end(rmglob);
 			return FALSE;
 		}
 		
-		for(i = 0; i < size; ++i)
+		local float v;
+		v = cvar("g_explosive_rmcustom_votable_restrict");
+		local string r;
+		r = cvar_string("g_explosive_rmcustom_votable_restrictions");
+		
+		for(i = 0; i < globsize; ++i)
 		{
 			tmpname = search_getfilename(rmglob, i);
 			tmpname = substring(tmpname, strlen("rm-custom/"), strlen(tmpname));
 			tmpname = substring(tmpname, 0, strlen(tmpname) - 4);
+			
+			// Apply restriction rules
+			local float restricted;
+			switch(v)
+			{
+				case 0:
+					restricted =  FALSE;							break;
+				
+				case 1:
+					restricted = !ListContains(r, tmpname, " ");	break;
+				
+				case 2:
+					restricted =  ListContains(r, tmpname, " ");	break;
+			}
+			
+			if(restricted) continue;
+			
 			if(tmpname == cfgname)
 			{
 				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
@@ -196,9 +299,50 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else
 	{
-		RemapVote_vote = vote;
-		RemapVote_display = strzone(strcat("^1", vote));
+		s = NormalizeGametypeName(argv(0));
+		
+		if(s != "")	// detected a gametype vote
+		{
+			// Gametype overplayed?
+			// TODO: Get rid of this, if the gametype is overplayed a gametype voting screen should appear
+			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
+			if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
+			{
+				sprint (e, "^1This gametype is currently overplayed.");
+				if (s == "ft")
+					sprint (e, " Quit the freezefaggotry.");
+				sprint (e, "\n");
+				return FALSE;
+			}
+
+			// Let's give this another shot
+			if (! GameTypeFilter_Allowed (mapname, s))
+			{
+				sprint (e, strcat ("^1", GametypeFullNameFromName(s), " is not allowed on the current map\n"));
+				return FALSE;
+			}
+			if (! cvar ("g_explosive_gametypevote_call"))
+			{
+				sprint (e, "^1Gametype voting is not allowed.\n");
+				return FALSE;
+			}
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+		}
+		else
+		{
+			RemapVote_vote = vote;
+			RemapVote_display = strzone(strcat("^1", vote));
+		}
 	}
+
+	if(argv(0) == "topic")
+	{
+		keeptopic = TRUE;
+		cvar_set("_sv_explosive_topicby", e.netname);
+	}
+
+	cvar_set ("_sv_rm_lastvote", ftos (time));
 
 	return TRUE;
 }
@@ -242,9 +386,18 @@ float GameCommand_Vote(string s, entity e) {
 	float argc;
 	argc = tokenize_console(s);
 	if(argv(0) == "help") {
+		UnmarkAway(e);
 		print_to(e, "  vote COMMANDS ARGUMENTS. See 'vhelp' for more info.");
 		return TRUE;
 	} else if(argv(0) == "vote") {
+		if(e.classname == "")
+		{
+			sprint(e, "^1You must be connected to use vote commands\n");
+			return TRUE;
+		}
+		
+		UnmarkAway(e);
+		
 		if(argv(1) == "") {
 			print_to(e, "^1You have to supply a vote command. See 'vhelp' for more info.");
 		} else if(argv(1) == "help") {
@@ -270,6 +423,8 @@ float GameCommand_Vote(string s, entity e) {
 					vote = VoteParse(s, argc);
 					if(vote == "") {
 						print_to(e, "^1Your vote is empty. See 'vhelp' for more info.");
+					} else if(vote == "$*") {	// happens on "vcall" without arguments
+						stuffcmd(e, "menu_cmd directmenu VcallMenu\n");
 					} else if(e
 						&& time < e.vote_next) {
 							print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote."));
@@ -479,15 +634,7 @@ void VoteHelp(entity e) {
 	print_to(e, "^7If enough of the players vote no the vote is rejected.");
 	print_to(e, strcat("^7If neither the vote will timeout after ", cvar_string("sv_vote_timeout"), "^7 seconds."));
 	print_to(e, "^7You can call a vote for or execute these commands:");
-	
-	local string votes;
-	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
-	
-	for(i = 0; i < n; ++i)
-		if(argv(i) != "walpurgis") if(argv(i) != "supermentalrescue")
-			votes = strcat(votes, argv(i), " ");
-	
-	print_to(e, strcat("^3", votes, "^7and maybe further ^3arguments^7"));
+	print_to(e, strcat("^3", GetVoteList_Filtered(), "^7and maybe further ^3arguments^7"));
 }
 
 string VoteNetname(entity e)
@@ -522,6 +669,16 @@ string ValidateMap(string m, entity e)
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
 		return string_null;
 	}
+
+/*
+//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
+	if (! GameTypeFilter_Allowed (m, GetGametype ()))
+	{
+		print_to (e, strcat ("^2Invalid mode ^1", GametypeFullNameFromType (game), " ^2for map ^1", m));
+		return string_null;
+	}
+	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't
+*/
 
 	return m;
 }
@@ -561,8 +718,15 @@ float VoteCommandInList(string votecommand, string list)
 }
 
 float VoteAllowed(string votecommand, string cmd) {
-	if(VoteCommandInList(votecommand, cvar_string("sv_vote_commands")))
+	local string s;
+	
+	if(VoteCommandInList(votecommand, GetVoteList()))
 		return TRUE;
+
+	if(cvar("g_explosive_gametypevote_call"))
+	if((s = NormalizeGametypeName(votecommand)) != "")
+	if(ListContains(cvar_string("g_explosive_gametypevote_options"), s, " "))
+		return TRUE;			// gametype alias
 
 	if(cmd == "vdo")
 	{
@@ -688,6 +852,9 @@ void VoteCount() {
 
 	FOR_EACH_REALCLIENT(player)
 	{
+		if(player.is_away)
+			continue;
+		
 		if(player.vote_vote == -1) {
 			++nocount;
 		} else if(player.vote_vote == 1) {
@@ -717,6 +884,8 @@ void VoteCount() {
 		abstaincount = realplayerabstaincount;
 		playercount = realplayercount;
 	}
+	
+	//abstaincount += CountAFKClients();
 
 	float votefactor, simplevotefactor;
 	votefactor = bound(0.5, cvar("sv_vote_majority_factor"), 0.999);
@@ -726,7 +895,7 @@ void VoteCount() {
 	//VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
 	
 	local entity _e;
-	FOR_EACH_REALCLIENT(_e)
+	FOR_EACH_REALCLIENT(_e) if(_e.classname != "")
 	{
 		msg_entity = _e;
 		VoteDialog_Update(MSG_ONE, yescount, nocount, needed);

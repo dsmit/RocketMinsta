@@ -89,6 +89,7 @@ void WriteGameCvars()
 	cvar_set("g_dm", ftos(g_dm));
 	cvar_set("g_tdm", ftos(g_tdm));
 	cvar_set("g_domination", ftos(g_domination));
+	cvar_set("g_total_domination", ftos(g_total_domination));
 	cvar_set("g_ctf", ftos(g_ctf));
 	cvar_set("g_runematch", ftos(g_runematch));
 	cvar_set("g_lms", ftos(g_lms));
@@ -100,21 +101,25 @@ void WriteGameCvars()
 	cvar_set("g_nexball", ftos(g_nexball));
 	cvar_set("g_cts", ftos(g_cts));
 	cvar_set("g_freezetag", ftos(g_freezetag));
+    cvar_set("g_vip", ftos(g_vip));
 }
 
 void ReadGameCvars()
 {
 	float found;
 	float prev;
-	float i;
+	//float i;
 
 	found = 0;
 	prev = cvar("gamecfg");
+	
+	/*
 	for(i = 0; i < 2; ++i)
 	{
 		found += (g_dm = (!found && (prev != GAME_DEATHMATCH) && cvar("g_dm")));
 		found += (g_tdm = (!found && (prev != GAME_TEAM_DEATHMATCH) && cvar("g_tdm")));
-		found += (g_domination = (!found && (prev != GAME_DOMINATION) && cvar("g_domination")));
+		found += (g_total_domination = (!found && (prev != GAME_TOTAL_DOMINATION) && cvar("g_total_domination")));
+		found += (g_domination = (!found && (prev != GAME_DOMINATION) && cvar("g_domination") && !cvar("g_total_domination")));
 		found += (g_ctf = (!found && (prev != GAME_CTF) && cvar("g_ctf")));
 		found += (g_runematch = (!found && (prev != GAME_RUNEMATCH) && cvar("g_runematch")));
 		found += (g_lms = (!found && (prev != GAME_LMS) && cvar("g_lms")));
@@ -126,15 +131,115 @@ void ReadGameCvars()
 		found += (g_nexball = (!found && (prev != GAME_NEXBALL) && cvar("g_nexball")));
 		found += (g_cts = (!found && (prev != GAME_CTS) && cvar("g_cts")));
 		found += (g_freezetag = (!found && (prev != GAME_FREEZETAG) && cvar("g_freezetag")));
+        found += (g_vip = (!found && (prev != GAME_VIP) && cvar("g_vip")));
+
+		printcvar("g_vip");
+		printcvar("g_freezetag");
+		printcvar("g_ctf");
+		printcvar("g_keyhunt");
+		printcvar("g_domination");
+		printcvar("g_total_domination");
+
+		if(g_total_domination)
+			g_domination = 1;
 
 		if(found)
 			break;
 
 		prev = -1; // second attempt takes place WITHOUT prev set
 	}
+	
 
-	if(!found)
-		g_dm = 1;
+	// What the FUCK!?
+	if(g_vip)
+	{
+		g_ctf = 0;
+		g_freezetag = 0;
+		g_keyhunt = 0;
+		g_domination = 0;
+		g_total_domination = 0;
+	}
+	*/
+	
+	g_dm = cvar("g_dm");
+	g_tdm = cvar("g_tdm");
+	g_total_domination = cvar("g_total_domination");
+	g_domination = cvar("g_domination");
+	g_ctf = cvar("g_ctf");
+	g_runematch = cvar("g_runematch");
+	g_lms = cvar("g_lms");
+	g_arena = cvar("g_arena");
+	g_keyhunt = cvar("g_keyhunt");
+	g_assault = cvar("g_assault");
+	g_onslaught = cvar("g_onslaught");
+	g_race = cvar("g_race");
+	g_nexball = cvar("g_nexball");
+	g_cts = cvar("g_cts");
+	g_freezetag = cvar("g_freezetag");
+	g_vip = cvar("g_vip");
+
+	// What the FUCK!?
+	/*
+	if(g_vip)
+	{
+		g_ctf = 0;
+		g_freezetag = 0;
+		g_keyhunt = 0;
+		g_domination = 0;
+		g_total_domination = 0;
+		
+		cvar_set("g_keyhunt", "0");
+		cvar_set("g_freezetag", "0");
+		cvar_set("g_ctf", "0");
+		cvar_set("g_total_domination", "0");
+		cvar_set("g_domination", "0");
+	}
+	*/
+
+	if(g_total_domination)
+		g_domination = 1;
+
+	//since this sometimes tends to fuck up randomly...
+	found += g_dm;
+	found += g_tdm;
+	//found += g_total_domination;
+	found += g_domination;
+	found += g_ctf;
+	found += g_runematch;
+	found += g_lms;
+	found += g_arena;
+	found += g_keyhunt;
+	found += g_assault;
+	found += g_onslaught;
+	found += g_race;
+	found += g_nexball;
+	found += g_cts;
+	found += g_freezetag;
+	found += g_vip;
+	
+	if(found > 1 || found <= 0)
+	{
+		bprint("^6MORE THAN TWO OR LESS THAN ONE GAMETYPES APPLIED. Everything is totally screwed up, falling back to CTF\n");
+		g_dm = 0;
+		g_tdm = 0;
+		g_total_domination = 0;
+		g_domination = 0;
+		g_ctf = 1;
+		g_runematch = 0;
+		g_lms = 0;
+		g_arena = 0;
+		g_keyhunt = 0;
+		g_assault = 0;
+		g_onslaught = 0;
+		g_race = 0;
+		g_nexball = 0;
+		g_cts = 0;
+		g_freezetag = 0;
+		g_vip = 0;
+	}
+	
+	//if(!found)
+	//	g_dm = 1;
 
 	if(g_dm && cvar("deathmatch_force_teamplay"))
 	{
@@ -212,31 +317,42 @@ void InitGameplayMode()
 	if(g_dm)
 	{
 		game = GAME_DEATHMATCH;
-		gamemode_name = "Deathmatch";
+		//gamemode_name = "Deathmatch";
 	}
 
 	if(g_tdm)
 	{
 		game = GAME_TEAM_DEATHMATCH;
-		gamemode_name = "Team Deathmatch";
+		//gamemode_name = "Team Deathmatch";
 		ActivateTeamplay();
 		tdm_init();
 	}
 
 	if(g_domination)
 	{
-		game = GAME_DOMINATION;
-		gamemode_name = "Domination";
+		if(g_total_domination)
+		{
+			fraglimit_override = cvar("g_totaldomination_point_limit");
+			leadlimit_override = cvar("g_totaldomination_point_leadlimit");
+			timelimit_override = cvar("g_totaldomination_time_limit");
+			game = GAME_TOTAL_DOMINATION;
+		}
+		else
+		{
+			fraglimit_override = cvar("g_domination_point_limit");
+			leadlimit_override = cvar("g_domination_point_leadlimit");
+			timelimit_override = cvar("g_domination_time_limit");
+			game = GAME_DOMINATION;
+		}
+		
 		ActivateTeamplay();
-		fraglimit_override = cvar("g_domination_point_limit");
-		leadlimit_override = cvar("g_domination_point_leadlimit");
 		dom_init();
 	}
 
 	if(g_ctf)
 	{
 		game = GAME_CTF;
-		gamemode_name = "Capture the Flag";
+		//gamemode_name = "Capture the Flag";
 		ActivateTeamplay();
 		if(cvar("g_campaign"))
 			g_ctf_win_mode = 2;
@@ -259,7 +375,7 @@ void InitGameplayMode()
 	if(g_runematch)
 	{
 		game = GAME_RUNEMATCH;
-		gamemode_name = "Rune Match";
+		//gamemode_name = "Rune Match";
 		if(cvar("deathmatch_force_teamplay"))
 			ActivateTeamplay();
 		fraglimit_override = cvar("g_runematch_point_limit");
@@ -270,7 +386,7 @@ void InitGameplayMode()
 	if(g_lms)
 	{
 		game = GAME_LMS;
-		gamemode_name = "Last Man Standing";
+		//gamemode_name = "Last Man Standing";
 		fraglimit_override = cvar("g_lms_lives_override");
 		leadlimit_override = 0; // not supported by LMS
 		if(fraglimit_override == 0)
@@ -283,7 +399,7 @@ void InitGameplayMode()
 	if(g_arena)
 	{
 		game = GAME_ARENA;
-		gamemode_name = "Arena";
+		//gamemode_name = "Arena";
 		fraglimit_override = cvar("g_arena_point_limit");
 		leadlimit_override = cvar("g_arena_point_leadlimit");
 		maxspawned = cvar("g_arena_maxspawned");
@@ -295,7 +411,7 @@ void InitGameplayMode()
 	if(g_keyhunt)
 	{
 		game = GAME_KEYHUNT;
-		gamemode_name = "Key Hunt";
+		//gamemode_name = "Key Hunt";
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_keyhunt_point_limit");
 		leadlimit_override = cvar("g_keyhunt_point_leadlimit");
@@ -305,7 +421,7 @@ void InitGameplayMode()
 	if(g_freezetag)
 	{
 		game = GAME_FREEZETAG;
-		gamemode_name = "Freeze Tag";
+		//gamemode_name = "Freeze Tag";
 		ActivateTeamplay();
 		fraglimit_override = cvar("g_explosive_freezetag_point_limit");
 		leadlimit_override = cvar("g_explosive_freezetag_point_leadlimit");
@@ -316,7 +432,7 @@ void InitGameplayMode()
 	if(g_assault)
 	{
 		game = GAME_ASSAULT;
-		gamemode_name = "Assault";
+		//gamemode_name = "Assault";
 		ActivateTeamplay();
 		ScoreRules_assault();
 	}
@@ -324,14 +440,14 @@ void InitGameplayMode()
 	if(g_onslaught)
 	{
 		game = GAME_ONSLAUGHT;
-		gamemode_name = "Onslaught";
+		//gamemode_name = "Onslaught";
 		ActivateTeamplay();
 	}
 
 	if(g_race)
 	{
 		game = GAME_RACE;
-		gamemode_name = "Race";
+		//gamemode_name = "Race";
 
 		if(cvar("g_race_teams"))
 		{
@@ -349,7 +465,7 @@ void InitGameplayMode()
 	if(g_cts)
 	{
 		game = GAME_CTS;
-		gamemode_name = "CTS";
+		//gamemode_name = "CTS";
 		g_race_qualifying = 1;
 		fraglimit_override = 0;
 		leadlimit_override = 0;
@@ -358,12 +474,25 @@ void InitGameplayMode()
 	if(g_nexball)
 	{
 		game = GAME_NEXBALL;
-		gamemode_name = "Nexball";
+		//gamemode_name = "Nexball";
 		fraglimit_override = cvar("g_nexball_goallimit");
 		leadlimit_override = cvar("g_nexball_goalleadlimit");
 		ActivateTeamplay();
 		nb_init();
 	}
+
+    if(g_vip)
+    {
+        game = GAME_VIP;
+        fraglimit_override = cvar("g_explosive_vip_point_limit");
+        leadlimit_override = cvar("g_explosive_vip_lead_limit");
+        timelimit_override = cvar("g_explosive_vip_time_limit");
+        ActivateTeamplay();
+        vip_init();
+    }
+
+	gamemode_name = GametypeFullNameFromType(game);
+	gametypetoset = game;
 
 	if(teams_matter)
 		entcs_init();
@@ -416,6 +545,52 @@ void InitGameplayMode()
 		ScoreRules_race();
 	}
 
+	
+	// More robust freezefag detector
+	local float __i, __j = tokenizebyseparator (cvar_string ("g_explosive_gametypevote_options") /* GameTypeVote_GetOptions () */ , " ");
+	local string gtype, gtype_cvar, gtype_cvar_other;
+	for (__i = 0; __i < __j; __i ++)
+	{
+		gtype = argv (__i);
+		
+		gtype_cvar = strcat ("_sv_rm_maprow_", gtype);
+		gtype_cvar_other = strcat ("_sv_rm_otherplayed_", gtype);
+		
+		// in case there are no cvars yet
+		registercvar(gtype_cvar, "0");
+		registercvar(gtype_cvar_other, "0");
+		
+		if (cvar (gtype_cvar) > 0 && gtype != GetGametype ())
+		{
+			if(cvar("g_explosive_gametypevote_overplayed_strict"))
+			{
+				cvar_set(gtype_cvar_other, ftos(cvar(gtype_cvar_other) + 1));
+				
+				if(cvar(gtype_cvar_other) >= cvar("g_explosive_gametypevote_overplayed_strict_minmaps"))
+				{
+					// not overplayed anymore, unlock this gametype
+					
+					cvar_set(gtype_cvar, "0");
+					cvar_set(gtype_cvar_other, "0");
+				}
+				
+				// Only decrease the counter if it didn't go beyond bounds of sanity.
+				if(cvar(gtype_cvar) < cvar("g_explosive_gametypevote_maxmaps"))
+					cvar_set (gtype_cvar, ftos(max(0, cvar(gtype_cvar) - 1)));
+			}
+			else // emulate the old behaviour: reset the counter
+			{
+				cvar_set (gtype_cvar, "0");
+				cvar_set(gtype_cvar_other, "0");
+			}
+		}
+		else if (gtype == GetGametype ())
+		{
+			cvar_set (gtype_cvar, ftos (cvar (gtype_cvar) + 1));
+			cvar_set(gtype_cvar_other, "0");
+		}
+	}
+
 	InitializeEntity(world, default_delayedinit, INITPRIO_GAMETYPE_FALLBACK);
 }
 
@@ -444,7 +619,7 @@ void RM_WelcomeMessage(entity pl)
 	else
 		motd = "^8(message of the day missing)";
 	
-	s = strcat("^xFB0", strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " "), gamemode_name, "\n^7running on Nexuiz ", cvar_string("g_nexuizversion"), ": ", GetClientVersionMessage());
+	s = strcat("^xFB0", strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " "), gamemode_name, "\n", GetClientVersionMessage());
 	s = strcat(s, "\n^8mod build date: ^9", RM_BUILD_DATE, "\n\n\n\n\n");
 	
 	s = strcat(s, "\n^0^x111^x222^x333^x333^x222^x111^0\n", motd,
@@ -694,6 +869,8 @@ void CheckAllowedTeams (entity for_whom)
 			dm = kh_teams;
 		else if(g_race)
 			dm = race_teams;
+		else if(g_freezetag)
+			dm = ft_teams;
 		else
 			dm = 2;
 

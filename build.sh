@@ -2,7 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
-require md5sum tar 7za
+require md5sum tar 7za %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -12,6 +12,8 @@ VERSION="$(rm-version)"
 BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
+COMMONSUM=""
+MENUSUM=""
 
 function buildall
 {
@@ -20,17 +22,23 @@ function buildall
     
     USEQCC="$(getqcc)"
 
+    echo " -- Calculating sum of menu/..."
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+
+	echo " -- Calculating sum of common/..."
+	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+	MENUSUM="$MENUSUM$COMMONSUM"
+
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        echo "#define RM_SUPPORT_CLIENTPKGS"          >> "$QCSOURCE"/common/rm_auto.qh
-
-        for i in $BUILT_PKGNAMES; do
-            echo "#define RM_SUPPORT_PKG_$i"          >> "$QCSOURCE"/common/rm_auto.qh
-        done
-    fi
+	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
+	for i in $BUILT_PKGNAMES; do
+		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
+	done
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -38,7 +46,76 @@ function buildall
     buildqc client/
     mv -v csprogs.dat "$CSPROGS"
 
+    buildqc menu/
+    mv -v menu.dat "menu.pk3dir/menu.dat"
+    makedata menu "$1" "$2"
+    rm -v "menu.pk3dir"/*.dat
+
     rm -v "$QCSOURCE"/common/rm_auto.qh
+}
+
+function tocompress
+{
+	cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
+}
+
+function compress-gfx
+{
+	[ $COMPRESSGFX = 0 ] && return
+	
+	echo "   -- Compressing graphics"
+	
+	COMPRESSGFX_ABORT=0
+	
+	if [ ! -e compressdirs ]; then
+		echo "Package didn't provide a list of directories to compress"
+		COMPRESSGFX_ABORT=1
+		return 0
+	fi
+	
+	COMPRESSGFX_TEMPDIR="$(mktemp -d)"
+	echo "     - Temporary directory with original graphics to be compressed: $COMPRESSGFX_TEMPDIR"
+	
+	if [ ! -e $COMPRESSGFX_TEMPDIR ]; then
+		warning "Failed to create temporary directory! Skipping this package"
+		COMPRESSGFX_ABORT=1
+		return 1
+	fi
+	
+	tocompress | while read line; do
+		dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
+		file="$(echo $line | sed -e 's@.*/@@')"
+	
+		mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
+	
+		echo "Compressing: $line"
+		
+		if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
+			warning "Failed to compress $line! Restoring the uncompressed file"
+		fi
+		
+		mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
+	done
+}
+
+function compress-restore
+{
+	[ $COMPRESSGFX = 0 ] && return
+	[ $COMPRESSGFX_ABORT = 1 ] && return
+	
+	echo "   -- Cleaning up after compression"
+	
+	pkgdir="$PWD"
+	pushd "$COMPRESSGFX_TEMPDIR"
+	
+	find -type f | sed -e 's@^./@@' | while read line; do
+		mv -v "$line" "$pkgdir/$line"
+		rm -vf "$pkgdir/${line%%.tga}.jpg"
+	done
+	
+	popd
+	
+	rm -rf "$COMPRESSGFX_TEMPDIR"
 }
 
 function makedata
@@ -53,9 +130,14 @@ function makedata
     pushd "$rmdata.pk3dir"
     rmdata="zzz-rm-$rmdata"
     
-    echo "   -- Calculating md5 sums"
-    find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
-    local sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    local sum=""
+    if [ "$rmdata" != "zzz-rm-menu" ]; then
+        echo "   -- Calculating md5 sums"
+        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+    else
+        sum="$MENUSUM"
+    fi
     
     if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
@@ -71,6 +153,8 @@ function makedata
         return
     fi
     
+    compress-gfx
+    
     echo "   -- Writing version info"
     echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
     echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
@@ -79,8 +163,10 @@ function makedata
     7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
     echo "   -- Removing temporary files"
     rm -vf _*
-    popd
     
+    compress-restore
+    popd
+        
     echo "   -- Installing to $NEXDATA"
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
 
@@ -95,8 +181,63 @@ function makedata
     BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
 }
 
+function buildqc
+{
+    qcdir="$QCSOURCE/$1"
+
+    # this is ugly, needs fixing
+    if [ "$1" = "server/" ]; then
+        progname="progs"
+    elif [ "$1" = "client/" ]; then
+        progname="csprogs"
+    elif [ "$1" = "menu/" ]; then
+        progname="menu"
+    else
+        error "$1 is unknown"
+    fi
+
+    local sum=""
+    if [ $CACHEQC != 0 ]; then
+        echo " -- Calculating sum of $1..."
+        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        
+        if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
+            sum="$sum.$MENUSUM"
+        fi
+        
+        if [ -e "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
+            echo " -- Found a cached build of $1, using it"
+            
+            cp -v "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
+            return
+        fi
+    fi
+
+    echo " -- Building $qcdir"
+    local olddir="$PWD"
+    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
+    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
+    
+    local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
+    local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
+    if [ "$(readlink -f "$compiled")" != "$olddir/$cname" ]; then
+        cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
+    fi
+    popd &>/dev/null
+    
+    if [ $CACHEQC != 0 ]; then
+        echo " -- Copying compilled progs to cache"
+        cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
+    fi
+}
+
 function is-included
 {
+    # special rule: menu package gets built after menu QC
+    if [ $1 = "menu" ]; then
+        return 1;
+    fi
+    
     if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
         # Not a prefixed package, checking if ignored
         for i in $IGNOREPKG; do
@@ -119,16 +260,11 @@ function is-included
 
 function makedata-all
 {
-    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        echo "Not building client packages: restricted by configuration"
-        return 0
-    fi
-    
     local suffix="$1"
     local desc="$2"
     
     #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
-    for line in $(ls | grep -P "\.pk3dir/?$"); do
+    for line in $(ls | perlgrep "\.pk3dir/?$"); do
         is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
         makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
     done
@@ -136,7 +272,7 @@ function makedata-all
 
 function listcustom()
 {
-    find "$NEXDATA/rm-custom" -name "*.cfg" | while read cfg; do
+    find "$NEXDATA/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
         echo -e "\t\t$cfg : $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
     done
 }
@@ -145,15 +281,12 @@ function finalize-install
 {
     cp -v "rocketminsta.cfg" "$NEXDATA"
 
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat rocketminsta_pkgextension.cfg >> "$NEXDATA"/rocketminsta.cfg
-        cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs
 $(for i in $BUILT_PKGINFOS; do
     echo "rm_putpackage $i"
 done)
 EOF
-    fi
 
     cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 
@@ -164,19 +297,28 @@ EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
         mkdir -pv "$NEXDATA/rm-custom"
-        cp -v rm-custom/* "$NEXDATA/rm-custom"
+        cp -rv rm-custom/* "$NEXDATA/rm-custom"
     fi
+}
+
+function configtest
+{
+	if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
+		error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
+	fi
+	
+	SUPPORT_CLIENTPKGS=1
+	
+	if [ "$COMPRESSGFX" != 0 ] && ! hasoptional convert; then
+		warning "You have COMPRESSGFX on without ImageMagick installed. Compression will be DISABLED."
+		COMPRESSGFX=0
+	fi
 }
 
 ################################################################################
 
 [ -e "config.sh" ] || error "No configuration file found. Please run \`cp EXAMPLE_config.sh config.sh', edit config.sh and try again."
 . "config.sh" || error "Failed to read configuration"
-
-if [ -z "$SUPPORT_CLIENTPKGS" ]; then
-    warn-oldconfig "config.sh" "SUPPORT_CLIENTPKGS" "1"
-    SUPPORT_CLIENTPKGS=0
-fi
 
 if [ -z $BUILDPKG_OPTIONAL ]; then
     warn-oldconfig "config.sh" "BUILDPKG_OPTIONAL" "(-)"
@@ -198,11 +340,32 @@ if [ -z $CACHEPKGS ]; then
     CACHEPKGS=0
 fi
 
+if [ -z $CACHEQC ]; then
+    warn-oldconfig "config.sh" "CACHEQC" "0"
+    CACHEQC=0
+fi
+
+if [ -z $COMPRESSGFX ]; then
+    warn-oldconfig "config.sh" "COMPRESSGFX" "1"
+    COMPRESSGFX=1
+fi
+
+if [ -z $COMPRESSGFX_QUALITY ]; then
+    warn-oldconfig "config.sh" "COMPRESSGFX_QUALITY" "85"
+    COMPRESSGFX_QUALITY=85
+fi
+
+if [ -n "$BUILDNAME" ]; then
+    BRANCH=$BUILDNAME
+fi
+
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
-    rm -vf pkgcache/*.pk3 || error "rm failed"
+    rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"
     exit
 fi
+
+configtest
 
 if [ "$1" = "release" ]; then
     RELEASE=1
@@ -213,6 +376,8 @@ if [ "$1" = "release" ]; then
     
     [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
     . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
+    
+    configtest
     
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
@@ -273,19 +438,13 @@ EOF
 EOF
     fi
 
-    if [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat <<EOF >> "$NEXDATA/README.rmrelease"
-    3) Start the server and enjoy.
-EOF
-    else
-        cat <<EOF >> "$NEXDATA/README.rmrelease"
+    cat <<EOF >> "$NEXDATA/README.rmrelease"
     3) MAKE SURE that the following packages can be autodownloaded by clients:
         $BUILT_PACKAGES
         
         This package contains all of them
     4) Start the server and enjoy.
 EOF
-    fi
 
     cat <<EOF >> "$NEXDATA/README.rmrelease"
 
@@ -359,11 +518,8 @@ $(listcustom)
         exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
 
     (note: if you have sv_progs and csqc_progname variables changed
-    because of previous RocketMinsta installation, it's a good idea to remove them)
-EOF
+    because of a previous RocketMinsta installation, it's a good idea to remove them)
 
-    if ! [ $SUPPORT_CLIENTPKGS -eq 0 ]; then
-        cat <<EOF
         
     In addition, these packages MUST be available on your download server:
         $BUILT_PACKAGES
@@ -372,11 +528,6 @@ EOF
         $NEXDATA
     
     They will be added to sv_curl_serverpackages automatically.
-    If you can't host these packages, please rebuild with SUPPORT_CLIENTPKGS=0
-EOF
-    fi
-
-cat <<EOF
 
 **************************************************
 EOF

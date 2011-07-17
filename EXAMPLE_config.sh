@@ -4,8 +4,8 @@
 NEXDATA="$HOME/.nexuiz/data"
 
 # Paths where the compiled mod files will be installed
-SVPROGS="$NEXDATA/sv_mod.dat"
-CSPROGS="$NEXDATA/cl_mod.dat"
+SVPROGS="$NEXDATA/rocketminsta_sv.dat"
+CSPROGS="$NEXDATA/rocketminsta_cl.dat"
 
 # List of QuakeC compillers the script will attempt to use
 # Full and relative paths are allowed
@@ -16,10 +16,6 @@ QCCFLAGS="-O3"
 
 # Where QuakeC source is located
 QCSOURCE="qcsrc"
-
-# Whether to build client-side packages and enable support for them in the mod
-# Disable ONLY if you, for any reason, have no way of letting clients download those packages automatically.
-SUPPORT_CLIENTPKGS=1
 
 # A list of optional client packages to build.
 # These packages are a part of RocketMinsta, but aren't built automatically. They have a prefix of "o_".
@@ -40,3 +36,16 @@ IGNOREPKG=(-)
 # it will be, of course, rebuilt. This option is only useful if you're a developer who constantly needs to rebuild the mod
 CACHEPKGS=0
 
+# Like CACHEPKGS, but caches compilled QuakeC code
+CACHEQC=0
+
+# If enabled, some graphics in client packages will be compressed as lower quality jpgs to reduce the package size
+# The list of directories to compress is specified in the "compressdirs" file of the package's directory, if present
+# Requires ImageMagick, will be automatically disabled if not installed
+COMPRESSGFX=1
+
+# Will get passed to the -quality parameter of 'convert'
+COMPRESSGFX_QUALITY=85
+
+# Release branch override. Normally empty.
+BUILDNAME=""

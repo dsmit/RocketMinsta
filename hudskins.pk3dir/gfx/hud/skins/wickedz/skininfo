@@ -1,0 +1,22 @@
+border_simple 2
+sector_teamcolor some
+sector_teamcolor_brightness 0.5
+sector_color 0.5 0.3 0
+sector_padding -2 -2 -2 -3
+sector_teamcolor_mod 0.1 0.1 0.1
+border_color 0 0 0
+sector_alpha 1
+border_alpha 0
+line_color 0.5 0.5 0.5
+line_alpha 0.2
+line_padding 1 3
+flash_alphamod 1
+flash_intmod 1
+border_drawmode normal
+flash_line_imod 1
+flash_line_amod 1
+flash_sector_imod 2
+flash_sector_amod 0
+flash_border_imod 0
+flash_border_amod 0
+sector_fill tile

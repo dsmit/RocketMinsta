@@ -343,6 +343,10 @@ float Ban_IsClientBanned(entity client, float idx)
 		Ban_LoadBans();
 	if(!Ban_GetClientIP(client))
 		return FALSE;
+
+	if (Banning_IsNameBanned (client.netname))
+		return TRUE;
+
 	if(idx < 0)
 	{
 		b = 0;
@@ -567,6 +571,17 @@ float GameCommand_Ban(string command)
 			RESTARG(reason);
 
 			Ban_Insert(ip, bantime, reason, 1);
+			return TRUE;
+		}
+	}
+	else if (argv (0) == "nickban")
+	{
+		if (argc >= 2)
+		{
+			INITARG(2);
+			RESTARG(reason); // permanent
+			Banning_BanPlayerByName (argv (1), reason);
+			// dropclient ( ... );
 			return TRUE;
 		}
 #undef INITARG

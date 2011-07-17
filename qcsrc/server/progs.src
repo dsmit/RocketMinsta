@@ -22,7 +22,8 @@ campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
 ../common/util.qc
-
+../common/ip2c.qh
+ip2c.qh
 csqcprojectile.qh
 csqceffects.qc
 
@@ -44,6 +45,8 @@ vote.qh
 
 freezetag.qh
 
+vip.qh
+
 scores_rules.qc
 
 miscfunctions.qc
@@ -61,6 +64,7 @@ arena.qc
 
 dodging.qc
 freezetag.qc
+vip.qc
 
 g_violence.qc
 g_damage.qc
@@ -167,7 +171,8 @@ target_spawn.qc
 func_breakable.qc
 
 ../common/items.qc
-
+../common/ip2c.qc
+ip2c.qc
 monsters/defs.qc
 monsters/fight.qc
 monsters/ai.qc

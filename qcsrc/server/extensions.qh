@@ -1012,7 +1012,7 @@ string(string in) uri_unescape = #511;
 //  0 for success, or
 //  the HTTP response code on server error (e.g. 404)
 //if 1 is returned by uri_get, the callback will be called in the future
-float(string url, float id) uri_get = #513;
+//float(string url, float id) uri_get = #513; // Moved to common/constants.qh
 
 //DP_SV_SPAWNFUNC_PREFIX
 //idea: div0

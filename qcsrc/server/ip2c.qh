@@ -1,0 +1,3 @@
+void IP2C_SetCountry_Internal(entity player, string cn);
+void IP2C_SetCountry(entity player);
+.string ip2c_country;

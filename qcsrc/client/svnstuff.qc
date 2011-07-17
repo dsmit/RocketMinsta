@@ -1,7 +1,7 @@
-
+typedef float(string s, vector size) textLengthUpToWidth_widthFunction_svn_t;
 float drawstring_svn(vector position, string text, vector scale, vector rgb, float alpha, float flag) = #321;
 
-float textLengthUpToWidth_svn(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w)
+float textLengthUpToWidth_svn(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_svn_t w)
 {
 	float ICanHasKallerz;
 
@@ -70,7 +70,6 @@ float textLengthUpToWidth_svn(string theText, float maxWidth, vector theSize, te
 	return left;
 }
 
-typedef float(string s, vector size) textLengthUpToWidth_widthFunction_svn_t;
 string textShortenToWidth_svn(string theText, float maxWidth, vector theFontSize, textLengthUpToWidth_widthFunction_svn_t tw)
 {
 	if(tw(theText, theFontSize) <= maxWidth)

@@ -517,6 +517,8 @@ void FlagTouch()
 		RegenFlag (other.flagcarried);
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
+		
+		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
 	if (other.team == COLOR_TEAM1 || other.team == COLOR_TEAM2) // only red and blue team can steal flags
@@ -559,6 +561,9 @@ void FlagTouch()
 		WaypointSprite_AttachCarrier("flagcarrier", other);
 		WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
 		WaypointSprite_Ping(self.sprite);
+
+		//hudflash_default(other, '1 1 -1');
+		hudflash_teamcolor_default_spec(other);
 
 		return;
 	}
@@ -604,6 +609,8 @@ void FlagTouch()
 			LogCTF("return", self.team, other);
 			sound (other, CHAN_AUTO, self.noise1, VOL_BASE, ATTN_NONE);
 			ReturnFlag(self);
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + cvar("g_balance_ctf_delay_collect")))
 		{
@@ -643,6 +650,8 @@ void FlagTouch()
 			self.takedamage = DAMAGE_NO;
 			WaypointSprite_AttachCarrier("flagcarrier", other);
 			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 	}
 };
@@ -778,9 +787,14 @@ Keys:
 
 void spawnfunc_item_flag_team1()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
-		if((g_keyhunt || g_freezetag) && g_minstagib)
+		if(g_vip)
+		{
+			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
+			remove(self);
+		}
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -850,12 +864,15 @@ void spawnfunc_item_flag_team1()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+		WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+	}
 
 	precache_model("models/ctf/shield.md3");
 	precache_model("models/ctf/shockwavetransring.md3");
@@ -890,9 +907,14 @@ Keys:
 
 void spawnfunc_item_flag_team2()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
-		if((g_keyhunt || g_freezetag) && g_minstagib)
+		if(g_vip)
+		{
+			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
+			remove(self);
+		}
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -961,13 +983,16 @@ void spawnfunc_item_flag_team2()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
-
+		WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+	}
+	
 	precache_model("models/ctf/shield.md3");
 
 	self.reset = item_flag_reset;

@@ -1,14 +1,3 @@
-.entity scorekeeper;
-entity teamscorekeepers[16];
-string scores_label[MAX_SCORE];
-float scores_flags[MAX_SCORE];
-string teamscores_label[MAX_TEAMSCORE];
-float teamscores_flags[MAX_TEAMSCORE];
-float teamscores_entities_count;
-var .float scores_primary;
-var .float teamscores_primary;
-float scores_flags_primary;
-float teamscores_flags_primary;
 
 vector ScoreField_Compare(entity t1, entity t2, .float field, float fieldflags, vector previous) // returns: cmp value, best prio
 {
@@ -216,8 +205,9 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 
 	longflags = 0;
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
-		if(self.scores[i] > 127 || self.scores[i] <= -128)
-			longflags |= p;
+		if(i != SP_JOINTIME)
+			if(self.scores[i] > 127 || self.scores[i] <= -128)
+				longflags |= p;
 
 #if MAX_SCORE <= 8
 	WriteByte(MSG_ENTITY, sendflags);
@@ -229,7 +219,12 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
 		if(sendflags & p)
 		{
-			if(longflags & p)
+			if(i == SP_JOINTIME) // haha
+			{
+				WriteString(MSG_ENTITY, ftos(time));
+				WriteString(MSG_ENTITY, ftos(self.scores[i]));
+			}
+			else if(longflags & p)
 				WriteInt24_t(MSG_ENTITY, self.scores[i]);
 			else
 				WriteChar(MSG_ENTITY, self.scores[i]);

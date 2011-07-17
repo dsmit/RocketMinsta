@@ -16,10 +16,83 @@ Note: The only teams who can use dom control points are identified by spawnfunc_
 */
 
 #define DOMPOINTFRAGS frags
+#define FOR_EACH_CONTROLPOINT(v) for(v = world; (v = find(v, classname, "dom_controlpoint")) != world; )
 
 .float enemy_playerid;
 .entity sprite;
 .float captime;
+float tdom_maycap;
+.float pointupdatetime;
+float totalpoints, redpoints, bluepoints;
+
+void dom_recountpoints()
+{
+    totalpoints = redpoints = bluepoints = 0;
+
+    local entity e;
+    FOR_EACH_CONTROLPOINT(e)
+	{
+		++totalpoints;
+		
+		if(e.goalentity.team == COLOR_TEAM1)
+			++redpoints;
+		else if(e.goalentity.team == COLOR_TEAM2)
+			++bluepoints;
+	}
+
+    FOR_EACH_CLIENT(e)
+    {
+        e.totalpoints_stat = totalpoints;
+        e.redpoints_stat   = redpoints  ;
+        e.bluepoints_stat  = bluepoints ;
+    }
+}
+
+void tdom_EndRound_Think()
+{
+    local float timeleft = rint(self.cnt - time);
+	local entity e;
+	
+    if(intermission_running)
+    {
+        remove(self);
+        return;
+    }
+    
+    if(timeleft <= cvar("g_totaldomination_warmup"))
+    {
+        dom_recountpoints();
+        if(timeleft <= 0)
+        {
+            FOR_EACH_PLAYER(e)
+            {
+                bigprint_clear_spec(e);
+                bigprint_spec(e, "^5Begin!", "", 1);
+                tdom_maycap = 1;
+            }
+            remove(self);
+            return;
+        }
+        
+        
+        FOR_EACH_PLAYER(e)
+        {
+            bigprint_clear_spec(e);
+            bigprint_spec(e, strcat("total domination starts in: ", ftos(timeleft)), "", 1);
+        }
+    }
+    self.nextthink = time + 1;
+}
+
+void tdom_EndRound()
+{
+    local entity e = spawn();
+    e.think = tdom_EndRound_Think;
+    e.nextthink = time + 1;
+    next_round = time + 5;
+    e.cnt = cvar("g_totaldomination_warmup") + next_round;
+    tdom_maycap = 0;
+}
 
 void() dom_controlpoint_setup;
 
@@ -35,6 +108,44 @@ void LogDom(string mode, float team_before, entity actor)
 }
 
 void() dom_spawnteams;
+
+void tdom_checkwinner()
+{
+    local entity e;
+    dom_recountpoints(); 
+	
+	if(!bluepoints && redpoints && redpoints == totalpoints)
+	{
+		//bprint("^5Total domination: ^1RED WINS\n");
+		FOR_EACH_PLAYER(e)
+		{
+			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
+			
+			if(e.team == COLOR_TEAM1)
+				hudflash_teamcolor_default_spec(e);
+		}
+		bprint("^1Red team ^5wins the round since they have captured all of the control points\n");
+		play2all("ctf/red_capture.wav");
+		TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
+		tdom_EndRound();
+	}
+	
+	if(!redpoints && bluepoints && bluepoints == totalpoints)
+	{
+		//bprint("^5Total domination: ^4BLUE WINS\n");
+		FOR_EACH_PLAYER(e)
+		{
+			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
+				
+			if(e.team == COLOR_TEAM2)
+				hudflash_teamcolor_default_spec(e);
+		}
+		bprint("^4Blue team ^5wins the round since they have captured all of the control points\n");
+		play2all("ctf/blue_capture.wav");
+		TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
+		tdom_EndRound();
+	}
+}
 
 void dompoint_captured ()
 {
@@ -63,7 +174,23 @@ void dompoint_captured ()
 	//bprint(self.message);
 	//bprint("\n");
 
-	bprint("^3", head.netname, "^3", self.message, "\n");
+	//bprint("^3", head.netname, "^3", self.message, "\n");
+	
+	string teamname_full;
+	
+	if(self.enemy.team == COLOR_TEAM1)
+		teamname_full = "^1Red team";
+	else if(self.enemy.team == COLOR_TEAM2)
+		teamname_full = "^4Blue team";
+	else if(self.enemy.team == COLOR_TEAM3)
+		teamname_full = "^3Yellow team";
+	else
+		teamname_full = "^6Pink team";
+	
+	bprint(self.enemy.netname, " ^5has captured a control point for the ", teamname_full, "\n");
+	centerprint_spec(self.enemy, "^5You have captured a control point!");
+	hudflash_teamcolor_default_spec(self.enemy);
+	
 	if(self.enemy.playerid == self.enemy_playerid)
 		PlayerScore_Add(self.enemy, SP_DOM_TAKES, 1);
 	else
@@ -114,6 +241,11 @@ void dompoint_captured ()
 	WaypointSprite_Ping(self.sprite);
 
 	self.captime = time;
+	
+	if(g_totaldomination)
+		tdom_checkwinner();
+	else
+		dom_recountpoints(); 
 };
 
 void AnimateDomPoint()
@@ -136,6 +268,9 @@ void dompointthink()
 
 	self.nextthink = time + 0.1;
 
+    if(time - self.pointupdatetime > 0.1)
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
 	//	self.frame = 0;
@@ -158,7 +293,10 @@ void dompointthink()
 		fragamt = cvar("g_domination_point_amt");
 		if(!fragamt)
 			fragamt = self.DOMPOINTFRAGS;
-		TeamScore_AddToTeam(self.goalentity.team, ST_SCORE, fragamt);
+			
+		if(!g_totaldomination)
+			TeamScore_AddToTeam(self.goalentity.team, ST_SCORE, fragamt);
+			
 		TeamScore_AddToTeam(self.goalentity.team, ST_DOM_TICKS, fragamt);
 
 		// give credit to the individual player, if he is still there
@@ -183,12 +321,29 @@ void dompointtouch()
 	if(time < self.captime + 0.3)
 		return;
 
+	if(g_totaldomination)
+	if(!tdom_maycap)
+		return;
+
 	// only valid teams can claim it
 	head = find(world, classname, "dom_team");
 	while (head && head.team != other.team)
 		head = find(head, classname, "dom_team");
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
+
+	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
+	self.pointupdatetime = time;
+    other.pointupdatetime = time;
+
+    other.freezetag_revive_progress = self.freezetag_revive_progress;
+	if(self.freezetag_revive_progress < 1)
+	{
+		//bprint(other.netname, "^7.freezetag_revive_progress = ", ftos(other.freezetag_revive_progress), "\n");
+		return;
+	}
+	self.freezetag_revive_progress = 0;
+    other.freezetag_revive_progress = self.freezetag_revive_progress;
 
 	// delay capture
 
@@ -223,6 +378,16 @@ void dompointtouch()
 	self.enemy_playerid = other.playerid;
 	dompoint_captured();
 };
+
+float domination_PlayerPreThink()
+{
+	DEPENDON_F(g_domination, 0)
+	
+	if(time - self.pointupdatetime >= 0.01)
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+	
+	return 1;
+}
 
 /*QUAKED spawnfunc_dom_team (0 .5 .8) (-32 -32 -24) (32 32 32)
 Team declaration for Domination gameplay, this allows you to decide what team
@@ -287,7 +452,8 @@ void dom_controlpoint_setup()
 	self.goalentity = head;
 	setmodel(self, head.mdl); // precision already set
 	self.skin = head.skin;
-
+	self.enemy = world;
+	
 	self.cnt = -1;
 
 	if(!self.message)
@@ -315,6 +481,8 @@ void dom_controlpoint_setup()
 	waypoint_spawnforitem(self);
 	WaypointSprite_SpawnFixed("dom-neut", self.origin + '0 0 32', self, sprite);
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
+
+    dom_recountpoints();
 };
 
 
@@ -569,8 +737,8 @@ void dom_spawnpoint(vector org)
 	self.classname = "dom_controlpoint";
 	self.think = spawnfunc_dom_controlpoint;
 	self.nextthink = time;
-	setorigin(self, org);
 	spawnfunc_dom_controlpoint();
+	setorigin(self, org + '0 0 1' * (1 - self.mins_z + 24));
 	self = oldself;
 };
 
@@ -578,10 +746,15 @@ void dom_spawnpoint(vector org)
 void dom_spawnteams()
 {
 	float numteams;
+	/*
 	if(cvar("g_domination_teams_override") < 2)
 		numteams = cvar("g_domination_default_teams");
 	else
 		numteams = cvar("g_domination_teams_override");
+	*/
+	
+	numteams = 2;
+	
 	// LordHavoc: edit this if you want to change defaults
 	dom_spawnteam("Red", COLOR_TEAM1-1, "models/domination/dom_red.md3", 0, "domination/claim.wav", "", "Red team has captured a control point");
 	dom_spawnteam("Blue", COLOR_TEAM2-1, "models/domination/dom_blue.md3", 0, "domination/claim.wav", "", "Blue team has captured a control point");
@@ -592,37 +765,96 @@ void dom_spawnteams()
 	dom_spawnteam("", 0, "models/domination/dom_unclaimed.md3", 0, "", "", "");
 };
 
-void dom_delayedinit()
+float dom_spawnpointsfor(string clname)
 {
 	local entity head;
-
-	// if no teams are found, spawn defaults, if custom teams are set, use them
-	if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
-		dom_spawnteams();
-	// if no control points are found, spawn defaults
-	if (find(world, classname, "dom_controlpoint") == world)
+	local float i;
+	
+	//head = find(world, classname, clname);
+	for(head = world; (head = find(head, classname, clname));)
 	{
-		// here follow default domination points for each map
-		/*
-		if (world.model == "maps/e1m1.bsp")
-		{
-			dom_spawnpoint('0 0 0');
-		}
-		else
-		*/
-		{
-			// if no supported map was found, make every deathmatch spawn a point
-			head = find(world, classname, "info_player_deathmatch");
-			while (head)
-			{
-				dom_spawnpoint(head.origin);
-				head = find(head, classname, "info_player_deathmatch");
-			}
-		}
+		bprint("^5Domination: ^7found a ", head.classname, " at ", vtos(head.origin), "\n");
+		dom_spawnpoint(head.origin);
+		++i;
 	}
+	
+	bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints for ^6", clname, "\n");
+	return i;
+}
 
+void dom_removeall(string clname)
+{
+	local entity head;
+	head = find(world, classname, "");
+	
+	for(head = world; (head = find(head, classname, clname));)
+	{
+		bprint("^5Domination: ^7removed a ", head.classname, " at ", vtos(head.origin), "\n");
+		remove(head);
+	}
+}
+
+void dom_cp_placeholder()
+{
+	local entity oldself = self;
+	
+	self = spawn();
+	self.classname = "dom_cp_placeholder";
+	self.origin = oldself.origin;
+	setorigin(self, oldself.origin);
+	
+	bprint("^5Domination: ^7spawned a dom_cp_placeholder at ", vtos(self.origin), "\n");
+}
+
+void dom_delayedinit()
+{
+	// if no teams are found, spawn defaults, if custom teams are set, use them
+	//if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
+	
+	dom_removeall("dom_team");
+	dom_spawnteams();
+
+	local float i, j, n;
+	i = 0;
+	
+	if(find(world, classname, "dom_controlpoint") == world)
+	{
+		//dom_removeall("dom_controlpoint");
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+		for(j = 0; j < n; ++j)
+			i += dom_spawnpointsfor(argv(j));
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		for(j = 0; j < n; ++j)
+			dom_removeall(argv(j));
+		
+		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
+	}
+	else
+	{
+		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
+		
+		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		for(j = 0; j < n; ++j)
+			dom_removeall(argv(j));
+	}
+	
+	dom_recountpoints();
 	ScoreRules_dom();
 };
+
+void totaldom_init()
+{
+	if(inWarmupStage)
+		warmup = time;
+	else
+		warmup = time + cvar("g_start_delay");
+	
+	tdom_maycap = 1;
+	precache_sound("ctf/red_capture.wav");
+    precache_sound("ctf/blue_capture.wav");
+}
 
 void dom_init()
 {
@@ -640,5 +872,8 @@ void dom_init()
 	// teamplay is always on in domination, defaults to hurt self but not teammates
 	//if(!teams_matter)
 	//	cvar_set("teamplay", "3");
+	
+    dom_recountpoints();
+	if(g_totaldomination)
+		totaldom_init();
 };
-

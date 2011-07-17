@@ -160,7 +160,7 @@ float GameCommand_Generic(string command)
 	float argc;
 	float i, j, f, n;
 	vector rgb;
-	string s, s2, c;
+	string s, s2, s3, c;
 	argc = tokenize_console(command);
 	if(argv(0) == "help")
 	{
@@ -198,6 +198,8 @@ float GameCommand_Generic(string command)
 		print("  maplist maplist\n");
 		print("  maplist lsmaps\n");
 		print("  addtolist variable addedvalue\n");
+		print("  ip2c_lookup ipaddress\n");
+		print("  ip2c_status\n");
 		print("  records\n");
 		return TRUE;
 	}
@@ -811,7 +813,6 @@ float GameCommand_Generic(string command)
             if(cvar_string(s) == "")
                 return TRUE;
 
-            local string s3;
             n = tokenizebyseparator(cvar_string(s), " ");
 
             for(i = 0; i < n; ++i)
@@ -830,7 +831,6 @@ float GameCommand_Generic(string command)
             if(cvar_string(s) == "")
                 return TRUE;
 
-            local string s3;
             n = tokenizebyseparator(cvar_string(s), " ");
 
             for(i = 0; i < n; ++i)
@@ -854,6 +854,12 @@ float GameCommand_Generic(string command)
 		}
 		return TRUE;
 #endif
+	} else if(argv(0) == "ip2c_lookup") {
+		IP2C_Lookup(argv(1), IP2C_Callback_DumpToConsole, world);
+		return TRUE;
+	} else if(argv(0) == "ip2c_status") {
+		IP2C_PrintRequests();
+		return TRUE;
 	}
 
 	return FALSE;

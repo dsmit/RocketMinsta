@@ -36,23 +36,6 @@ function getqcc
     echo "$qcc"
 }
 
-function buildqc
-{
-    qcdir="$QCSOURCE/$1"
-
-    echo " -- Building $qcdir" >&2
-    local olddir="$PWD"
-    pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
-    
-    local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
-    local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
-    if [ "$(readlink -f "$compiled")" != "$olddir/$cname" ]; then
-        cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
-    fi
-    popd &>/dev/null
-}
-
 function rconopen
 {
     RCON_ADDRESS="$1"
@@ -60,10 +43,16 @@ function rconopen
     RCON_PASSWORD="$3"
 }
 
+RCON_USE_NETCAT=0
 function rconsend
 {
     echo " --:> $1"
-    printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT
+    
+    if [ $RCON_USE_NETCAT != 0 ]; then
+        printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" | netcat -uc $RCON_ADDRESS $RCON_PORT
+    else
+        printf "\377\377\377\377rcon %s %s" $RCON_PASSWORD "$1" > /dev/udp/$RCON_ADDRESS/$RCON_PORT
+    fi
 }
 
 function rconsendto
@@ -74,7 +63,7 @@ function rconsendto
 
 function rm-version-checkformat
 {
-    grep -P '^v\d+\.\d+\.\d+[a-zA-Z\d]*$'
+    perlgrep '^v\d+\.\d+\.\d+[a-zA-Z\d]*$'
 }
 
 function rm-version
@@ -101,10 +90,30 @@ function rm-hasversion
     [ "$(rm-version)" != "git" ]
 }
 
+function warning
+{
+    echo -e "***\n\e[31;1mWARNING: \e[0m$@\e[0m\n***\n"
+    sleep 1 #little annoyance
+}
+
 function warn-oldconfig
 {
-    echo -e "***\n\e[31;1mWARNING: \e[0myour $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!\n***"
-    sleep 1 #little annoyance
+    warning "your $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!"
+}
+
+PERLGREP="grep -P"
+function perlgrep
+{
+    $PERLGREP "$@"
+}
+
+OPTIONAL_FOUND=""
+
+function hasoptional
+{
+    for i in $OPTIONAL_FOUND; do
+        [ $i == $1 ] && return 0;
+    done; return 1
 }
 
 function require
@@ -114,21 +123,44 @@ function require
 
     echo "rmlib is checking for required utilities..."
 
-    for i in $req; do
-        echo -n " - $i... "
+    if ! echo a | grep -Pq a; then
+        echo "WARNING: grep doesn't support -P switch! Will attempt to use pcregrep instead"
+        req="$req pcregrep"
+        PERLGREP="pcregrep"
+    fi
 
-        if which $i &> /dev/null; then
-            echo -e '\e[32;1mfound\e[0m'
-        else
-            echo -e '\e[31;1mnot found!\e[0m'
-            lacking="$lacking $i"
+    if ! echo a > /dev/udp/localhost/1; then
+        echo "WARNING: shell doesn't support /dev/udp! Will attempt to use netcat instead"
+        req="$req netcat"
+        RCON_USE_NETCAT=1
+    fi
+
+    for i in $req; do
+        echo -n " - ${i##%}... "
+
+        if [ ${i##%} = $i ]; then          # no %prefix, required
+            if which $i &> /dev/null; then
+                echo -e '\e[32;1mfound\e[0m'
+            else
+                echo -e '\e[31;1mnot found!\e[0m'
+                lacking="$lacking $i"
+            fi
+        else                                # %prefix, optional
+            i="${i##%}"
+            
+            if which $i &> /dev/null; then
+                echo -e '\e[32;1mfound\e[0m'
+                OPTIONAL_FOUND="$OPTIONAL_FOUND $i"
+            else
+                echo -e '\e[33;1mnot found but optional\e[0m'
+            fi
         fi
     done
 
     if [ -n "$lacking" ]; then
         error "The following utilities are required but are not present: $lacking. Please install them to proceed."
     fi
-
+    
     echo "All OK, proceeding"
 }
 

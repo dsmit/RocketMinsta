@@ -279,12 +279,37 @@ SelectSpawnPoint
 Finds a point to respawn
 =============
 */
+
+entity global_spawnpoint;
+float noclosetoteam;
+
+/*
+void bsprint(entity e, string s)
+{
+	print("To ", e.netname, ": ", s);
+	sprint(e, s);
+}
+*/
+
 entity SelectSpawnPoint (float anypoint)
 {
-	local float teamcheck;
-	local entity firstspot_new;
+	local float teamcheck, closetoteam;
+	local entity firstspot_new, e;
 	local entity spot, firstspot, playerlist;
 
+	local float randspawns, closetoteam_cvar;
+	randspawns = cvar("g_explosive_randomspawns");
+	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
+	
+	if(!global_spawnpoint)
+		global_spawnpoint = spawn();
+
+	if(randspawns == 2)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		return global_spawnpoint;
+	}
+	
 	spot = find (world, classname, "testplayerstart");
 	if (spot)
 		return spot;
@@ -293,6 +318,19 @@ entity SelectSpawnPoint (float anypoint)
 
 	if(!anypoint && have_team_spawns)
 		teamcheck = self.team;
+
+	closetoteam = 1;
+	if(noclosetoteam)
+	{
+		closetoteam = 0;
+		noclosetoteam = 0;
+	}
+	
+	if(!closetoteam_cvar)
+		closetoteam = 0;
+	if(closetoteam_cvar < 2)
+	if(have_team_spawns)
+		closetoteam = 0;
 
 	// get the list of players
 	playerlist = findchain(classname, "player");
@@ -303,6 +341,126 @@ entity SelectSpawnPoint (float anypoint)
 	if(anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
+	}
+	else if(teams_matter && closetoteam)
+	{
+		local entity md_point, md_player, md_tmp_point, md_tmp_player;
+		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
+		mdst = -1;
+		local float i;
+		
+		local float cvar_mindist_team = cvar("g_explosive_spawnclosetoteam_mindist_team");
+		local float cvar_mindist_enemies = cvar("g_explosive_spawnclosetoteam_mindist_enemies");
+
+		for(i = 0; i < 2; ++i)
+		{
+			for(spot = firstspot; spot; spot = spot.chain) if(!teamcheck || spot.team == teamcheck)
+			{
+				//bsprint(self, strcat("^3checking point ", etos(spot), "\n"));
+				
+				tmplen = 0;
+				md_tmp_player = md_tmp_point = world;
+				minlen = minenemylen = -1;
+				
+				FOR_EACH_PLAYER(e) if(e.team != self.team)
+				{
+					tmplen = vlen(e.origin - spot.origin);
+					if(minenemylen < 0 || tmplen < minenemylen)
+						minenemylen = tmplen;
+				}
+				
+				//bsprint(self, strcat("^x0AFMeasured dist to enemy: ", ftos(minenemylen), "\n"));
+				
+				if(!i)
+				if(minenemylen < cvar_mindist_enemies)
+				{
+					//bsprint(self, "^xA06TOO CLOSE TO ENEMY\n");
+					continue;
+				}
+				
+				FOR_EACH_PLAYER(e) if(e.team == self.team) if(e != self)
+				{
+					tmplen = vlen(e.origin - spot.origin);
+					
+					if(minlen < 0)
+						minlen = tmplen;
+					
+					if(tmplen > minlen)
+					{
+						//bsprint(self, strcat("skipped ", e.netname, " ^7(tmplen > minlen)\n"));
+						continue;
+					}
+
+					// try to avoid points with players spawned
+					if(!i)
+					{
+						//bsprint(self, strcat("checking if ", e.netname, "^7 is spawned on ", etos(spot), " (tmplen = ", ftos(tmplen), ")\n"));
+						
+						if(tmplen < cvar_mindist_team)
+						{
+							//bsprint(self, strcat("a player already spawned on that spot! ^3", e.netname, "\n"));
+							spawnfailed = TRUE;
+							break;
+						}
+					}
+					
+					if(tmplen <= minlen)
+					{
+						minlen = tmplen;
+						md_tmp_player = e;
+						md_tmp_point  = spot;
+						
+						//bsprint(self, strcat("^2measured dist to point ", etos(md_tmp_point), " = ", ftos(minlen), "\n"));
+					}
+				}
+				//bsprint(self, strcat("^xA58md_point is currently ^1", etos(md_point), "\n"));
+				
+				if(spawnfailed)
+				{
+					spawnfailed = FALSE;
+					continue;
+				}
+				
+				//bsprint(self, strcat("^1Now trying to select spawn: ^7", ftos(minlen), " < ", ftos(mdst), "?\n"));
+				if(mdst == -1 || minlen < mdst)
+				{
+					mdst = minlen;
+					md_player = md_tmp_player;
+					md_point = md_tmp_point;
+					
+					//bsprint(self, strcat(" ^6******** ^7selected spot ", etos(md_point), " with distance ", ftos(mdst), "\n"));
+				}
+				
+				//bsprint(self, strcat("^xA58md_point is currently ^1", etos(md_point), "\n"));
+			}
+			
+			if(!i)
+			{
+				if(md_point) // if this fails, will try again without the already-spawned-players check
+				{
+					//bsprint(self, "^5SPAWN SUCCEDED\n");
+					//bsprint(self, strcat("^5final spot: ", etos(md_point), " with distance ", ftos(mdst), "\n"));
+					break;
+				}
+				//else
+					//bsprint(self, "^5SPAWN FAILED\n");
+			}
+			
+			minlen = -1;
+		}
+		
+		// if even that fails, fall back to normal spawning method
+		if(!md_point)
+		{
+			//bsprint(self, "^5FALLBACK SPAWN FAILED\n");
+			noclosetoteam = 1;
+			return SelectSpawnPoint(anypoint);
+		}
+		else
+		{
+			//bsprint(self, "^5SPAWN FINISHED\n");
+			return md_point;
+		}
 	}
 	else
 	{
@@ -331,11 +489,16 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		print("spot mindistance: ", ftos(spot.SPAWNPOINT_SCORE), "\n");
 
-		entity e;
 		if(teamcheck)
 			for(e = firstspot; e; e = e.chain)
 				if(e.team != teamcheck)
 					error("invalid spawn found");
+	}
+
+	if(!spot) if(randspawns)
+	{
+		MoveToRandomMapLocation(global_spawnpoint, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 10, 30, 0);
+		spot = global_spawnpoint;
 	}
 
 	if (!spot)
@@ -347,7 +510,12 @@ entity SelectSpawnPoint (float anypoint)
 			if(some_spawn_has_been_used)
 				return world; // team can't spawn any more, because of actions of other team
 			else
-				error("Cannot find a spawn point - please fix the map!");
+			{
+				//error("Cannot find a spawn point - please fix the map!");
+				bprint("\x01^1* Cannot find a spawn point! ^7Forced endmatch.\n");
+				localcmd("timelimit -1\n");
+				return world;
+			}
 		}
 	}
 
@@ -537,8 +705,8 @@ void PutObserverInServer (void)
 	race_PreSpawnObserver();
 
 	spot = SelectSpawnPoint (TRUE);
-	if(!spot)
-		error("No spawnpoints for observers?!?\n");
+	//if(!spot)
+	//	error("No spawnpoints for observers?!?\n");
 	RemoveGrapplingHook(self); // Wazat's Grappling Hook
 
 	if(clienttype(self) == CLIENTTYPE_REAL)
@@ -548,9 +716,12 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 
+	remove(self.shownames);
+	self.shownames = world;
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+	vip_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -1008,6 +1179,18 @@ void PutClientInServer (void)
 
 	//if(g_ctf)
 	//	ctf_playerchanged();
+	
+	if(cvar("g_explosive_shownames"))
+	if(self.classname == "player")
+	if(self.shownames == world)
+	{
+		self.shownames = spawn();
+		self.shownames.owner = self;
+		self.shownames.think = shownames_think;
+		self.shownames.nextthink = time;
+		self.shownames.customizeentityforclient = shownames_customize;
+		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
+	}
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1278,6 +1461,17 @@ void FixClientCvars(entity e)
 	 */
 }
 
+void ServerTopic()
+{
+	local string topicby = cvar_string("_sv_explosive_topicby");
+	local string servertopic = cvar_string("_sv_explosive_topic");
+	
+	if(servertopic) if(servertopic != "")
+		sprint(self, strcat("\x01^2* ^3Current topic^7: ", servertopic, "\n"
+			   "\x01^2* ^7Topic set by ^3", ((topicby && topicby != "")? topicby : "<server>"),
+		"\n"));
+}
+
 /*
 =============
 ClientConnect
@@ -1465,6 +1659,33 @@ void ClientConnect (void)
 	}
 	else
 		self.hitplotfh = -1;
+	
+	if(clienttype(self) == CLIENTTYPE_REAL)
+		defer(5, ServerTopic);
+	
+	if(cvar("g_explosive_shownames"))
+	{
+		self.shownames = spawn();
+		self.shownames.owner = self;
+		self.shownames.think = shownames_think;
+		self.shownames.nextthink = time;
+		self.shownames.customizeentityforclient = shownames_customize;
+		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
+	}
+	
+	self.g_minstagib_stat = g_minstagib;
+	SendSpeedRecord(self);
+	IP2C_SetCountry(self);
+	
+	if(self.scorekeeper)
+	{
+		self.scorekeeper.SendFlags |= pow(2, SP_JOINTIME);
+		self.scorekeeper.(scores[SP_JOINTIME]) = time;
+	}
+	else
+		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
+	
+	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
 }
 
 /*
@@ -1508,6 +1729,7 @@ void ClientDisconnect (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+	vip_RemovePlayer();
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -1550,6 +1772,10 @@ void ClientDisconnect (void)
 		strunzone(self.netname_previous);
 	if(self.clientstatus)
 		strunzone(self.clientstatus);
+	
+	if(clienttype(self) != CLIENTTYPE_BOT)
+	if(self.hudskin)
+		fstrunzone(self.hudskin);
 
 	ClearPlayerSounds();
 
@@ -1558,6 +1784,8 @@ void ClientDisconnect (void)
 
 	self.playerid = 0;
 	ReadyCount();
+
+	remove(self.shownames);
 
 	// free cvars
 	GetCvars(-1);
@@ -1894,6 +2122,10 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod;
+	
+	if(g_vip) if(ISVIP(self))
+		return;
+	
 	maxh = cvar("g_balance_health_rotstable");
 	maxa = cvar("g_balance_armor_rotstable");
 	maxf = cvar("g_balance_fuel_rotstable");
@@ -2068,21 +2300,26 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(!cvar("g_explosive_showspecs"))
 		return;
 	
+	if(player == of)
+	if(player.classname == "spectator") // What the fuck?
+		return;
+	
 	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
 	
 	local entity spec;
-	local float count;
+	local float specs;
 	local float a = cvar("g_explosive_anonspecs");
 	
-	FOR_EACH_SPECOF(of, spec, a) count++;
-	
+	FOR_EACH_SPECOF(of, spec, a) specs++;
+
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteShort(MSG_ONE, count);
+	WriteShort(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
-		WriteString(MSG_ONE, spec.netname);
+		//WriteString(MSG_ONE, spec.netname);
+		WriteByte(MSG_ONE, num_for_edict(spec));
 }
 
 void ResetSpectatorInfo(entity player)
@@ -2107,8 +2344,11 @@ void WriteSpectatorInfo(entity player)
 	FOR_EACH_SPECOF(player, spec, 0)
 	{
 		#ifdef RM_SUPPORT_MADOKA
-		stuffcmd(spec, "cl_cmd lockmadoka ", ftos(player.madoka), "\n");
+		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
 		#endif
+		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), " ", player.hudskin, "\n"));
+		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
+		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
 		WriteSpectatorInfoOf(spec, player);
 	}
 }
@@ -2129,6 +2369,8 @@ float SpectateUpdate() {
 
 float SpectateNext() {
 	local entity oldenemy = self.enemy;
+	
+	UnmarkAway(self);
 	
 	other = find(self.enemy, classname, "player");
 	if (!other) {
@@ -2368,6 +2610,7 @@ Called every frame for each client before the physics are run
 void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
+float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
 	self.stat_game_starttime = game_starttime;
@@ -2394,6 +2637,7 @@ void PlayerPreThink (void)
 		if(self.cvar_g_nexuizversion)
 			if(time > self.version_nagtime)
 			{
+				if(self.cvar_g_nexuizversion != "2.5.2")
 				if(strstr(self.cvar_g_nexuizversion, "svn", 0) < 0)
 				{
 					if(strstr(cvar_string("g_nexuizversion"), "svn", 0) >= 0)
@@ -2433,6 +2677,8 @@ void PlayerPreThink (void)
 #endif
 
 	freezetag_PlayerPreThink();
+	domination_PlayerPreThink();
+	vip_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")

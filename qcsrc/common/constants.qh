@@ -39,6 +39,8 @@ const float GAME_RACE	= 11;
 const float GAME_NEXBALL = 12;
 const float GAME_CTS = 13;
 const float GAME_FREEZETAG = 14;
+const float GAME_TOTAL_DOMINATION = 15;
+const float GAME_VIP = 16;
 
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
@@ -58,6 +60,10 @@ const float TE_CSQC_VOTERESET = 109;
 const float TE_CSQC_MADOKAPRINT = 110;
 const float TE_CSQC_MORNINGRESCUE = 111;
 const float TE_CSQC_CLEARBIGPRINT = 112;
+const float TE_CSQC_SPEEDRECORD = 113;
+const float TE_CSQC_HUDFLASH = 114;
+const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
+const float TE_CSQC_VIPINFO = 116;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -91,6 +97,7 @@ const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
+const float ENT_CLIENT_SHOWNAMES = 23;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -296,6 +303,10 @@ const float STAT_REDALIVE = 106;
 const float STAT_BLUEALIVE = 107;
 const float STAT_YELLOWALIVE = 108;
 const float STAT_PINKALIVE = 109;
+const float STAT_TOTALPOINTS = 110;
+const float STAT_REDPOINTS = 111;
+const float STAT_BLUEPOINTS = 112;
+const float STAT_MINSTA = 113;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -341,7 +352,7 @@ const float STAT_PINKALIVE = 109;
  */
  
 //<akari>
-#define MAX_SCORE 11
+#define MAX_SCORE 17
 //</akari>
 #define MAX_TEAMSCORE 2
 
@@ -351,9 +362,13 @@ const float STAT_PINKALIVE = 109;
 #define SP_SUICIDES 2
 #define SP_SCORE 3
 
-//<akari>
 #define SP_HOOKFRAGS 10
-//</akari>
+#define SP_FREEZETAG_FROZENSTATUS 11
+#define SP_MADOKASTATUS 12
+#define SP_AWAYSTATUS 13
+#define SP_JOINTIME 14
+#define SP_CN_CHAR0 15
+#define SP_CN_CHAR1 16
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 
@@ -501,12 +516,14 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA "weapons/rm_minsta.wav"
+	#define RM_SOUND_MINSTA (cvar("g_explosive_oldnexsound")? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/crylink_fire.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/poweroff.wav"
 	#define RM_SOUND_MINSTA "weapons/minstanexfire.wav"
+	#define RM_SOUND_KILL "misc/hit.wav"
 #endif
 
 #if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
@@ -518,3 +535,34 @@ float MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
+
+
+// xonotic compat
+
+#define autocvar_hud_shownames (rm_shownames)
+#define autocvar_sv_shownames_cull_distance 2500
+#define autocvar_hud_shownames_enemies 2
+#define autocvar_hud_shownames_height 15
+#define autocvar_hud_shownames_status 0
+#define autocvar_hud_panel_healtharmor_maxhealth 0
+#define autocvar_hud_panel_healtharmor_maxarmor 0
+#define autocvar_hud_shownames_aspect 8
+#define autocvar_hud_shownames_fontsize 10
+#define autocvar_hud_shownames_decolorize 1
+#define autocvar_hud_shownames_alpha 0.9
+#define autocvar_hud_shownames_resize 0
+#define autocvar_hud_shownames_mindistance 1000
+#define autocvar_hud_shownames_maxdistance 2500
+
+#ifndef MENUQC
+const vector eX = '1 0 0';
+const vector eY = '0 1 0';
+const vector eZ = '0 0 1';
+#endif
+
+#define GTV_AVAILABLE 0
+#define GTV_OVERPLAYED 1
+// for later use in per-map gametype filtering
+#define GTV_FORBIDDEN 2
+
+float(string url, float id) uri_get = #513;

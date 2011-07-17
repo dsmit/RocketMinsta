@@ -383,10 +383,50 @@ void CTFCheck_Think()
 	if(cvar("g_ctf")) if(!find(world, classname, "item_flag_team"))
 	{
 		bprint("\x01^2 * ^1This map is not CTF-compatible! ^7Forced endmatch.\n");
+		forbidrestart = 1;
 		localcmd("endmatch\n");
 	}
 	
 	remove(self);
+}
+
+string InfoMessages_Pick()
+{
+	local float c = cvar("_g_explosive_infomessages_count");
+	local float r = floor(random() * c);
+	
+	if(!c) return "";
+	return cvar_string(strcat("_g_explosive_infomessages_", ftos(r)));
+}
+
+void InfoMessages_Think()
+{
+	if(!cvar("g_explosive_infomessages"))
+	{
+		remove(self);
+		return;
+	}
+
+	local string msg = InfoMessages_Pick();
+	local entity e;
+	FOR_EACH_REALCLIENT(e)
+		sprint(e, strcat("\x01^5 * ^7", msg, "\n"));
+	
+	self.nextthink = time + cvar("g_explosive_infomessages") * 60;
+}
+
+void InfoMessages_Init()
+{
+	if(!cvar("g_explosive_infomessages"))
+		return;
+	
+	print("Initializing the built-in infomessage system\n");
+	
+	local entity e;
+	e = spawn();
+	e.classname = "rm_info";
+	e.think = InfoMessages_Think;
+	e.nextthink = time + cvar("g_explosive_infomessages") * 60;
 }
 
 void spawnfunc_worldspawn (void)
@@ -398,6 +438,22 @@ void spawnfunc_worldspawn (void)
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
+
+	registercvar("g_freezetag", "0");
+	registercvar("g_total_domination", "0");
+    registercvar("g_vip", "0");
+/*
+ - now unused
+    registercvar("_sv_rm_lastgametype", "");
+    registercvar("_sv_rm_maprow", "0");
+*/
+    registercvar("_g_explosive_infomessages_count", "0");
+
+	registercvar ("_sv_rm_lastvote", "0");
+	registercvar ("_sv_rm_lastservertime", "0");
+	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
+
+	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -625,8 +681,20 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_YELLOWALIVE, AS_INT, yellowalive_stat);
 		addstat(STAT_PINKALIVE, AS_INT, pinkalive_stat);
 		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
-		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+		//addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
 	}
+
+    if(g_domination)
+    {
+        addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);
+        addstat(STAT_REDPOINTS, AS_INT, redpoints_stat);
+        addstat(STAT_BLUEPOINTS, AS_INT, bluepoints_stat);
+    }
+
+	if(g_freezetag || g_domination)
+		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+
+	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
@@ -673,12 +741,8 @@ void spawnfunc_worldspawn (void)
 
 	localcmd("\n_sv_hook_gamestart ", GetGametype(), ";");
 
-
-	//<akari>
-	//Executes a config file for each map, special for ari
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
-	//</akari>
 
 	world_initialized = 1;
 	
@@ -688,9 +752,40 @@ void spawnfunc_worldspawn (void)
 	local entity ctfcheck = spawn();
 	ctfcheck.think = CTFCheck_Think;
 	ctfcheck.nextthink = time + 3;
+	
+	if(g_explosive_speedaward_ownaccel)
+	{
+		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
+		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel")));
+	}
+	else
+	{
+		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
+		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
+	}
+
+	if(cvar("timelimit") < 0)
+		cvar_set("timelimit", "20");
+
+	if(cvar("fraglimit") < 0)
+		cvar_set("fraglimit", "10");
+
+/*
+	-- Not needed anymore --
+	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
+	{
+		cvar_set("_sv_rm_lastgametype", GametypeNameFromType(game));
+		cvar_set("_sv_rm_maprow", "0");
+	}
+*/
+
+//	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
+	InfoMessages_Init();
+	IP2C_Init();
+	UpdateCTFBlacklist();
+	
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 }
-
-
 
 void spawnfunc_light (void)
 {
@@ -1006,57 +1101,6 @@ string GetNextMap()
 	}
 
 	return "";
-};
-
-float DoNextMapOverride()
-{
-	if(cvar("g_campaign"))
-	{
-		CampaignPostIntermission();
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if(cvar("quit_when_empty"))
-	{
-		if(player_count <= currentbots)
-		{
-			localcmd("quit\n");
-			alreadychangedlevel = TRUE;
-			return TRUE;
-		}
-	}
-	if(cvar_string("quit_and_redirect") != "")
-	{
-		redirection_target = strzone(cvar_string("quit_and_redirect"));
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if (cvar("samelevel")) // if samelevel is set, stay on same level
-	{
-		// this does not work because it tries to exec maps/nexdm01.mapcfg (which doesn't exist, it should be trying maps/dm_nexdm01.mapcfg for example)
-		//localcmd(strcat("exec \"maps/", mapname, ".mapcfg\"\n"));
-		// so instead just restart the current map using the restart command (DOES NOT WORK PROPERLY WITH exit_cfg STUFF)
-		localcmd("restart\n");
-		//changelevel (mapname);
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	if(cvar_string("nextmap") != "")
-		if(MapInfo_CheckMap(cvar_string("nextmap")))
-		{
-			Map_Goto_SetStr(cvar_string("nextmap"));
-			Map_Goto();
-			alreadychangedlevel = TRUE;
-			return TRUE;
-		}
-	if(cvar("lastlevel"))
-	{
-		GameResetCfg();
-		localcmd("set lastlevel 0\ntogglemenu\n");
-		alreadychangedlevel = TRUE;
-		return TRUE;
-	}
-	return FALSE;
 };
 
 void GotoNextMap()
@@ -1715,6 +1759,7 @@ void ShuffleMaplist()
 float leaderfrags;
 float WinningCondition_Scores(float limit, float leadlimit)
 {
+	local entity e;
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
@@ -1739,23 +1784,41 @@ float WinningCondition_Scores(float limit, float leadlimit)
 		limit = -limit;
 	}
 
+	
+
 	if(WinningConditionHelper_zeroisworst)
 		leadlimit = 0; // not supported in this mode
 
 	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
+		local string winmsg;
+		
+		if(teamplay)
+			winmsg = strcat(ColoredTeamName(WinningConditionHelper_winnerteam), " ^7is about to win");
+		else
+			winmsg = strcat(WinningConditionHelper_winner.netname, " ^7is about to win");
+		
 		if(leaderfrags != WinningConditionHelper_topscore)
 		{
 			leaderfrags = WinningConditionHelper_topscore;
 
 			if (limit)
 			if (leaderfrags == limit - 1)
+			{
 				play2all("announcer/robotic/1fragleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "one frag remains", winmsg, 2);
+			}
 			else if (leaderfrags == limit - 2)
+			{
 				play2all("announcer/robotic/2fragsleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "two frags remain", winmsg, 2);
+			}
 			else if (leaderfrags == limit - 3)
+			{
 				play2all("announcer/robotic/3fragsleft.wav");
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "three frags remain", winmsg, 2);
+			}
 		}
 	}
 
@@ -2067,6 +2130,7 @@ float mapvote_count;
 float mapvote_count_real;
 string mapvote_maps[MAPVOTE_COUNT];
 float mapvote_maps_suggested[MAPVOTE_COUNT];
+float mapvote_maps_availability[MAPVOTE_COUNT];
 string mapvote_suggestions[MAPVOTE_COUNT];
 float mapvote_suggestion_ptr;
 float mapvote_maxlen;
@@ -2076,6 +2140,82 @@ float mapvote_run;
 float mapvote_detail;
 float mapvote_abstain;
 .float mapvote;
+
+float gametypevote;
+string choosenmap;
+
+void MapVote_AddVotable(string, float);
+void GameTypeVote_Start();
+float GameTypeVote_Finished(float);
+float GameTypeVote_AvailabilityStatus(string);
+
+float DoNextMapOverride()
+{
+	if(cvar("g_campaign"))
+	{
+		CampaignPostIntermission();
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if(cvar("quit_when_empty"))
+	{
+		if(player_count <= currentbots)
+		{
+			localcmd("quit\n");
+			alreadychangedlevel = TRUE;
+			return TRUE;
+		}
+	}
+	if(cvar_string("quit_and_redirect") != "")
+	{
+		redirection_target = strzone(cvar_string("quit_and_redirect"));
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if (cvar("samelevel")) // if samelevel is set, stay on same level
+	{
+		// this does not work because it tries to exec maps/nexdm01.mapcfg (which doesn't exist, it should be trying maps/dm_nexdm01.mapcfg for example)
+		//localcmd(strcat("exec \"maps/", mapname, ".mapcfg\"\n"));
+		// so instead just restart the current map using the restart command (DOES NOT WORK PROPERLY WITH exit_cfg STUFF)
+		localcmd("restart\n");
+		//changelevel (mapname);
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	if(cvar_string("nextmap") != "")
+		if(MapInfo_CheckMap(cvar_string("nextmap")))
+		{
+			if(gametypevote)
+				return FALSE;
+			
+			Map_Goto_SetStr(cvar_string("nextmap"));
+			
+			if(mapvote_initialized)
+			{
+				if(cvar("g_explosive_gametypevote")) if(cvar("g_explosive_gametypevote_overplayed_strict"))
+				{
+					if(GameTypeVote_AvailabilityStatus(GametypeNameFromType(gametypetoset)) != GTV_AVAILABLE)
+					{
+						choosenmap = strzone(cvar_string("nextmap"));
+						//GameTypeVote_Start();
+						return FALSE;
+					}
+				}
+			}
+			
+			alreadychangedlevel = TRUE;
+			Map_Goto();
+			return TRUE;
+		}
+	if(cvar("lastlevel"))
+	{
+		GameResetCfg();
+		localcmd("set lastlevel 0\ntogglemenu\n");
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	return FALSE;
+};
 
 void MapVote_ClearAllVotes()
 {
@@ -2136,6 +2276,32 @@ void MapVote_AddVotable(string nextMap, float isSuggestion)
 	mapvote_count += 1;
 }
 
+string GameTypeVote_GetOptions();
+float GameTypeVote_AvailabilityStatus_ForMap(string, string);
+float MapIsPlayable(string map_name)
+{
+	if(!cvar("g_explosive_gametypevote"))
+		// if gametype voting isn't enabled, the server will stay on the current gametype
+		// so let's hide any map that isn't allowed in the current mode
+		return GameTypeFilter_Allowed(map_name, GetGametype());
+	
+	// Multigametype server: we'll hide the map if it supports none of gametypes that can be played
+	local float ret, i, n;
+	local string gtname;
+	
+	n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	for(i = 0; i < n; ++i)
+	{
+		gtname = argv(i);
+		ret += (GameTypeVote_AvailabilityStatus_ForMap(gtname, map_name) == GTV_AVAILABLE);
+		
+		// GameTypeVote_AvailabilityStatus_ForMap tokenizes
+		n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	}
+	
+	return ret;
+}
+
 void MapVote_Spawn();
 void MapVote_Init()
 {
@@ -2159,7 +2325,12 @@ void MapVote_Init()
 			MapVote_AddVotable(mapvote_suggestions[floor(random() * mapvote_suggestion_ptr)], TRUE);
 
 	for(i = 0; i < 100 && mapvote_count < nmax; ++i)
-		MapVote_AddVotable(GetNextMap(), FALSE);
+	{
+		local string m = GetNextMap();
+		
+		if(MapIsPlayable(m))
+			MapVote_AddVotable(m, FALSE);
+	}
 
 	if(mapvote_count == 0)
 	{
@@ -2169,7 +2340,14 @@ void MapVote_Init()
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
-			MapVote_AddVotable(GetNextMap(), FALSE);
+		{
+			m = GetNextMap();
+			if(!MapIsPlayable(m))
+				continue;
+			
+			MapVote_AddVotable(m, FALSE);
+			mapvote_maps_availability[i] = GTV_AVAILABLE;
+		}
 	}
 
 	mapvote_count_real = mapvote_count;
@@ -2245,6 +2423,11 @@ float MapVote_SendEntity(entity to, float sf)
 		WriteByte(MSG_ENTITY, mapvote_abstain);
 		WriteByte(MSG_ENTITY, mapvote_detail);
 		WriteCoord(MSG_ENTITY, mapvote_timeout);
+		WriteByte(MSG_ENTITY, gametypevote);
+		
+		if(gametypevote)
+			WriteString(MSG_ENTITY, choosenmap);
+		
 		if(mapvote_count <= 8)
 			WriteByte(MSG_ENTITY, MapVote_GetMapMask());
 		else
@@ -2269,6 +2452,9 @@ float MapVote_SendEntity(entity to, float sf)
 					for(o = strstr(pakfile, "/", 0)+1; o > 0; o = strstr(pakfile, "/", 0)+1)
 						pakfile = substring(pakfile, o, 999);
 					WriteString(MSG_ENTITY, pakfile);
+					
+					if(gametypevote)
+						WriteByte(MSG_ENTITY, mapvote_maps_availability[i]);
 				}
 			}
 	}
@@ -2316,6 +2502,8 @@ float MapVote_Finished(float mappos)
 	float i;
 	float didntvote;
 
+	//bprint("^5MAPVOTE FINISHED^7: ", ftos(mappos), "\n");
+
 	if(cvar("sv_eventlog"))
 	{
 		result = strcat(":vote:finished:", mapvote_maps[mappos]);
@@ -2341,10 +2529,29 @@ float MapVote_Finished(float mappos)
 	FOR_EACH_REALCLIENT(other)
 		FixClientCvars(other);
 
-	Map_Goto_SetStr(mapvote_maps[mappos]);
-	Map_Goto();
-	alreadychangedlevel = TRUE;
-	return TRUE;
+
+	if(!cvar("g_explosive_gametypevote"))
+	{
+		Map_Goto_SetStr(mapvote_maps[mappos]);
+		Map_Goto();
+		alreadychangedlevel = TRUE;
+		return TRUE;
+	}
+	else
+	{
+		if(!gametypevote)
+		{
+			if(cvar_string("nextmap") == "")
+			{
+				Map_Goto_SetStr(mapvote_maps[mappos]);
+				choosenmap = strzone(mapvote_maps[mappos]);
+			}
+			GameTypeVote_Start();
+			return FALSE;
+		}
+		
+		return GameTypeVote_Finished(mappos);
+	}
 }
 void MapVote_CheckRules_1()
 {
@@ -2377,6 +2584,9 @@ float MapVote_CheckRules_2()
 	float mapvote_voters_real;
 	string result;
 
+	if(cvar_string("nextmap") != "" && !gametypevote)
+		return MapVote_Finished(0);
+
 	if(mapvote_count_real == 1)
 		return MapVote_Finished(0);
 
@@ -2386,7 +2596,9 @@ float MapVote_CheckRules_2()
 
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
-		RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+		if(mapvote_maps_availability[i] == GTV_AVAILABLE)
+			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+	
 	firstPlace = RandomSelection_chosen_float;
 	firstPlaceVotes = RandomSelection_best_priority;
 	//dprint("First place: ", ftos(firstPlace), "\n");
@@ -2395,7 +2607,9 @@ float MapVote_CheckRules_2()
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(i != firstPlace)
-			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+			if(mapvote_maps_availability[other.impulse - 1] == GTV_AVAILABLE)
+				RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+				
 	secondPlace = RandomSelection_chosen_float;
 	secondPlaceVotes = RandomSelection_best_priority;
 	//dprint("Second place: ", ftos(secondPlace), "\n");
@@ -2407,6 +2621,7 @@ float MapVote_CheckRules_2()
 	if(secondPlace == -1 || time > mapvote_timeout || (mapvote_voters_real - firstPlaceVotes) < firstPlaceVotes)
 		return MapVote_Finished(firstPlace);
 
+	if(!gametypevote)
 	if(mapvote_keeptwotime)
 		if(time > mapvote_keeptwotime || (mapvote_voters_real - firstPlaceVotes - secondPlaceVotes) < secondPlaceVotes)
 		{
@@ -2475,8 +2690,19 @@ void MapVote_Tick()
 		if(other.impulse >= 1 && other.impulse <= mapvote_count)
 			if(mapvote_maps[other.impulse - 1] != "")
 			{
-				other.mapvote = other.impulse;
-				MapVote_TouchVotes(other);
+				if(gametypevote)
+				{
+					if(mapvote_maps_availability[other.impulse - 1] == GTV_AVAILABLE)
+					{
+						other.mapvote = other.impulse;
+						MapVote_TouchVotes(other);
+					}
+				}
+				else
+				{
+					other.mapvote = other.impulse;
+					MapVote_TouchVotes(other);
+				}
 			}
 		other.impulse = 0;
 
@@ -2495,6 +2721,26 @@ void MapVote_Start()
 	if(MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
 }
+
+float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
+{
+	if (! GameTypeFilter_Allowed (map_name, gtname))
+		return GTV_FORBIDDEN;
+	
+	if not(cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_AVAILABLE;
+	
+	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
+		return GTV_OVERPLAYED;
+	
+	return GTV_AVAILABLE;
+}
+
+float GameTypeVote_AvailabilityStatus(string gtname)
+{
+	return GameTypeVote_AvailabilityStatus_ForMap(gtname, getmapname_stored);
+}
+
 void MapVote_Think()
 {
 	if(!mapvote_run)
@@ -2525,6 +2771,98 @@ void MapVote_Think()
 	MapVote_Tick();
 };
 
+string GameTypeVote_GetOptions()
+{
+	#ifdef 0
+	if not(cvar("g_explosive_gametypevote_maxmaps"))
+		return cvar_string("g_explosive_gametypevote_options");
+	
+	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
+		return cvar_string("g_explosive_gametypevote_options");
+	
+	local string result;
+	local float i, n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
+	local float first;
+	first = 1;
+	
+	for(i = 0; i < n; i++)
+	{
+		if(argv(i) == GametypeNameFromType(game))
+			continue;
+		
+		if(first)
+			result = argv(i);
+		else
+			result = strcat(result, " ", argv(i));
+		
+		first = 0;
+	}
+	
+	return result;
+	#else
+	return cvar_string("g_explosive_gametypevote_options");
+	#endif
+}
+
+float GameTypeVote_Finished(float pos)
+{
+	if(!gametypevote)
+		return FALSE;
+	
+	localcmd("gametype ", mapvote_maps[pos], "\n");
+	if(cvar_string("nextmap") != "")
+		Map_Goto_SetStr(cvar_string("nextmap"));
+	Map_Goto();
+	alreadychangedlevel = TRUE;
+	return TRUE;
+}
+
+void GameTypeVote_Start()
+{
+	local float j;
+	MapVote_ClearAllVotes();
+
+	for(j = 0; j < mapvote_count; ++j)
+		if(mapvote_maps[j])
+			if(mapvote_maps[j] != "")
+				strunzone(mapvote_maps[j]);
+	
+	mapvote_count = 0;
+	mapvote_timeout = time + cvar("g_explosive_gametypevote_timeout");
+	mapvote_abstain = 0;
+	
+	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	
+	for(j = 0; j < n; ++j)
+	{
+		// If we don't spam tokenizebyseparator, shit fucks up
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
+		MapVote_AddVotable(argv(j), 0);
+		tokenizebyseparator( GameTypeVote_GetOptions (), " ");
+		mapvote_maps_availability[j] = GameTypeVote_AvailabilityStatus(argv(j));
+	}
+
+	if(cvar("g_explosive_gametypevote_shuffle"))
+	{
+		for(j = 0; j < mapvote_count * 3; ++j)
+		{
+			local float idx1, idx2;
+			idx1 = min(mapvote_count-1, floor(random() * mapvote_count));
+			idx2 = min(mapvote_count-1, floor(random() * mapvote_count));
+			
+			string temp1, temp2;
+			temp1 = mapvote_maps[idx1];
+			temp2 = mapvote_maps[idx2];
+			
+			mapvote_maps[idx1] = temp2;
+			mapvote_maps[idx2] = temp1;
+		}
+	}
+	
+	gametypevote = 1;
+	MapVote_Spawn();
+}
+
 string GotoMap(string m)
 {
 	if(!MapInfo_CheckMap(m))
@@ -2552,15 +2890,35 @@ void EndFrame()
 		{
 			if(self.enemy.typehitsound)
 				play2(self, "misc/typehit.wav");
-			else if(self.enemy.hitsound && self.cvar_cl_hitsound)
-				play2(self, "misc/hit.wav");
+			else if(self.cvar_cl_hitsound)
+			{
+				if(self.enemy.killsound)
+				{
+					if(self.rm_nokillsound)
+						play2(self, "misc/hit.wav");
+					else
+						play2(self, RM_SOUND_KILL);
+				}
+				else if(self.enemy.hitsound)
+					play2(self, "misc/hit.wav");
+			}
 		}
 		else
 		{
 			if(self.typehitsound)
 				play2(self, "misc/typehit.wav");
-			else if(self.hitsound && self.cvar_cl_hitsound)
-				play2(self, "misc/hit.wav");
+			else if(self.cvar_cl_hitsound)
+			{
+				if(self.killsound)
+				{
+					if(self.rm_nokillsound)
+						play2(self, "misc/hit.wav");
+					else
+						play2(self, RM_SOUND_KILL);
+				}
+				else if(self.hitsound)
+					play2(self, "misc/hit.wav");
+			}
 		}
 	}
 	altime = time + frametime * (1 + cvar("g_antilag_nudge"));
@@ -2573,6 +2931,8 @@ void EndFrame()
 	{
 		self.hitsound = FALSE;
 		self.typehitsound = FALSE;
+		self.killsound = FALSE;
+		self.instakillsound = FALSE;
 		antilag_record(self, altime);
 	}
 }
@@ -2645,6 +3005,8 @@ void RestoreGame()
 
 void SV_Shutdown()
 {
+	cvar_set ("_sv_rm_lastservertime", ftos (time));
+
 	if(gameover > 1) // shutting down already?
 		return;
 
@@ -2656,7 +3018,20 @@ void SV_Shutdown()
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
 		if(!sv_cheats)
+		{
+			if(g_explosive_speedaward_ownaccel)
+			{
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel"), ftos(highest_velocity));
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel"), highest_velocity_name);
+			}
+			else
+			{
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
+				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
+			}
 			db_save(ServerProgsDB, "server.db");
+		}
+		IP2C_Shutdown();
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");
 		db_close(ServerProgsDB);
