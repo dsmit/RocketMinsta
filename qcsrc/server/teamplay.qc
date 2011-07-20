@@ -868,6 +868,8 @@ void CheckAllowedTeams (entity for_whom)
 			dm = kh_teams;
 		else if(g_race)
 			dm = race_teams;
+		else if(g_freezetag)
+			dm = ft_teams;
 		else
 			dm = 2;
 

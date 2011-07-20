@@ -15,6 +15,3 @@ float HOOK_WAITING_FOR_RELEASE = 16;
 
 void GrappleHookInit();
 vector hook_shotorigin;
-
-.entity hooker;
-.entity hooked_to;

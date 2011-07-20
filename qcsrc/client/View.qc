@@ -625,6 +625,7 @@ void CSQC_UpdateView(float w, float h)
                 CSQC_common_hud();
 
         // crosshair goes VERY LAST
+        if(spectatee_status != -1)
         if(!scoreboard_active && !ons_showmap && !camera_active) {
 			// TrueAim check
 			float shottype;
@@ -710,8 +711,8 @@ void CSQC_UpdateView(float w, float h)
 					wcross_color_z = cvar("crosshair_color_blue");
 				}
 				
-                wcross_alpha = cvar("crosshair_color_alpha") * m;
-                wcross_sizefloat = cvar("crosshair_size") * m;
+                wcross_alpha = cvar("crosshair_color_alpha") * m * (1 - sbar_scoreboard_fade_alpha);
+                wcross_sizefloat = cvar("crosshair_size") * m * (1 - sbar_scoreboard_fade_alpha);
                 if (cvar("crosshair_per_weapon")) {
                     e = get_weaponinfo(activeweapon);
                     if (e && e.netname != "")

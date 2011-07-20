@@ -226,8 +226,13 @@ void SV_ParseClientCommand(string s) {
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
 		
+		stuffcmd(self, strcat("set _g_balance_minstanex_explosive ", ftos(cvar("g_balance_minstanex_explosive")), "\n"));
+		
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
+		
+		// And the scoreboard fields
+		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "spyrmcfg") {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
 		

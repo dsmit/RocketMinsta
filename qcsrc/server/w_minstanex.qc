@@ -235,14 +235,6 @@ void W_MinstaNex_Attack (void)
 	}
 }
 
-
-//<akari>
-.entity hooker;
-.entity hooked_to;
-entity nobody;
-string GetHitSound(entity attacker, entity target);
-//</akari>
-
 .float minstagib_nextthink;
 void minstagib_ammocheck (void)
 {
@@ -325,26 +317,11 @@ void minstagib_ammocheck (void)
 		}
 	}
 	
-	//<akari>
-	//Health draining
-	
 	if(!g_freezetag || !self.freezetag_frozen)
 	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_health_drain") && self.health > cvar("g_explosive_health_min"))
 	{
 		self.health -= cvar("g_explosive_health_drain");
 	}
-	
-	//Hook damage
-	/*if(self.hooker.hooked_to == self)
-	{
-		if(!teams_matter || self.hooker.team != self.team)
-		{
-			play2(self.hooker, "misc/hit.wav");
-			Damage(self, self.hooker.hook, self.hooker, random() * 10, DEATH_NOAMMO, self.origin, '0 0 0');
-		}
-	}*/
-	
-	//</akari>
 	
 	self.minstagib_nextthink = time + 1;
 }
