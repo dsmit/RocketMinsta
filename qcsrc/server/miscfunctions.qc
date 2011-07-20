@@ -230,6 +230,27 @@ void relocate_spawnpoint()
     }
 }
 
+float count_team_spawns()
+{
+	float r, b, y, p, c;
+	entity e;
+	
+	#define HANDLETEAM(o,p) case o: if(!p) c++; p = 1; break;
+	for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) if(e.team)
+	{
+		switch(e.team)
+		{
+			HANDLETEAM(COLOR_TEAM1, r)
+			HANDLETEAM(COLOR_TEAM2, b)
+			HANDLETEAM(COLOR_TEAM3, y)
+			HANDLETEAM(COLOR_TEAM4, p)
+		}
+	}
+	#undef HANDLETEAM
+	
+	return c;
+}
+
 #define strstr strstrofs
 /*
 // NOTE: DO NOT USE THIS FUNCTION TOO OFTEN.
@@ -1420,44 +1441,13 @@ void precache_all_models(string pattern)
     search_end(globhandle);
 }
 
-//<akari>
-string hook_hitsound;
-string hook_teamhitsound;
-
-string Hook_GetHitSound_ENEMY()
-{
-	if(fopen("sounds/misc/hit_hook.wav", FILE_READ) != -1)
-		return "misc/hit_hook.wav";
-	return "misc/hit.wav";
-}
-
-string Hook_GetHitSound_TEAM()
-{
-	if(fopen("sounds/misc/teamhit_hook.wav", FILE_READ) != -1)
-		return "misc/teamhit_hook.wav";
-	return "misc/typehit.wav";
-}
-//</akari>
-
 void precache()
 {
-    //<akari>
-    hook_hitsound = Hook_GetHitSound_ENEMY();
-    hook_teamhitsound = Hook_GetHitSound_TEAM();
-    
-    bprint("Hook hit sound: ", hook_hitsound, "\n");
-    bprint("Hook teamhit sound: ", hook_teamhitsound, "\n");
-    
-    precache_sound(hook_hitsound);
-    precache_sound(hook_teamhitsound);
-    
     precache_sound (RM_SOUND_MORNINGRESCUE);
 	precache_sound (RM_SOUND_PHOENIX);
 	precache_sound (RM_SOUND_REBIRTH);
 	precache_sound (RM_SOUND_RECOVERY);
     precache_sound (RM_SOUND_KILL);
-    
-    //</akari>
     
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");

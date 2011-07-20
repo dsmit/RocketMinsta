@@ -1,8 +1,24 @@
 float IPCacheDB;
+.entity ip2c_callbackentity;
+.string ip2c_callbackip;
+.ip2c_callback_t ip2c_callbackfunction;
+.float ip2c_requested_at;
 
 void IP2C_Log(string msg)
 {
+	#ifdef MENUQC
+		print("MENU ");
+	#endif
+	
     print("IP2C: ", msg, "\n");
+}
+
+void IP2C_FreeCallbackEntity(entity e)
+{
+	if(e.ip2c_callbackip)
+		strunzone(e.ip2c_callbackip);
+		
+	remove(e);
 }
 
 void IP2C_Init()
@@ -14,6 +30,10 @@ void IP2C_Init()
 
 void IP2C_Shutdown()
 {
+	local entity e;
+	for(e = world; (e = find(e, classname, "ip2c_callbackprovider")); )
+		IP2C_FreeCallbackEntity(e);
+	
     IP2C_Log("Saving cached IPs");
     db_save(IPCacheDB, IP2C_DBNAME);
     db_close(IPCacheDB);
@@ -30,9 +50,31 @@ void IP2C_CacheIP(string ip, string cn)
     db_put(IPCacheDB, ip, cn);
 }
 
-.entity ip2c_callbackentity;
-.string ip2c_callbackip;
-.ip2c_callback_t ip2c_callbackfunction;
+void IP2C_RequestTimeout()
+{
+	IP2C_Log(strcat("Request for ", self.ip2c_callbackip, " timed out after ", ftos(time - self.ip2c_requested_at), " seconds"));
+	IP2C_FreeCallbackEntity(self);
+}
+
+#ifdef MENUQC
+.void() think;
+.float nextthink;
+
+// apparently menuqc doesn't support thinkfunctions
+void IP2C_CheckTimedOut()
+{
+	local entity e;
+	for(e = world; (e = find(e, classname, "ip2c_callbackprovider")); ) if(time >= e.nextthink)
+	{
+		local entity oldself;
+		oldself = self;
+		self = e;
+		e.think();
+		self = oldself;
+	}
+}
+
+#endif
 
 void IP2C_AddCallback(string ip, ip2c_callback_t callback, entity callbackentity)
 {
@@ -41,6 +83,9 @@ void IP2C_AddCallback(string ip, ip2c_callback_t callback, entity callbackentity
     cb.ip2c_callbackip = strzone(ip);
     cb.ip2c_callbackentity = callbackentity;
     cb.ip2c_callbackfunction = callback;
+    cb.think = IP2C_RequestTimeout;
+    cb.nextthink = time + cvar("g_explosive_ip2country_timeout");
+    cb.ip2c_requested_at = time;
 }
 
 void IP2C_ExecCallbacks(string ip, string cn)
@@ -50,12 +95,8 @@ void IP2C_ExecCallbacks(string ip, string cn)
     if(e.ip2c_callbackip == ip)
     {
         e.ip2c_callbackfunction(ip, cn, e.ip2c_callbackentity);
-        
-        if(e.ip2c_callbackip)
-            strunzone(e.ip2c_callbackip);
-        
-        remove(e);
-    }
+		IP2C_FreeCallbackEntity(e);
+	}
 }
 
 void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity)
@@ -111,4 +152,13 @@ void IP2C_URI_Get_Callback(float id, float status, string data)
 void IP2C_Callback_DumpToConsole(string ip, string cn, entity e)
 {
     IP2C_Log(strcat("Country for IP ", ip, ": ", cn));
+}
+
+void IP2C_PrintRequests()
+{
+	IP2C_Log("^3Requests in progress:");
+	
+	local entity e;
+	for(e = world; (e = find(e, classname, "ip2c_callbackprovider")); )
+		IP2C_Log(strcat(e.ip2c_callbackip, " : ^5", ftos(time - e.ip2c_requested_at), "s"));
 }

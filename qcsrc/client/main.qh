@@ -197,6 +197,7 @@ float rm_visualscore;
 float rm_oldhud_option;
 float rm_althud_option;
 float rm_noflags;
+float rm_showrankings;
 
 float rm_oldhud;
 float rm_althud;

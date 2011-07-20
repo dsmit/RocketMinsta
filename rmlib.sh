@@ -90,10 +90,15 @@ function rm-hasversion
     [ "$(rm-version)" != "git" ]
 }
 
+function warning
+{
+    echo -e "***\n\e[31;1mWARNING: \e[0m$@\e[0m\n***\n"
+    sleep 1 #little annoyance
+}
+
 function warn-oldconfig
 {
-    echo -e "***\n\e[31;1mWARNING: \e[0myour $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!\n***"
-    sleep 1 #little annoyance
+    warning "your $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!"
 }
 
 PERLGREP="grep -P"
