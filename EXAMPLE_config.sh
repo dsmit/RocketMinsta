@@ -46,3 +46,6 @@ COMPRESSGFX=1
 
 # Will get passed to the -quality parameter of 'convert'
 COMPRESSGFX_QUALITY=85
+
+# Release branch override. Normally empty.
+BUILDNAME=""

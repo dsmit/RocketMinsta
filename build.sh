@@ -355,6 +355,10 @@ if [ -z $COMPRESSGFX_QUALITY ]; then
     COMPRESSGFX_QUALITY=85
 fi
 
+if [ -n "$BUILDNAME" ]; then
+    BRANCH=$BUILDNAME
+fi
+
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
     rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"

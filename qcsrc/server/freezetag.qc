@@ -177,11 +177,11 @@ void freezetag_Initialize()
     else
         warmup = time + cvar("g_start_delay");
     
-
-	precache_sound("ctf/red_capture.wav");
-	precache_sound("ctf/blue_capture.wav");
 	precache_sound("freezetag/last_player_alarm.ogg");
-	precache_sound("kh/capture.wav");
+	precache_sound("freezetag/red_scores.ogg");
+	precache_sound("freezetag/blue_scores.ogg");
+	precache_sound("freezetag/yellow_scores.ogg");
+	precache_sound("freezetag/pink_scores.ogg");
 	precache_sound("freezetag/freezing.wav");
 
 	ScoreRules_freezetag();
@@ -274,29 +274,29 @@ void freezetag_CheckWinner()
 	{
 		if(winner.team == COLOR_TEAM1)
         {
-			teamname = "^1red";
-            teamname_full = "^1Red team";
-            if(ft_teams < 3) play2all("ctf/red_capture.wav");
+		teamname = "^1red";
+		teamname_full = "^1Red team";
+		play2all("freezetag/red_scores.ogg");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
-			teamname = "^4blue";
-            teamname_full = "^4Blue team";
-            if(ft_teams < 3) play2all("ctf/blue_capture.wav");
+		teamname = "^4blue";
+		teamname_full = "^4Blue team";
+		play2all("freezetag/blue_scores.ogg");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
-			teamname = "^3yellow";
-            teamname_full = "^3Yellow team";
+		teamname = "^3yellow";
+		teamname_full = "^3Yellow team";
+		play2all("freezetag/yellow_scores.ogg");
         }
 		else
         {
-			teamname = "^6pink";
-            teamname_full = "^6Pink team";
+		teamname = "^6pink";
+		teamname_full = "^6Pink team";
+		play2all("freezetag/pink_scores.ogg");
         }
         
-        if(ft_teams > 2)
-			play2all("kh/capture.wav");
         
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
