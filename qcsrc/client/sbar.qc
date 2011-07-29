@@ -4299,9 +4299,16 @@ void Sbar_Draw (void)
 			}
 		}
 
+		// TODO: make this less ugly
+		float hgammo = getstati(STAT_HGAMMO);
+		if(hgammo)
+		{
+			vector hgapos;
+			hgapos_y = vid_conheight - vid_conheight/7;
+			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+		}
+
 		// fuel ammo
-
-
 		if(rm_oldhud)
 		{
 			a = getstati(GetAmmoStat(4)); // how much fuel do we have?

@@ -308,6 +308,7 @@ const float STAT_REDPOINTS = 111;
 const float STAT_BLUEPOINTS = 112;
 const float STAT_MINSTA = 113;
 const float STAT_HGFORCE = 114;
+const float STAT_HGAMMO = 115;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P

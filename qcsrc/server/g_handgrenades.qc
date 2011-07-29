@@ -4,12 +4,13 @@
 
 void HG_Attack()
 {
-	if(time < self.hg_next)
+	if(time < self.hg_next || !self.hg_ammo)
 		return;
 	
 	makevectors(self.v_angle);
 	W_Grenade_Attack2_Real(self.hg_power); // hack hack
 	self.hg_next = time + cvar("g_explosive_handgrenades_mindelay");
+	self.hg_ammo -= 1;
 }
 
 void HG_Frame()
@@ -24,7 +25,10 @@ void HG_Frame()
 	   (g_freezetag && self.freezetag_frozen))
 			held = 0;
 	
-	if(held && time >= self.hg_next)
+	if(held && held != self.hg_state && !self.hg_ammo)
+		bigprint_spec(self, "out of grenades", "", 1);
+	
+	if(held && time >= self.hg_next && self.hg_ammo)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
 			cvar("g_explosive_handgrenades_speed"),
@@ -46,5 +50,5 @@ void HG_Frame()
 void HG_PlayerSpawn()
 {
 	self.hg_power = 0;
-	// TODO: implement ammo limitation and add it here
+	self.hg_ammo = cvar("g_explosive_handgrenades_ammo");
 }
