@@ -1,5 +1,6 @@
 void HG_Frame();
 void HG_Attack();
+void HG_PlayerSpawn();
 void W_Grenade_Attack2_Real(float);
 
 .float hg_power;

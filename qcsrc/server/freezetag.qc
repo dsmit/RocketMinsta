@@ -375,6 +375,9 @@ void freezetag_Unfreeze(entity attacker)
 		WaypointSprite_Kill(self.waypointsprite_attached);
 	
 	self.disableclientprediction = 0;
+	
+	if(g_handgrenades)
+		HG_PlayerSpawn();
 }
 
 .vector ft_oldorigin;

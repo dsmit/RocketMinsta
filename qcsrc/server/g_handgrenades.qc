@@ -42,3 +42,9 @@ void HG_Frame()
 	
 	self.hg_state = held;
 }
+
+void HG_PlayerSpawn()
+{
+	self.hg_power = 0;
+	// TODO: implement ammo limitation and add it here
+}
