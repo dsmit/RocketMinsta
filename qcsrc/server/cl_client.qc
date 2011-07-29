@@ -2286,6 +2286,7 @@ void SpectateCopy(entity spectatee) {
 	self.freezetag_frozen = spectatee.freezetag_frozen;
 	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
 	self.hg_power = spectatee.hg_power;
+	self.hg_ammo = spectatee.hg_ammo;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
