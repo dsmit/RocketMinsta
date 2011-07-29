@@ -30,6 +30,7 @@ csqceffects.qc
 portals.qh
 
 g_hook.qh
+g_handgrenades.qh
 
 scores.qh
 
@@ -127,6 +128,7 @@ domination.qc
 mode_onslaught.qc
 nexball.qc
 g_hook.qc
+g_handgrenades.qc
 
 t_swamp.qc
 

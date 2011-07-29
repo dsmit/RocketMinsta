@@ -1011,6 +1011,9 @@ void readplayerstartcvars()
     if (g_jetpack)
         start_items |= IT_JETPACK;
 
+	if(g_jetpack || g_grappling_hook)
+		g_handgrenades = 0;
+
     if (g_weapon_stay == 2)
     {
         if (!start_ammo_shells) start_ammo_shells = g_pickup_shells;
@@ -1103,6 +1106,7 @@ void readlevelcvars(void)
     g_footsteps = cvar("g_footsteps");
     g_grappling_hook = cvar("g_grappling_hook");
     g_jetpack = cvar("g_jetpack");
+    g_handgrenades = cvar("g_explosive_handgrenades");
     g_laserguided_missile = cvar("g_laserguided_missile");
     g_midair = cvar("g_midair");
     g_minstagib = cvar("g_minstagib");
