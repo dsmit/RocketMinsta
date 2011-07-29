@@ -8,7 +8,7 @@ void HG_Attack()
 		return;
 	
 	makevectors(self.v_angle);
-	W_Grenade_Attack2_Real(self.hg_power); // hack hack
+	W_Grenade_Attack2_Real(self.hg_power, self.hg_power == 1); // hack hack
 	self.hg_next = time + cvar("g_explosive_handgrenades_mindelay");
 	self.hg_ammo -= 1;
 }
@@ -43,6 +43,9 @@ void HG_Frame()
 		if(self.hg_state)
 			HG_Attack();
 	}
+	
+	if(self.hg_power == 1)
+		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;
 }

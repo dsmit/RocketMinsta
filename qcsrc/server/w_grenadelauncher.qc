@@ -108,7 +108,7 @@ void W_Grenade_Attack (void)
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE, TRUE);	
 }
 
-void W_Grenade_Attack2_Real (float force)
+void W_Grenade_Attack2_Real (float force, float inhand_explosion)
 {
 	local entity gren;
 
@@ -130,7 +130,7 @@ void W_Grenade_Attack2_Real (float force)
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
 
-	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");
+	gren.nextthink = (inhand_explosion? time+0.01 : time + cvar("g_balance_grenadelauncher_secondary_lifetime"));
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode2;
 	gren.touch = W_Grenade_Touch2;
@@ -149,7 +149,7 @@ void W_Grenade_Attack2_Real (float force)
 
 void W_Grenade_Attack2(void)
 {
-	W_Grenade_Attack2_Real(1);
+	W_Grenade_Attack2_Real(1, 0);
 }
 
 void spawnfunc_weapon_grenadelauncher (void)
