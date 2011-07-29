@@ -2936,6 +2936,18 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	}
 }
 
+void DrawProgress (vector cpos, vector size, float progress, float alpha, vector color)
+{
+	vector pos;
+	pos_x = cpos_x - size_x / 2;
+	pos_y = cpos_y - size_y / 2;
+	
+	vector fill = size;
+	fill_x *= progress;
+	
+	drawborderlines(1, pos, size, color, alpha, DRAWFLAG_NORMAL);
+	drawfill(pos, fill, color, alpha * 0.7, DRAWFLAG_NORMAL);
+}
 
 void Sbar_Draw (void)
 {
@@ -3144,6 +3156,20 @@ void Sbar_Draw (void)
 		else
 			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
     }
+
+	// handgrenade force meter
+	float hgstat = getstatf(STAT_HGFORCE);
+	
+	if(hgstat)
+	{
+		vector hgpos;
+		hgpos_x = vid_conwidth/2;
+		hgpos_y = vid_conheight - vid_conheight/4;
+		
+		vector hgcolor = '1 1 0';
+		hgcolor_y = hgcolor_y * 1 - hgstat;
+		DrawProgress(hgpos, '100 5', hgstat, 0.7, hgcolor);
+	}
 
 	local vector sv_pos;
 	sv_pos = bottomright;

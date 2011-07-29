@@ -1,0 +1,9 @@
+void HG_Frame();
+void HG_Attack();
+void W_Grenade_Attack2_Real(float);
+
+.float hg_power;
+.float hg_state;
+.float hg_next;
+
+#define BUTTON_HG button6
