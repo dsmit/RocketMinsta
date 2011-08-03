@@ -354,9 +354,15 @@ void freezetag_Unfreeze(entity attacker)
 {
     DEPENDON(g_freezetag)
     
-    self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+    if(!self)
+		return;
     
+    if(self.scorekeeper)
+    {
+		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+	}
+	
 	self.freezetag_frozen = 0;
 	self.freezetag_revive_progress = 0;
 
