@@ -25,7 +25,7 @@ void HG_Frame()
 	   (g_freezetag && self.freezetag_frozen))
 			held = 0;
 	
-	if(held && held != self.hg_state && !self.hg_ammo)
+	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
 		bigprint_spec(self, "out of grenades", "", 1);
 	
 	if(held && time >= self.hg_next && self.hg_ammo)

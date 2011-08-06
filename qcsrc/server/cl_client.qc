@@ -2721,6 +2721,8 @@ void PlayerPreThink (void)
 		if(frametime)
 			player_powerups();
 
+		HG_Frame();
+
 		if (self.deadflag != DEAD_NO)
 		{
 			float button_pressed, force_respawn;
@@ -2855,7 +2857,6 @@ void PlayerPreThink (void)
 		FixPlayermodel();
 
 		GrapplingHookFrame();
-		HG_Frame();
 
 		if(frametime)
 		{
