@@ -21,6 +21,7 @@ function buildall
     # $2 = desc
     
     USEQCC="$(getqcc)"
+    [ -z "$USEQCC" ] && exit 1
 
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
