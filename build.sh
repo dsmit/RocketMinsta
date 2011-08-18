@@ -228,6 +228,8 @@ function buildqc
     
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
+        
+        [ ! -e "pkgcache/qccache" ] && mkdir -p "pkgcache/qccache"
         cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
     fi
 }
