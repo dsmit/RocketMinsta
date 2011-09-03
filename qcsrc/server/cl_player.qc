@@ -356,7 +356,7 @@ void player_anim (void)
 
 void SpawnThrownWeapon (vector org, float w)
 {
-	if(g_minstagib)
+	if(g_minstagib && !g_weaponarena)
 	if(self.ammo_cells <= 0)
 		return;
 
