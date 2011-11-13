@@ -1066,6 +1066,7 @@ void GameCommand(string command)
 		{
 			//if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
 			madokaprint(e, "^1x ^0WALPURGIS NIGHT ^10", "", 5);
+			stuffcmd(e, "play2 sound/misc/scream\n");
 			
 			if(e.classname == "player")
 			{

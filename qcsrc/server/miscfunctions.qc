@@ -1452,6 +1452,7 @@ void precache()
 	precache_sound (RM_SOUND_REBIRTH);
 	precache_sound (RM_SOUND_RECOVERY);
     precache_sound (RM_SOUND_KILL);
+    precache_sound ("misc/scream.wav");
     
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");
