@@ -263,7 +263,7 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 	w = self.weapon;
 	if (w == 0)
 		return; // just in case
-	if (g_weaponarena)
+	if (g_weaponarena && !g_explosive_weaponarena_limitammo)
 		return;
 	if (g_lms)
 		return;

@@ -21,6 +21,7 @@ function buildall
     # $2 = desc
     
     USEQCC="$(getqcc)"
+    [ -z "$USEQCC" ] && exit 1
 
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
@@ -227,6 +228,8 @@ function buildqc
     
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
+        
+        [ ! -e "pkgcache/qccache" ] && mkdir -p "pkgcache/qccache"
         cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
     fi
 }
