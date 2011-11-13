@@ -221,7 +221,7 @@ function buildqc
     
     local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
     local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
-    if [ "$(readlink -f "$compiled")" != "$olddir/$cname" ]; then
+    if [ "$(readlink -f "$compiled")" != "$(readlink -f "$olddir/$cname")" ]; then
         cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
     fi
     popd &>/dev/null
