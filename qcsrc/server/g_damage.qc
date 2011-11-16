@@ -984,6 +984,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 					targ.ignore_next = 0;
 				}
 				
+				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
 				if(attacker != targ && cvar("g_explosive_splash_selfonly"))
 				{
 					damage = 0;
