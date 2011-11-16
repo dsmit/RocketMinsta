@@ -2899,8 +2899,8 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	vector score_color;
 	score_color = '1 1 1';
 
-	const float name_size = mySize_x*0.75;
-	const float spacing_size = mySize_x*0.04;
+	float name_size = mySize_x*0.75;
+	float spacing_size = mySize_x*0.04;
 	const float highlight_alpha = 0.2;
 	string s;
 
